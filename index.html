@@ -640,6 +640,13 @@
     .placeholder h2 { font-size: 1rem; color: var(--blue-dark); margin-bottom: 6px; }
     .placeholder p  { font-size: .75rem; color: var(--text-mid); }
 
+    /* --- Lightbox --- */
+    .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.93); z-index:9999; display:flex; align-items:center; justify-content:center; animation:lbIn .18s ease; }
+    @keyframes lbIn { from{opacity:0} to{opacity:1} }
+    .lightbox img { max-width:95vw; max-height:92vh; object-fit:contain; border-radius:6px; box-shadow:0 8px 48px rgba(0,0,0,.8); cursor:default; }
+    .lightbox-close { position:fixed; top:14px; right:18px; background:rgba(255,255,255,.1); border:none; color:#fff; font-size:1.5rem; line-height:1; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .lightbox-close:hover { background:rgba(255,255,255,.25); }
+
     @media (max-width: 640px) {
       header h1 { font-size: 1rem; }
       .opex-grid { grid-template-columns: 1fr; }
@@ -2203,7 +2210,10 @@ function renderCoverFlow(tabId, tecIdx) {
     const sc = scArr[abs];
     const op = opArr[abs];
     const z  = 10 - abs;
-    return `<div class="cflow-item" style="transform:translateX(calc(-50% + ${tx}px)) translateY(-50%) translateZ(${tz}px) rotateY(${ry}deg) scale(${sc});opacity:${op};z-index:${z}" onclick="setCoverFlowIdx('${tabId}',${tecIdx},${i})">
+    const clickAction = abs === 0
+      ? `openLightbox('${tabId}',${tecIdx},${i})`
+      : `setCoverFlowIdx('${tabId}',${tecIdx},${i})`;
+    return `<div class="cflow-item" style="transform:translateX(calc(-50% + ${tx}px)) translateY(-50%) translateZ(${tz}px) rotateY(${ry}deg) scale(${sc});opacity:${op};z-index:${z};${abs===0?'cursor:zoom-in':''}" onclick="${clickAction}">
       <img src="${img.src}" alt="${img.caption||''}">
     </div>`;
   }).join('');
@@ -2268,10 +2278,24 @@ function onCoverFlowFile(tabId, tecIdx, input) {
 }
 
 function delCoverFlowImg(tabId, tecIdx, imgIdx) {
+  if (!confirm('Remover esta imagem?')) return;
   DATA[tabId].tecnologia[tecIdx].imagens.splice(imgIdx, 1);
   tecCoverFlowIdx[`${tabId}-${tecIdx}`] = Math.max(0, imgIdx - 1);
   persistData(tabId);
   renderCoverFlow(tabId, tecIdx);
+}
+
+function openLightbox(tabId, tecIdx, imgIdx) {
+  const src = DATA[tabId].tecnologia[tecIdx]?.imagens[imgIdx]?.src;
+  if (!src) return;
+  const lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.innerHTML = `<img src="${src}"><button class="lightbox-close" title="Fechar">×</button>`;
+  lb.querySelector('.lightbox-close').onclick = () => lb.remove();
+  lb.onclick = e => { if (e.target === lb) lb.remove(); };
+  const onKey = e => { if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', onKey); } };
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(lb);
 }
 
 /* ---- Sub-abas ---- */

@@ -611,6 +611,25 @@
     .tec-li-empty { color:#bbb; font-style:italic; font-size:.65rem; padding-left:0; }
     .tec-li-empty::before { display:none; }
 
+    /* --- Coverflow --- */
+    .cflow-wrap  { position:relative; width:100%; height:270px; background:#0d1535; border-radius:12px; overflow:hidden; margin-bottom:22px; }
+    .cflow-stage { position:absolute; inset:0; perspective:900px; }
+    .cflow-empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:rgba(255,255,255,.25); gap:8px; font-size:.78rem; }
+    .cflow-item  { position:absolute; left:50%; top:50%; transition:all .4s cubic-bezier(.4,0,.2,1); cursor:pointer; user-select:none; }
+    .cflow-item img { width:230px; height:155px; object-fit:cover; border-radius:8px; box-shadow:0 8px 36px rgba(0,0,0,.65); display:block; pointer-events:none; }
+    .cflow-nav   { position:absolute; top:50%; transform:translateY(-50%); z-index:20; background:rgba(0,0,0,.45); border:none; color:rgba(255,255,255,.85); font-size:1.6rem; width:38px; height:38px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; line-height:1; }
+    .cflow-nav:hover { background:rgba(0,0,0,.8); color:#fff; }
+    .cflow-nav-l { left:12px; }
+    .cflow-nav-r { right:12px; }
+    .cflow-caption { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); color:rgba(255,255,255,.6); font-size:.67rem; text-align:center; white-space:nowrap; max-width:75%; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+    .cflow-dots  { position:absolute; bottom:10px; left:50%; transform:translateX(-50%); display:flex; gap:5px; z-index:10; }
+    .cflow-dot   { width:5px; height:5px; border-radius:50%; background:rgba(255,255,255,.25); transition:background .2s; cursor:pointer; }
+    .cflow-dot.active { background:var(--teal); }
+    .cflow-toolbar { position:absolute; top:10px; right:10px; display:flex; gap:5px; z-index:20; }
+    .cflow-tbtn  { background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.2); color:rgba(255,255,255,.8); font-size:.63rem; padding:4px 10px; border-radius:6px; cursor:pointer; font-family:inherit; transition:background .15s; }
+    .cflow-tbtn:hover { background:rgba(0,0,0,.8); color:#fff; }
+    .cflow-tbtn.del:hover { background:rgba(180,0,0,.7); border-color:transparent; }
+
     .placeholder {
       max-width: 1100px; margin: 48px auto;
       text-align: center; padding: 20px;
@@ -950,6 +969,7 @@ function defaultData(id, tab) {
     concorrentes_nota: '',
     gestao: [],
     tecnologia: [],
+    tecnologia_imagens: [],
     benchmark: {
       nome: '—',
       produtos: [],
@@ -2056,11 +2076,13 @@ function renderTecnologiaPanel(id) {
   }).join('');
 
   container.innerHTML = `<div class="tec-wrap">
+    <div class="cflow-wrap" id="cflow-${id}"></div>
     ${items.length ? `<div class="tec-grid">${cards}</div>` : '<div class="subtab-empty">Nenhuma arquitetura cadastrada.</div>'}
     <div style="display:flex;justify-content:flex-end;padding:0 0 16px">
       <button class="gestao-add-btn" onclick="addTecItem('${id}')">+ Adicionar arquitetura</button>
     </div>
   </div>`;
+  renderCoverFlow(id);
 }
 
 function _tecEditForm(id, i) {
@@ -2129,6 +2151,118 @@ function addTecItem(id) {
   DATA[id].tecnologia.push({ titulo:'', resumo:'', fluxo:[], pros:[], contras:[], quando_usar:[], quando_evitar:[] });
   renderTecnologiaPanel(id);
   _tecEditForm(id, i);
+}
+
+/* ---- Coverflow de imagens ---- */
+const tecCoverFlowIdx = {};
+
+function renderCoverFlow(id) {
+  const wrap = document.getElementById(`cflow-${id}`);
+  if (!wrap) return;
+  if (!DATA[id].tecnologia_imagens) DATA[id].tecnologia_imagens = [];
+  const imgs = DATA[id].tecnologia_imagens;
+  const idx  = Math.max(0, Math.min(tecCoverFlowIdx[id] || 0, imgs.length - 1));
+  tecCoverFlowIdx[id] = idx;
+
+  const fileInput = `<input type="file" accept="image/*" id="cflow-input-${id}" style="display:none" onchange="onCoverFlowFile('${id}',this)" multiple>`;
+
+  if (!imgs.length) {
+    wrap.innerHTML = `
+      <div class="cflow-empty-state">
+        <div style="font-size:2.2rem">🖼</div>
+        <div>Nenhuma imagem adicionada</div>
+      </div>
+      <div class="cflow-toolbar">
+        <button class="cflow-tbtn" onclick="addCoverFlowImg('${id}')">+ Adicionar imagem</button>
+      </div>
+      ${fileInput}`;
+    return;
+  }
+
+  const txArr = [0, 225, 370, 470];
+  const tzArr = [0, -55, -105, -145];
+  const ryArr = [0,  42,  54,  62];
+  const scArr = [1, .82, .65,  .5];
+  const opArr = [1, .74, .50, .28];
+
+  const items = imgs.map((img, i) => {
+    const off = i - idx;
+    const abs = Math.abs(off);
+    if (abs > 3) return '';
+    const tx = off >= 0 ? txArr[abs] : -txArr[abs];
+    const tz = tzArr[abs];
+    const ry = off > 0 ? -ryArr[abs] : off < 0 ? ryArr[abs] : 0;
+    const sc = scArr[abs];
+    const op = opArr[abs];
+    const z  = 10 - abs;
+    return `<div class="cflow-item" style="transform:translateX(calc(-50% + ${tx}px)) translateY(-50%) translateZ(${tz}px) rotateY(${ry}deg) scale(${sc});opacity:${op};z-index:${z}" onclick="setCoverFlowIdx('${id}',${i})">
+      <img src="${img.src}" alt="${img.caption||''}">
+    </div>`;
+  }).join('');
+
+  const dots = imgs.map((_, i) =>
+    `<div class="cflow-dot${i===idx?' active':''}" onclick="setCoverFlowIdx('${id}',${i})"></div>`
+  ).join('');
+
+  const caption = imgs[idx]?.caption || '';
+
+  wrap.innerHTML = `
+    <div class="cflow-stage">${items}</div>
+    ${idx > 0            ? `<button class="cflow-nav cflow-nav-l" onclick="setCoverFlowIdx('${id}',${idx-1})">‹</button>` : ''}
+    ${idx < imgs.length-1 ? `<button class="cflow-nav cflow-nav-r" onclick="setCoverFlowIdx('${id}',${idx+1})">›</button>` : ''}
+    ${caption ? `<div class="cflow-caption">${caption}</div>` : ''}
+    <div class="cflow-dots">${dots}</div>
+    <div class="cflow-toolbar">
+      <button class="cflow-tbtn del" onclick="delCoverFlowImg('${id}',${idx})">× Remover</button>
+      <button class="cflow-tbtn" onclick="addCoverFlowImg('${id}')">+ Adicionar</button>
+    </div>
+    ${fileInput}`;
+}
+
+function setCoverFlowIdx(id, i) {
+  tecCoverFlowIdx[id] = i;
+  renderCoverFlow(id);
+}
+
+function addCoverFlowImg(id) {
+  document.getElementById(`cflow-input-${id}`)?.click();
+}
+
+function onCoverFlowFile(id, input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  if (!DATA[id].tecnologia_imagens) DATA[id].tecnologia_imagens = [];
+  let done = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const imgEl = new Image();
+      imgEl.onload = () => {
+        const MAX = 900;
+        let w = imgEl.width, h = imgEl.height;
+        if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(imgEl, 0, 0, w, h);
+        DATA[id].tecnologia_imagens.push({ src: canvas.toDataURL('image/jpeg', 0.82), caption: '' });
+        done++;
+        if (done === files.length) {
+          tecCoverFlowIdx[id] = DATA[id].tecnologia_imagens.length - 1;
+          persistData(id);
+          renderCoverFlow(id);
+        }
+      };
+      imgEl.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function delCoverFlowImg(id, i) {
+  DATA[id].tecnologia_imagens.splice(i, 1);
+  tecCoverFlowIdx[id] = Math.max(0, i - 1);
+  persistData(id);
+  renderCoverFlow(id);
 }
 
 /* ---- Sub-abas ---- */

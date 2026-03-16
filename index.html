@@ -2100,7 +2100,7 @@ function renderTecnologiaPanel(id) {
   container.innerHTML = `<div class="tec-wrap">
     ${items.length ? `<div class="tec-grid">${cards}</div>` : '<div class="subtab-empty">Nenhuma arquitetura cadastrada.</div>'}
     <div style="display:flex;justify-content:flex-end;padding:0 0 16px">
-      <button class="gestao-add-btn" onclick="addTecItem('${id}')">+ Adicionar arquitetura</button>
+      <button class="gestao-add-btn" onclick="addTecItem('${id}')">+ Adicionar Tecnologia</button>
     </div>
   </div>`;
   items.forEach((_, i) => renderCoverFlow(id, i));

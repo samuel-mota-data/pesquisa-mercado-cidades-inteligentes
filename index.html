@@ -1847,9 +1847,10 @@ function renderGestaoPanel(id) {
   const items = events.length ? events.map((ev, i) => {
     const chain = [
       { data: ev.data, status: ev.status, titulo: ev.titulo, desc: ev.desc, obs: null, isOrig: true },
-      ...(ev.avancos || []).map(a => ({ ...a, isOrig: false }))
+      ...(ev.avancos || []).map(a => ({ ...a, titulo: ev.titulo, isOrig: false }))
     ];
     const latestStatus = chain[chain.length - 1].status || 'planejado';
+    const hasAvancos   = (ev.avancos || []).length > 0;
 
     const cards = chain.map((card, j) => {
       const isDimmed = j < chain.length - 1;
@@ -1858,12 +1859,13 @@ function renderGestaoPanel(id) {
       return `
         <div class="timeline-card${isDimmed ? ' tl-dimmed' : ''}" style="${!isLatest ? 'margin-bottom:8px' : ''}">
           ${isLatest ? `<div class="timeline-actions">
+            ${hasAvancos ? `<button class="tl-btn" onclick="reverterAvanco('${id}',${i})" title="Reverter">←</button>` : ''}
             <button class="tl-btn"        onclick="openAvancoForm('${id}',${i})" title="Avançar">→</button>
             <button class="tl-btn"        onclick="editGestaoItem('${id}',${i})"  title="Editar">✏</button>
             <button class="tl-btn tl-del" onclick="delGestaoItem('${id}',${i})"   title="Excluir">×</button>
           </div>` : ''}
           ${card.data  ? `<div class="tl-date">${_fmtDate(card.data)}</div>` : ''}
-          ${card.isOrig ? `<div class="tl-title">${card.titulo || '—'}</div>` : ''}
+          <div class="tl-title">${card.titulo || '—'}</div>
           ${card.isOrig && card.desc  ? `<div class="tl-desc">${card.desc}</div>`  : ''}
           ${!card.isOrig && card.obs  ? `<div class="tl-desc tl-obs">${card.obs}</div>` : ''}
           ${days !== null ? `<div class="tl-dias">${days} dia${days !== 1 ? 's' : ''} no status anterior</div>` : ''}
@@ -1963,8 +1965,15 @@ function saveAvanco(id, i) {
     status: novoStatus,
     obs:    g(`tl-av-obs-${id}-${i}`)?.value  || '',
   });
-  DATA[id].gestao[i].status = novoStatus;
   persistData(id); renderGestaoPanel(id);
+}
+
+function reverterAvanco(id, i) {
+  const ev = DATA[id].gestao[i];
+  if (!ev.avancos || ev.avancos.length === 0) return;
+  ev.avancos.pop();
+  persistData(id);
+  renderGestaoPanel(id);
 }
 
 function delGestaoItem(id, i) {

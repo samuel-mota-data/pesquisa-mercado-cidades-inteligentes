@@ -1839,7 +1839,7 @@ function renderGestaoPanel(id) {
             <button class="tl-btn"     onclick="editGestaoItem('${id}',${i})" title="Editar">✏</button>
             <button class="tl-btn tl-del" onclick="delGestaoItem('${id}',${i})"  title="Excluir">×</button>
           </div>
-          <div class="tl-date">${ev.data || ''}</div>
+          <div class="tl-date">${ev.data ? new Date(ev.data + 'T00:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'}) : ''}</div>
           <div class="tl-title">${ev.titulo || '—'}</div>
           ${ev.desc ? `<div class="tl-desc">${ev.desc}</div>` : ''}
           <span class="tl-badge ${ev.status || 'planejado'}">${TL_STATUS[ev.status] || ev.status || ''}</span>
@@ -1861,7 +1861,7 @@ function _tlEditForm(id, i, ev) {
   item.querySelector('.timeline-card').innerHTML = `
     <div style="display:flex;flex-direction:column;gap:6px">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <input  class="sec-edit-input" id="tl-data-${id}-${i}"   placeholder="Data (ex: Jan 2025)" value="${ev.data  || ''}" style="width:140px">
+        <input  class="sec-edit-input" id="tl-data-${id}-${i}"   type="date" value="${ev.data || ''}" style="width:160px">
         <select class="sec-edit-input" id="tl-stat-${id}-${i}"   style="flex:1">
           <option value="planejado"    ${(ev.status||'planejado')==='planejado'    ?'selected':''}>Planejado</option>
           <option value="em-andamento" ${ev.status==='em-andamento'?'selected':''}>Em andamento</option>
@@ -1889,6 +1889,7 @@ function saveGestaoItem(id, i) {
     titulo: g(`tl-tit-${id}-${i}`)?.value  || '',
     desc:   g(`tl-desc-${id}-${i}`)?.value || '',
   };
+  DATA[id].gestao.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
   persistData(id);
   renderGestaoPanel(id);
 }

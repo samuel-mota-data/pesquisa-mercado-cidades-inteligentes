@@ -520,6 +520,65 @@
       color: var(--text-mid); font-size: .78rem;
     }
 
+    /* ---- TIMELINE / GESTÃO ---- */
+    .timeline-wrap { max-width: 680px; margin: 0 auto; padding: 28px 14px 48px; }
+    .timeline { position: relative; padding: 4px 0 4px 0; }
+    .timeline::before {
+      content: ''; position: absolute;
+      left: 15px; top: 0; bottom: 0;
+      width: 2px; background: var(--gray-mid);
+    }
+    .timeline-item { position: relative; padding-left: 48px; margin-bottom: 18px; }
+    .timeline-dot {
+      position: absolute; left: 7px; top: 13px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--white); border: 2px solid var(--gray-mid); z-index: 1;
+      transition: border-color .15s, background .15s;
+    }
+    .timeline-dot.done        { background: var(--blue-dark); border-color: var(--blue-dark); }
+    .timeline-dot.em-andamento { background: var(--teal);      border-color: var(--teal); }
+    .timeline-dot.planejado   { background: var(--white);     border-color: #b0bcd4; }
+    .timeline-card {
+      background: var(--white); border-radius: 8px;
+      padding: 12px 14px 10px;
+      border: 1px solid var(--gray-mid);
+      box-shadow: 0 1px 6px rgba(26,43,140,.06);
+      position: relative;
+    }
+    .timeline-card:hover .timeline-actions { opacity: 1; }
+    .timeline-actions {
+      position: absolute; top: 8px; right: 8px;
+      display: flex; gap: 2px; opacity: 0;
+      transition: opacity .15s;
+    }
+    .tl-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-mid); font-size: .7rem; font-family: inherit;
+      padding: 3px 6px; border-radius: 4px;
+      transition: color .1s, background .1s;
+    }
+    .tl-btn:hover           { background: var(--gray-light); color: var(--blue-dark); }
+    .tl-btn.tl-del:hover    { color: var(--red-risk); }
+    .tl-date  { font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: var(--text-mid); margin-bottom: 3px; }
+    .tl-title { font-size: .8rem; font-weight: 700; color: var(--blue-dark); margin-bottom: 4px; }
+    .tl-desc  { font-size: .71rem; color: var(--text-mid); line-height: 1.55; }
+    .tl-badge {
+      display: inline-block; margin-top: 7px;
+      font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+      padding: 2px 8px; border-radius: 99px;
+    }
+    .tl-badge.done         { background: #eaecf7; color: var(--blue-dark); }
+    .tl-badge.em-andamento { background: #e0fafb; color: #007070; }
+    .tl-badge.planejado    { background: var(--gray-light); color: #7a8aaa; }
+    .gestao-add-btn {
+      margin-left: 48px; margin-top: 4px;
+      background: none; border: 1px dashed var(--gray-mid);
+      color: var(--text-mid); font-family: inherit;
+      font-size: .72rem; padding: 6px 14px; border-radius: 6px;
+      cursor: pointer; transition: border-color .15s, color .15s;
+    }
+    .gestao-add-btn:hover { border-color: var(--teal); color: var(--blue-dark); }
+
     .placeholder {
       max-width: 1100px; margin: 48px auto;
       text-align: center; padding: 20px;
@@ -857,6 +916,7 @@ function defaultData(id, tab) {
     diferenciais: [],
     concorrentes: [],
     concorrentes_nota: '',
+    gestao: [],
     benchmark: {
       nome: '—',
       produtos: [],
@@ -1301,7 +1361,7 @@ function renderPanel(id) {
 </main></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div class="subtab-empty">Em desenvolvimento.</div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div class="subtab-empty">Em desenvolvimento.</div></div>
-  <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div class="subtab-empty">Em desenvolvimento.</div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
 `;
 
   /* ---- Charts (criados após innerHTML estar no DOM) ---- */
@@ -1347,6 +1407,7 @@ function renderPanel(id) {
   initializedConc.add(id);
   initializedPanels.add(id);
   setCalcReadonly(id, true);
+  renderGestaoPanel(id);
   // restaura sub-aba ativa se diferente de mercado
   const _sub = activeSubTab[id];
   if (_sub && _sub !== 'mercado') activateSubTab(id, _sub);
@@ -1759,6 +1820,92 @@ function activateTab(id) {
 document.getElementById('tab-bar').addEventListener('click', e => {
   if (e.target.classList.contains('tab-btn')) activateTab(e.target.dataset.tab);
 });
+
+/* ====================================================
+   GESTÃO DE PROCESSO — Timeline / Roadmap
+   ==================================================== */
+const TL_STATUS = { done: 'Concluído', 'em-andamento': 'Em andamento', planejado: 'Planejado' };
+
+function renderGestaoPanel(id) {
+  const container = document.getElementById('gestao-panel-' + id);
+  if (!container) return;
+  const events = DATA[id].gestao || [];
+  const items = events.length
+    ? events.map((ev, i) => `
+      <div class="timeline-item" id="tl-item-${id}-${i}">
+        <div class="timeline-dot ${ev.status || 'planejado'}"></div>
+        <div class="timeline-card">
+          <div class="timeline-actions">
+            <button class="tl-btn"     onclick="editGestaoItem('${id}',${i})" title="Editar">✏</button>
+            <button class="tl-btn tl-del" onclick="delGestaoItem('${id}',${i})"  title="Excluir">×</button>
+          </div>
+          <div class="tl-date">${ev.data || ''}</div>
+          <div class="tl-title">${ev.titulo || '—'}</div>
+          ${ev.desc ? `<div class="tl-desc">${ev.desc}</div>` : ''}
+          <span class="tl-badge ${ev.status || 'planejado'}">${TL_STATUS[ev.status] || ev.status || ''}</span>
+        </div>
+      </div>`).join('')
+    : `<p style="padding-left:48px;color:var(--text-mid);font-size:.75rem">Nenhum evento ainda.</p>`;
+
+  container.innerHTML = `
+    <div class="timeline-wrap">
+      <div class="timeline" id="tl-${id}">${items}</div>
+      <button class="gestao-add-btn" onclick="addGestaoItem('${id}')">+ Adicionar evento</button>
+    </div>`;
+}
+
+function _tlEditForm(id, i, ev) {
+  const item = document.getElementById(`tl-item-${id}-${i}`);
+  if (!item) return;
+  item.querySelector('.timeline-dot').className = `timeline-dot ${ev.status || 'planejado'}`;
+  item.querySelector('.timeline-card').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <input  class="sec-edit-input" id="tl-data-${id}-${i}"   placeholder="Data (ex: Jan 2025)" value="${ev.data  || ''}" style="width:140px">
+        <select class="sec-edit-input" id="tl-stat-${id}-${i}"   style="flex:1">
+          <option value="planejado"    ${(ev.status||'planejado')==='planejado'    ?'selected':''}>Planejado</option>
+          <option value="em-andamento" ${ev.status==='em-andamento'?'selected':''}>Em andamento</option>
+          <option value="done"         ${ev.status==='done'        ?'selected':''}>Concluído</option>
+        </select>
+      </div>
+      <input    class="sec-edit-input" id="tl-tit-${id}-${i}"  placeholder="Título" value="${ev.titulo || ''}">
+      <textarea class="sec-edit-input" id="tl-desc-${id}-${i}" placeholder="Descrição (opcional)" style="resize:vertical;min-height:52px">${ev.desc || ''}</textarea>
+      <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:2px">
+        <button class="calc-action-btn discard" onclick="renderGestaoPanel('${id}')">Cancelar</button>
+        <button class="calc-action-btn save"    onclick="saveGestaoItem('${id}',${i})">Salvar</button>
+      </div>
+    </div>`;
+}
+
+function editGestaoItem(id, i) {
+  _tlEditForm(id, i, DATA[id].gestao[i]);
+}
+
+function saveGestaoItem(id, i) {
+  const g = s => document.getElementById(s);
+  DATA[id].gestao[i] = {
+    data:   g(`tl-data-${id}-${i}`)?.value || '',
+    status: g(`tl-stat-${id}-${i}`)?.value || 'planejado',
+    titulo: g(`tl-tit-${id}-${i}`)?.value  || '',
+    desc:   g(`tl-desc-${id}-${i}`)?.value || '',
+  };
+  persistData(id);
+  renderGestaoPanel(id);
+}
+
+function delGestaoItem(id, i) {
+  DATA[id].gestao.splice(i, 1);
+  persistData(id);
+  renderGestaoPanel(id);
+}
+
+function addGestaoItem(id) {
+  if (!DATA[id].gestao) DATA[id].gestao = [];
+  const i = DATA[id].gestao.length;
+  DATA[id].gestao.push({ data: '', titulo: '', desc: '', status: 'planejado' });
+  renderGestaoPanel(id);
+  _tlEditForm(id, i, DATA[id].gestao[i]);
+}
 
 /* ---- Sub-abas ---- */
 const activeSubTab = {};

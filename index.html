@@ -647,6 +647,17 @@
     .lightbox-close { position:fixed; top:14px; right:18px; background:rgba(255,255,255,.1); border:none; color:#fff; font-size:1.5rem; line-height:1; width:36px; height:36px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; }
     .lightbox-close:hover { background:rgba(255,255,255,.25); }
 
+    /* --- Modal de confirmação --- */
+    .confirm-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:10000; display:flex; align-items:center; justify-content:center; animation:lbIn .15s ease; }
+    .confirm-box { background:var(--white); border-radius:12px; box-shadow:0 8px 40px rgba(0,0,0,.25); padding:28px 28px 20px; max-width:340px; width:90%; text-align:center; }
+    .confirm-box h4 { font-size:.95rem; font-weight:700; color:var(--blue-dark); margin:0 0 8px; }
+    .confirm-box p  { font-size:.76rem; color:var(--text-mid); margin:0 0 22px; line-height:1.55; }
+    .confirm-actions { display:flex; gap:8px; justify-content:center; }
+    .confirm-cancel { background:var(--gray-light); border:none; color:var(--text-mid); font-family:inherit; font-size:.78rem; font-weight:600; padding:9px 22px; border-radius:8px; cursor:pointer; }
+    .confirm-cancel:hover { background:#e0e4ef; }
+    .confirm-ok { background:var(--red-risk); border:none; color:#fff; font-family:inherit; font-size:.78rem; font-weight:700; padding:9px 22px; border-radius:8px; cursor:pointer; }
+    .confirm-ok:hover { background:#c42f2f; }
+
     @media (max-width: 640px) {
       header h1 { font-size: 1rem; }
       .opex-grid { grid-template-columns: 1fr; }
@@ -2278,11 +2289,32 @@ function onCoverFlowFile(tabId, tecIdx, input) {
 }
 
 function delCoverFlowImg(tabId, tecIdx, imgIdx) {
-  if (!confirm('Remover esta imagem?')) return;
-  DATA[tabId].tecnologia[tecIdx].imagens.splice(imgIdx, 1);
-  tecCoverFlowIdx[`${tabId}-${tecIdx}`] = Math.max(0, imgIdx - 1);
-  persistData(tabId);
-  renderCoverFlow(tabId, tecIdx);
+  showConfirm('Remover imagem?', 'Esta ação não pode ser desfeita.', () => {
+    DATA[tabId].tecnologia[tecIdx].imagens.splice(imgIdx, 1);
+    tecCoverFlowIdx[`${tabId}-${tecIdx}`] = Math.max(0, imgIdx - 1);
+    persistData(tabId);
+    renderCoverFlow(tabId, tecIdx);
+  });
+}
+
+function showConfirm(title, message, onOk) {
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  ov.innerHTML = `
+    <div class="confirm-box">
+      <h4>${title}</h4>
+      <p>${message}</p>
+      <div class="confirm-actions">
+        <button class="confirm-cancel">Cancelar</button>
+        <button class="confirm-ok">Remover</button>
+      </div>
+    </div>`;
+  ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+  ov.querySelector('.confirm-ok').onclick = () => { ov.remove(); onOk(); };
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  const onKey = e => { if (e.key === 'Escape') { ov.remove(); document.removeEventListener('keydown', onKey); } };
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(ov);
 }
 
 function openLightbox(tabId, tecIdx, imgIdx) {

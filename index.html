@@ -402,18 +402,23 @@
     .tab-bar {
       background: var(--blue-dark);
       border-bottom: 2px solid var(--teal);
+    }
+    .tab-bar-center {
+      max-width: 1100px; margin: 0 auto;
       display: flex; align-items: stretch;
     }
     .tab-sort-btn {
       flex-shrink: 0;
       background: none; border: none; cursor: pointer;
-      color: rgba(255,255,255,.55);
-      font-size: 1.1rem; line-height: 1;
-      padding: 0 12px;
-      border-right: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,255,255,.45);
+      font-size: .65rem; line-height: 1;
+      width: 32px;
+      display: flex; align-items: center; justify-content: center;
+      border-right: 1px solid rgba(255,255,255,.1);
       transition: color .15s;
       font-family: inherit;
     }
+    .tab-sort-btn::after { content: '▾'; font-size: .85rem; }
     .tab-sort-btn:hover { color: var(--teal); }
     .tab-bar-scroll {
       flex: 1; overflow-x: auto;
@@ -421,8 +426,8 @@
     }
     .tab-bar-scroll::-webkit-scrollbar { display: none; }
     .tab-bar-inner {
-      display: inline-flex; gap: 0;
-      padding: 0 14px; min-width: 100%;
+      display: flex; gap: 0;
+      padding: 0 14px;
     }
     /* modal de ordenação */
     .tab-sort-overlay {
@@ -431,26 +436,40 @@
     .tab-sort-overlay.open { display: block; }
     .tab-sort-panel {
       position: fixed; top: 78px; left: 0;
-      background: var(--white); border-radius: 0 0 8px 0;
-      padding: 12px 14px; min-width: 250px;
-      box-shadow: 4px 4px 24px rgba(26,43,140,.18);
+      background: var(--white); border-radius: 0 8px 8px 0;
+      padding: 14px 16px; min-width: 270px;
+      box-shadow: 6px 6px 28px rgba(26,43,140,.22);
       z-index: 901;
     }
-    .tab-sort-panel h4 { font-size: .72rem; color: var(--blue-dark); margin-bottom: 8px; }
-    .tab-sort-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 5px 8px; border-radius: 4px; margin-bottom: 2px;
-      cursor: grab; font-size: .72rem; color: var(--text-dark);
-      border: 1px solid transparent; background: var(--gray-light);
-      user-select: none;
+    .tab-sort-panel h4 {
+      font-size: .7rem; color: var(--text-mid); font-weight: 600;
+      letter-spacing: .5px; text-transform: uppercase;
+      margin-bottom: 10px;
     }
-    .tab-sort-item:hover { border-color: var(--gray-mid); }
-    .tab-sort-item.dragging { opacity: .3; }
-    .tab-sort-item.drag-over { border-color: var(--teal); background: #e6feff; }
-    .tab-sort-handle { color: #aab; font-size: .85rem; }
+    .tab-sort-list-wrap { display: flex; flex-direction: column; gap: 0; }
+    .tab-sort-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 10px; border-radius: 5px;
+      cursor: grab; font-size: .73rem; color: var(--text-dark);
+      background: var(--gray-light);
+      border-top: 2px solid transparent;
+      border-bottom: 2px solid transparent;
+      margin-bottom: 2px;
+      user-select: none; transition: background .1s;
+    }
+    .tab-sort-item:hover { background: var(--gray-mid); }
+    .tab-sort-item.dragging { opacity: .25; }
+    .tab-sort-item.drop-before { border-top-color: var(--teal); }
+    .tab-sort-item.drop-after  { border-bottom-color: var(--teal); }
+    .tab-sort-handle { color: #b0bcd4; font-size: .9rem; flex-shrink: 0; }
+    .tab-sort-num {
+      font-size: .6rem; font-weight: 700; color: var(--text-mid);
+      background: var(--gray-mid); border-radius: 3px;
+      padding: 1px 5px; flex-shrink: 0; min-width: 18px; text-align: center;
+    }
     .tab-sort-footer {
       display: flex; justify-content: flex-end; gap: 6px;
-      margin-top: 10px; padding-top: 8px;
+      margin-top: 12px; padding-top: 10px;
       border-top: 1px solid var(--gray-mid);
     }
     .tab-btn {
@@ -713,17 +732,19 @@ let DATA = {
 
 <!-- BARRA DE ABAS -->
 <nav class="tab-bar">
-  <button class="tab-sort-btn" onclick="openTabSort()" title="Reordenar abas">⌄</button>
-  <div class="tab-bar-scroll">
-    <div class="tab-bar-inner" id="tab-bar"></div>
+  <div class="tab-bar-center">
+    <button class="tab-sort-btn" onclick="openTabSort()" title="Reordenar abas"></button>
+    <div class="tab-bar-scroll">
+      <div class="tab-bar-inner" id="tab-bar"></div>
+    </div>
   </div>
 </nav>
 
 <!-- MODAL ORDENAÇÃO DE ABAS -->
 <div id="tab-sort-overlay" class="tab-sort-overlay" onclick="closeTabSort(false)"></div>
 <div id="tab-sort-panel" class="tab-sort-panel" style="display:none">
-  <h4>Reordenar abas</h4>
-  <div id="tab-sort-list"></div>
+  <h4>Ordem das abas</h4>
+  <div id="tab-sort-list" class="tab-sort-list-wrap"></div>
   <div class="tab-sort-footer">
     <button class="calc-action-btn discard" onclick="closeTabSort(false)">Cancelar</button>
     <button class="calc-action-btn save"    onclick="closeTabSort(true)">Salvar ordem</button>
@@ -1708,20 +1729,30 @@ function _renderSortList() {
   list.innerHTML = _tabSortOrder.map((t, i) => `
     <div class="tab-sort-item" draggable="true" data-idx="${i}">
       <span class="tab-sort-handle">⠿</span>
-      <span>${t.label}</span>
+      <span class="tab-sort-num">${i + 1}</span>
+      <span style="flex:1">${t.label}</span>
     </div>`).join('');
   let dragIdx = null;
+  const clearIndicators = () => list.querySelectorAll('.tab-sort-item').forEach(el => el.classList.remove('drop-before','drop-after'));
   list.querySelectorAll('.tab-sort-item').forEach(el => {
     el.addEventListener('dragstart', () => { dragIdx = +el.dataset.idx; setTimeout(() => el.classList.add('dragging'), 0); });
-    el.addEventListener('dragend',   () => el.classList.remove('dragging'));
-    el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('drag-over'); });
-    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('dragend',   () => { el.classList.remove('dragging'); clearIndicators(); });
+    el.addEventListener('dragover',  e => {
+      e.preventDefault();
+      clearIndicators();
+      const mid = el.getBoundingClientRect().top + el.offsetHeight / 2;
+      el.classList.add(e.clientY < mid ? 'drop-before' : 'drop-after');
+    });
+    el.addEventListener('dragleave', clearIndicators);
     el.addEventListener('drop', e => {
-      e.preventDefault(); el.classList.remove('drag-over');
-      const dropIdx = +el.dataset.idx;
-      if (dragIdx === dropIdx) return;
+      e.preventDefault(); clearIndicators();
+      const hoverIdx = +el.dataset.idx;
+      const mid = el.getBoundingClientRect().top + el.offsetHeight / 2;
+      let insertAt = e.clientY < mid ? hoverIdx : hoverIdx + 1;
+      if (dragIdx < insertAt) insertAt--;
+      if (dragIdx === insertAt) return;
       const [moved] = _tabSortOrder.splice(dragIdx, 1);
-      _tabSortOrder.splice(dropIdx, 0, moved);
+      _tabSortOrder.splice(insertAt, 0, moved);
       _renderSortList();
     });
   });

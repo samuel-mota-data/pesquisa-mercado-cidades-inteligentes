@@ -582,6 +582,35 @@
     }
     .gestao-add-btn:hover { border-color: var(--teal); color: var(--blue-dark); }
 
+    /* --- Tecnologia --- */
+    .tec-wrap  { max-width:1100px; margin:0 auto; padding:24px 16px 0; }
+    .tec-grid  { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:16px; }
+    @media(max-width:700px){ .tec-grid{ grid-template-columns:1fr; } }
+    .tec-card  { background:var(--white); border-radius:10px; box-shadow:var(--card-shadow); border-top:4px solid var(--teal); padding:18px; }
+    .tec-card-head { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+    .tec-card-title { font-size:.9rem; font-weight:800; color:var(--blue-dark); flex:1; line-height:1.3; }
+    .tec-card-actions { display:flex; gap:2px; opacity:0; transition:opacity .15s; flex-shrink:0; }
+    .tec-card:hover .tec-card-actions { opacity:1; }
+    .tec-resumo { font-size:.73rem; color:var(--text-mid); line-height:1.6; margin-bottom:10px; }
+    .tec-flow   { display:flex; flex-wrap:wrap; align-items:center; gap:4px; margin-bottom:12px; background:var(--gray-light); border-radius:6px; padding:7px 10px; }
+    .tec-flow-step  { color:var(--blue-dark); font-size:.65rem; font-weight:700; font-family:monospace; }
+    .tec-flow-arrow { color:var(--teal); font-size:.8rem; font-weight:700; }
+    .tec-lists { display:grid; grid-template-columns:1fr 1fr; gap:8px 14px; margin-top:8px; }
+    .tec-col-head { font-size:.58rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; margin-bottom:4px; }
+    .tec-pros-head    { color:#0a8055; }
+    .tec-contras-head { color:var(--red-risk); }
+    .tec-usar-head    { color:#007a80; }
+    .tec-evitar-head  { color:#8a6700; }
+    .tec-ul { margin:0; padding:0; list-style:none; }
+    .tec-li { font-size:.68rem; color:var(--text-mid); padding:1px 0 1px 13px; position:relative; line-height:1.5; }
+    .tec-li::before { content:''; position:absolute; left:0; top:7px; width:5px; height:5px; border-radius:50%; }
+    .tec-li-pros::before    { background:#0a8055; }
+    .tec-li-contras::before { background:var(--red-risk); }
+    .tec-li-usar::before    { background:#007a80; }
+    .tec-li-evitar::before  { background:#8a6700; }
+    .tec-li-empty { color:#bbb; font-style:italic; font-size:.65rem; padding-left:0; }
+    .tec-li-empty::before { display:none; }
+
     .placeholder {
       max-width: 1100px; margin: 48px auto;
       text-align: center; padding: 20px;
@@ -920,6 +949,7 @@ function defaultData(id, tab) {
     concorrentes: [],
     concorrentes_nota: '',
     gestao: [],
+    tecnologia: [],
     benchmark: {
       nome: '—',
       produtos: [],
@@ -1362,7 +1392,7 @@ function renderPanel(id) {
   </section>
 
 </main></div>
-  <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div class="subtab-empty">Em desenvolvimento.</div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div id="tecnologia-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div class="subtab-empty">Em desenvolvimento.</div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
 `;
@@ -1411,6 +1441,7 @@ function renderPanel(id) {
   initializedPanels.add(id);
   setCalcReadonly(id, true);
   renderGestaoPanel(id);
+  renderTecnologiaPanel(id);
   // restaura sub-aba ativa se diferente de mercado
   const _sub = activeSubTab[id];
   if (_sub && _sub !== 'mercado') activateSubTab(id, _sub);
@@ -1987,6 +2018,117 @@ function addGestaoItem(id) {
   DATA[id].gestao.push({ data: '', titulo: '', desc: '', status: 'planejado', avancos: [] });
   renderGestaoPanel(id);
   _tlEditForm(id, i, DATA[id].gestao[i]);
+}
+
+/* ---- Tecnologia ---- */
+function renderTecnologiaPanel(id) {
+  const container = document.getElementById('tecnologia-panel-' + id);
+  if (!container) return;
+  if (!DATA[id].tecnologia) DATA[id].tecnologia = [];
+  const items = DATA[id].tecnologia;
+  const accents = ['var(--teal)','var(--blue-mid)','var(--green-light)','var(--yellow)'];
+
+  const cards = items.map((item, i) => {
+    const accent = accents[i % accents.length];
+    const fluxo = (item.fluxo||[]).map((f, fi) =>
+      `<span class="tec-flow-step">${f}</span>${fi < (item.fluxo.length-1) ? '<span class="tec-flow-arrow"> → </span>' : ''}`
+    ).join('');
+    const rl = (arr, cls) => (arr||[]).length
+      ? (arr||[]).map(x => `<li class="tec-li ${cls}">${x}</li>`).join('')
+      : `<li class="tec-li tec-li-empty">—</li>`;
+    return `<div class="tec-card" id="tec-card-${id}-${i}" style="border-top-color:${accent}">
+      <div class="tec-card-head">
+        <div class="tec-card-title">${item.titulo || '—'}</div>
+        <div class="tec-card-actions">
+          <button class="tl-btn" onclick="editTecItem('${id}',${i})" title="Editar">✏</button>
+          <button class="tl-btn tl-del" onclick="delTecItem('${id}',${i})" title="Excluir">×</button>
+        </div>
+      </div>
+      ${item.resumo ? `<p class="tec-resumo">${item.resumo}</p>` : ''}
+      ${(item.fluxo||[]).length ? `<div class="tec-flow">${fluxo}</div>` : ''}
+      <div class="tec-lists">
+        <div class="tec-col"><div class="tec-col-head tec-pros-head">Prós</div><ul class="tec-ul">${rl(item.pros,'tec-li-pros')}</ul></div>
+        <div class="tec-col"><div class="tec-col-head tec-contras-head">Contras</div><ul class="tec-ul">${rl(item.contras,'tec-li-contras')}</ul></div>
+        <div class="tec-col"><div class="tec-col-head tec-usar-head">Quando Usar</div><ul class="tec-ul">${rl(item.quando_usar,'tec-li-usar')}</ul></div>
+        <div class="tec-col"><div class="tec-col-head tec-evitar-head">Quando Evitar</div><ul class="tec-ul">${rl(item.quando_evitar,'tec-li-evitar')}</ul></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `<div class="tec-wrap">
+    ${items.length ? `<div class="tec-grid">${cards}</div>` : '<div class="subtab-empty">Nenhuma arquitetura cadastrada.</div>'}
+    <div style="display:flex;justify-content:flex-end;padding:0 0 16px">
+      <button class="gestao-add-btn" onclick="addTecItem('${id}')">+ Adicionar arquitetura</button>
+    </div>
+  </div>`;
+}
+
+function _tecEditForm(id, i) {
+  const card = document.getElementById(`tec-card-${id}-${i}`);
+  if (!card) return;
+  const item = DATA[id].tecnologia[i] || {};
+  const toLines = arr => (arr||[]).join('\n');
+  const esc = s => (s||'').replace(/"/g,'&quot;');
+  card.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <input class="sec-edit-input" id="tec-titulo-${id}-${i}" placeholder="Título da arquitetura" value="${esc(item.titulo)}">
+      <textarea class="sec-edit-input" id="tec-resumo-${id}-${i}" placeholder="Resumo" rows="2" style="resize:vertical">${item.resumo||''}</textarea>
+      <input class="sec-edit-input" id="tec-fluxo-${id}-${i}" placeholder="Fluxo (separar por vírgula): Hidrômetro, Gateway, Nuvem" value="${esc((item.fluxo||[]).join(', '))}">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div>
+          <div class="tec-col-head tec-pros-head" style="margin-bottom:3px">Prós (uma por linha)</div>
+          <textarea class="sec-edit-input" id="tec-pros-${id}-${i}" rows="3" style="resize:vertical">${toLines(item.pros)}</textarea>
+        </div>
+        <div>
+          <div class="tec-col-head tec-contras-head" style="margin-bottom:3px">Contras (uma por linha)</div>
+          <textarea class="sec-edit-input" id="tec-contras-${id}-${i}" rows="3" style="resize:vertical">${toLines(item.contras)}</textarea>
+        </div>
+        <div>
+          <div class="tec-col-head tec-usar-head" style="margin-bottom:3px">Quando Usar (uma por linha)</div>
+          <textarea class="sec-edit-input" id="tec-usar-${id}-${i}" rows="3" style="resize:vertical">${toLines(item.quando_usar)}</textarea>
+        </div>
+        <div>
+          <div class="tec-col-head tec-evitar-head" style="margin-bottom:3px">Quando Evitar (uma por linha)</div>
+          <textarea class="sec-edit-input" id="tec-evitar-${id}-${i}" rows="3" style="resize:vertical">${toLines(item.quando_evitar)}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:6px">
+        <button class="calc-action-btn discard" onclick="renderTecnologiaPanel('${id}')">Cancelar</button>
+        <button class="calc-action-btn save" onclick="saveTecItem('${id}',${i})">Salvar</button>
+      </div>
+    </div>`;
+}
+
+function editTecItem(id, i) { _tecEditForm(id, i); }
+
+function saveTecItem(id, i) {
+  const g = s => document.getElementById(s);
+  const toArr = s => (s||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  DATA[id].tecnologia[i] = {
+    titulo:        g(`tec-titulo-${id}-${i}`)?.value.trim() || '',
+    resumo:        g(`tec-resumo-${id}-${i}`)?.value.trim() || '',
+    fluxo:         (g(`tec-fluxo-${id}-${i}`)?.value||'').split(',').map(x=>x.trim()).filter(Boolean),
+    pros:          toArr(g(`tec-pros-${id}-${i}`)?.value),
+    contras:       toArr(g(`tec-contras-${id}-${i}`)?.value),
+    quando_usar:   toArr(g(`tec-usar-${id}-${i}`)?.value),
+    quando_evitar: toArr(g(`tec-evitar-${id}-${i}`)?.value),
+  };
+  persistData(id);
+  renderTecnologiaPanel(id);
+}
+
+function delTecItem(id, i) {
+  DATA[id].tecnologia.splice(i, 1);
+  persistData(id);
+  renderTecnologiaPanel(id);
+}
+
+function addTecItem(id) {
+  if (!DATA[id].tecnologia) DATA[id].tecnologia = [];
+  const i = DATA[id].tecnologia.length;
+  DATA[id].tecnologia.push({ titulo:'', resumo:'', fluxo:[], pros:[], contras:[], quando_usar:[], quando_evitar:[] });
+  renderTecnologiaPanel(id);
+  _tecEditForm(id, i);
 }
 
 /* ---- Sub-abas ---- */

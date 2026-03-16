@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estudo de Mercado — Dispositivos Inteligentes | Unifique</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* =============================================
+       CORES E VARIÁVEIS — edite aqui para rebranding
+       ============================================= */
+    :root {
+      --blue-dark:   #1a2b8c;
+      --blue-mid:    #2540c0;
+      --teal:        #00c8d4;
+      --green-light: #a8e063;
+      --yellow:      #f5c842;
+      --white:       #ffffff;
+      --gray-light:  #f4f6fb;
+      --gray-mid:    #dde3f0;
+      --text-dark:   #1a2340;
+      --text-mid:    #3a4a6b;
+      --red-risk:    #e03c3c;
+      --card-shadow: 0 4px 24px rgba(26,43,140,0.10);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--gray-light);
+      color: var(--text-dark);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    /* ---- HEADER ---- */
+    header {
+      background: linear-gradient(135deg, var(--blue-dark) 60%, var(--blue-mid));
+      color: var(--white);
+      padding: 18px 24px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--teal), var(--green-light));
+    }
+    .header-inner { max-width: 1100px; margin: 0 auto; }
+    .brand { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 4px; }
+    header h1 { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
+    header p  { margin-top: 4px; opacity: .75; font-size: .75rem; }
+
+    /* ---- LAYOUT ---- */
+    main { max-width: 1100px; margin: 0 auto; padding: 16px 14px 36px; }
+
+    .section { margin-bottom: 22px; }
+    .section-title {
+      font-size: .82rem; font-weight: 700; color: var(--blue-dark);
+      padding-bottom: 5px;
+      border-bottom: 2px solid var(--teal);
+      margin-bottom: 12px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-title .badge {
+      background: var(--teal); color: var(--white);
+      font-size: .6rem; font-weight: 700; letter-spacing: 1px;
+      padding: 2px 7px; border-radius: 99px; text-transform: uppercase;
+    }
+
+    /* ---- CARDS GRID ---- */
+    .cards { display: grid; gap: 8px; }
+    .cards-3 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+    .cards-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .cards-4 { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+
+    .card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 10px 12px;
+      box-shadow: var(--card-shadow);
+      border-top: 3px solid var(--teal);
+    }
+    .card h3 { font-size: .72rem; color: var(--blue-dark); margin-bottom: 3px; }
+    .card .big-num {
+      font-size: 1.15rem; font-weight: 800; color: var(--blue-mid);
+      line-height: 1;
+    }
+    .card .sub { font-size: .65rem; color: var(--text-mid); margin-top: 2px; }
+    .card .delta {
+      display: inline-block; margin-top: 4px;
+      background: rgba(0,200,212,.12); color: #008a92;
+      font-size: .62rem; font-weight: 700; padding: 2px 6px; border-radius: 99px;
+    }
+
+    .card.yellow  { border-top-color: var(--yellow); }
+    .card.green   { border-top-color: var(--green-light); }
+    .card.red     { border-top-color: var(--red-risk); }
+    .card.dark    { background: var(--blue-dark); color: var(--white); border-top-color: var(--teal); }
+    .card.dark h3 { color: var(--teal); }
+    .card.dark .big-num { color: var(--white); }
+    .card.dark .sub { color: rgba(255,255,255,.6); }
+
+    /* ---- TABLE ---- */
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse;
+      background: var(--white); border-radius: 8px;
+      overflow: hidden; box-shadow: var(--card-shadow);
+    }
+    thead tr { background: var(--blue-dark); color: var(--white); }
+    thead th { padding: 7px 10px; text-align: left; font-size: .68rem; letter-spacing: .5px; }
+    tbody tr:nth-child(even) { background: var(--gray-light); }
+    tbody td { padding: 6px 10px; font-size: .72rem; color: var(--text-dark); }
+    tbody tr:hover { background: rgba(0,200,212,.07); }
+    .highlight-row { background: rgba(245,200,66,.15) !important; font-weight: 700; }
+
+    /* ---- PROGRESS BARS ---- */
+    .progress-list { display: flex; flex-direction: column; gap: 6px; }
+    .progress-item label {
+      font-size: .65rem; font-weight: 600; color: var(--text-mid);
+      display: flex; justify-content: space-between; margin-bottom: 2px;
+    }
+    .progress-track {
+      height: 5px; background: var(--gray-mid); border-radius: 99px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 99px;
+      background: linear-gradient(90deg, var(--teal), var(--green-light));
+      transition: width .6s ease;
+    }
+    .progress-fill.red  { background: linear-gradient(90deg, #e03c3c, #ff7070); }
+    .progress-fill.yellow { background: linear-gradient(90deg, var(--yellow), #ffe08a); }
+
+    /* ---- OPEX TABLE ---- */
+    .opex-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .opex-box {
+      background: var(--white); border-radius: 8px;
+      padding: 10px 12px; box-shadow: var(--card-shadow);
+    }
+    .opex-box h4 { font-size: .65rem; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--teal); margin-bottom: 7px; }
+    .opex-line {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 4px 0; border-bottom: 1px solid var(--gray-mid);
+      font-size: .72rem;
+    }
+    .opex-line:last-child { border-bottom: none; }
+    .opex-line .lbl { color: var(--text-mid); }
+    .opex-line .val { font-weight: 700; color: var(--blue-dark); }
+    .opex-total {
+      margin-top: 6px; padding: 7px 10px;
+      background: var(--blue-dark); color: var(--white);
+      border-radius: 6px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .opex-total .lbl { font-size: .65rem; }
+    .opex-total .val { font-size: .88rem; font-weight: 800; color: var(--teal); }
+
+    /* ---- CALCULADORA ---- */
+    .calc-input {
+      width: 88px; text-align: right; flex-shrink: 0;
+      border: none; border-radius: 0;
+      padding: 0; font-size: .72rem; font-weight: 700;
+      font-family: inherit; color: var(--blue-dark);
+      background: transparent;
+    }
+    .calc-editing .calc-input {
+      border: 1px solid var(--gray-mid); border-radius: 4px;
+      padding: 2px 6px; background: var(--gray-light);
+    }
+    .calc-input:focus { outline: none; border-color: var(--teal); background: #fff; }
+    .calc-input.lbl-input {
+      width: auto; flex: 1; text-align: left; font-weight: 400;
+      margin-right: 6px; color: var(--text-mid);
+    }
+    .calc-output { font-weight: 700; color: var(--blue-dark); font-size: .72rem; }
+
+    .op-badge {
+      width: 18px; height: 18px; flex-shrink: 0; border-radius: 3px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .68rem; font-weight: 900; margin-right: 6px;
+    }
+    .op-add { background: rgba(0,200,212,.15); color: #007a82; }
+    .op-sub { background: rgba(224,60,60,.13); color: #b02020; }
+    .op-mul { background: rgba(37,64,192,.15); color: var(--blue-mid); }
+    .op-div { background: rgba(245,200,66,.28); color: #8a6e00; }
+    .op-pct { background: rgba(168,224,99,.28); color: #4a7a00; }
+    .op-clickable { cursor: pointer; user-select: none; }
+    .op-clickable:hover { filter: brightness(.85); }
+
+    .calc-hint { font-size: .6rem; color: #bbc; margin: 0 4px; flex-shrink: 0; }
+
+    .calc-del {
+      background: none; border: none; cursor: pointer;
+      color: #ccc; font-size: .85rem; padding: 0 3px; line-height: 1;
+      flex-shrink: 0; margin-left: 4px; width: 20px; text-align: center;
+      display: none;
+    }
+    .calc-del:hover { color: var(--red-risk); }
+    .calc-del-spacer { display: none; width: 20px; margin-left: 4px; flex-shrink: 0; }
+
+    .op-clickable { display: none; }
+    .calc-add-btn { display: none; }
+
+    .calc-editing .op-clickable  { display: inline-flex; }
+    .calc-editing .calc-del      { display: inline-flex; align-items: center; justify-content: center; }
+    .calc-editing .calc-del-spacer { display: inline-block; }
+    .calc-editing .calc-add-btn  { display: block; }
+
+    .calc-add-btn {
+      width: 100%; margin-top: 8px; border-radius: 5px;
+      background: none; border: 1px dashed var(--gray-mid);
+      padding: 5px 8px; cursor: pointer; font-family: inherit;
+      font-size: .65rem; color: var(--text-mid);
+    }
+    .calc-add-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+    .calc-edit-toggle {
+      border: 1px solid var(--gray-mid); border-radius: 4px; cursor: pointer;
+      font-size: .62rem; font-weight: 600; font-family: inherit;
+      padding: 2px 8px; background: none; color: var(--text-mid); margin-left: 8px;
+    }
+    .calc-edit-toggle:hover  { border-color: var(--teal); color: var(--teal); }
+    .calc-edit-toggle.active { background: var(--teal); color: #fff; border-color: var(--teal); }
+
+    .calc-action-btn {
+      border: none; border-radius: 4px; cursor: pointer;
+      font-size: .62rem; font-weight: 700; font-family: inherit;
+      padding: 3px 8px; line-height: 1.4;
+    }
+    .calc-action-btn.save    { background: var(--teal); color: #fff; }
+    .calc-action-btn.save:hover { background: #009aa2; }
+    .calc-action-btn.discard { background: var(--gray-mid); color: var(--text-mid); }
+    .calc-action-btn.discard:hover { background: #c8cedc; }
+
+    /* ---- DIFF PILLS ---- */
+    .diff-list { display: flex; flex-direction: column; gap: 8px; }
+    .diff-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      background: var(--white); border-radius: 8px;
+      padding: 9px 11px; box-shadow: var(--card-shadow);
+    }
+    .diff-body { flex: 1; }
+    .diff-body h4 { font-size: .75rem; font-weight: 700; color: var(--blue-dark); }
+    .diff-body p  { font-size: .68rem; color: var(--text-mid); margin-top: 2px; }
+    .diff-edit { display: none; flex-direction: column; gap: 3px; }
+    .diff-edit-input {
+      background: #f3f5fa; border: 1px solid var(--gray-mid); border-radius: 4px;
+      color: var(--blue-dark); font-size: .72rem; padding: 3px 6px;
+      width: 100%; box-sizing: border-box; font-family: inherit;
+    }
+    .diff-del {
+      background: none; border: none; color: var(--gray-mid); font-size: .9rem;
+      cursor: pointer; padding: 0 3px; flex-shrink: 0; align-self: center;
+      display: none; line-height: 1;
+    }
+    .diff-del:hover { color: var(--red-risk); }
+    .diff-add-btn {
+      display: none; margin-top: 6px; font-size: .68rem; color: var(--teal);
+      background: none; border: 1px dashed var(--teal); border-radius: 6px;
+      padding: 5px 10px; cursor: pointer; width: 100%; font-family: inherit;
+    }
+    .diff-add-btn:hover { background: rgba(0,161,168,.06); }
+    .diff-editing .diff-view     { display: none; }
+    .diff-editing .diff-edit     { display: flex; }
+    .diff-editing .diff-del      { display: inline-flex; }
+    .diff-editing .diff-add-btn  { display: block; }
+
+    /* ---- CONC EDIT MODE ---- */
+    .conc-view { display: inline; }
+    .conc-edit { display: none; }
+    .conc-del-col { display: none; }
+    .conc-add-btn {
+      display: none; margin-top: 6px; font-size: .68rem; color: var(--teal);
+      background: none; border: 1px dashed var(--teal); border-radius: 6px;
+      padding: 5px 10px; cursor: pointer; width: 100%; font-family: inherit;
+    }
+    .conc-add-btn:hover { background: rgba(0,161,168,.06); }
+    .conc-editing .conc-view    { display: none; }
+    .conc-editing .conc-edit    { display: inline-block; box-sizing: border-box; }
+    .conc-editing .conc-del-col { display: table-cell; }
+    .conc-editing .conc-add-btn { display: block; }
+    .conc-edit-input {
+      background: #f3f5fa; border: 1px solid var(--gray-mid); border-radius: 4px;
+      color: var(--blue-dark); font-size: .72rem; padding: 3px 6px;
+      width: 100%; font-family: inherit;
+    }
+    .conc-select-nivel {
+      background: #f3f5fa; border: 1px solid var(--gray-mid); border-radius: 4px;
+      color: var(--blue-dark); font-size: .72rem; padding: 2px 4px; font-family: inherit;
+    }
+    .conc-del-btn {
+      background: none; border: none; color: var(--gray-mid); cursor: pointer;
+      font-size: .9rem; padding: 0 3px; line-height: 1;
+    }
+    .conc-del-btn:hover { color: var(--red-risk); }
+    .conc-nota-ta {
+      display: none; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.25);
+      border-radius: 4px; color: rgba(255,255,255,.85); font-size: .78rem;
+      padding: 7px 9px; width: 100%; box-sizing: border-box;
+      min-height: 90px; resize: vertical; line-height: 1.6; font-family: inherit;
+    }
+    .conc-editing .conc-nota-ta { display: block; }
+
+    /* ---- UPLINKS & FONTES ---- */
+    .uplink {
+      color: var(--teal); font-size: .6rem; text-decoration: none;
+      opacity: .7; margin-left: 3px; vertical-align: super;
+    }
+    .uplink:hover { opacity: 1; }
+    .fontes-row {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+      margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--gray-light);
+    }
+    .fonte-label { font-size: .6rem; color: var(--text-mid); margin-right: 2px; }
+    .fonte-pill {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: .62rem; color: var(--text-mid); text-decoration: none;
+      border: 1px solid var(--gray-mid); border-radius: 20px;
+      padding: 2px 8px; transition: border-color .15s, color .15s;
+    }
+    .fonte-pill:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* ---- SECTION 1 / 2 EDIT MODE ---- */
+    .sec1-edit, .sec2-edit { display: none; }
+    .sec1-editing .sec1-view { display: none; }
+    .sec1-editing .sec1-edit { display: block; }
+    .sec2-editing .sec2-view { display: none; }
+    .sec2-editing .sec2-edit { display: block; }
+    .sec-edit-subtitle {
+      font-size: .62rem; font-weight: 700; color: var(--text-mid);
+      margin: 10px 0 5px; text-transform: uppercase; letter-spacing: .05em;
+    }
+    .sec-edit-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px;
+    }
+    .sec-edit-grid label {
+      font-size: .65rem; color: var(--text-mid); display: flex; flex-direction: column; gap: 3px;
+    }
+    .sec-edit-input {
+      background: var(--white); border: 1px solid var(--gray-mid); border-radius: 4px;
+      color: var(--blue-dark); font-size: .72rem; padding: 3px 6px;
+      font-family: inherit; width: 100%; box-sizing: border-box;
+    }
+    .sec-url-input {
+      background: #f3f5fa; border: 1px dashed #8fa0c0; border-radius: 4px;
+      color: var(--blue-dark); font-size: .65rem; padding: 2px 5px;
+      font-family: inherit; flex: 1.5; min-width: 0;
+    }
+    .sec-url-input:focus { border-color: var(--teal); outline: none; background: #fff; }
+    .sec-url-input::placeholder { color: #8fa0c0; }
+    .sec-row-edit {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg); border-radius: 6px; padding: 5px 8px; margin-bottom: 4px;
+    }
+    .sec-row-del {
+      background: none; border: none; color: var(--gray-mid); font-size: .9rem;
+      cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0;
+    }
+    .sec-row-del:hover { color: var(--red-risk); }
+    .sec-add-btn {
+      font-size: .65rem; color: var(--teal); background: none;
+      border: 1px dashed var(--teal); border-radius: 5px;
+      padding: 4px 10px; cursor: pointer; font-family: inherit; width: 100%; margin-top: 2px;
+    }
+    .sec-add-btn:hover { background: rgba(0,161,168,.06); }
+    .sec-card-edit-block {
+      background: var(--bg); border-radius: 8px; padding: 8px 10px;
+      margin-bottom: 6px; border-left: 3px solid var(--gray-mid);
+    }
+    .sec-card-edit-row {
+      display: flex; gap: 6px; margin-bottom: 4px;
+    }
+    .sec-card-edit-row label {
+      font-size: .65rem; color: var(--text-mid); display: flex; flex-direction: column; gap: 2px;
+    }
+
+    /* ---- RISK TABLE ---- */
+    .risk-impact { font-weight: 700; color: var(--red-risk); }
+
+    /* ---- FOOTER ---- */
+    footer {
+      text-align: center; padding: 16px 20px;
+      font-size: .65rem; color: #aab; border-top: 1px solid var(--gray-mid);
+    }
+
+    /* ---- CHART WRAPPER ---- */
+    .chart-wrap {
+      background: var(--white); border-radius: 8px;
+      padding: 12px; box-shadow: var(--card-shadow);
+    }
+    .chart-wrap canvas { max-height: 160px; }
+
+    /* ---- TABS ---- */
+    .tab-bar {
+      background: var(--blue-dark);
+      border-bottom: 2px solid var(--teal);
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: none;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-bar-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; gap: 0;
+      padding: 0 14px;
+    }
+    .tab-btn {
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.55);
+      font-size: .7rem; font-weight: 600;
+      padding: 9px 14px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+      font-family: inherit;
+    }
+    .tab-btn:hover { color: rgba(255,255,255,.85); }
+    .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+
+    /* ---- TAB PANELS ---- */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .placeholder {
+      max-width: 1100px; margin: 48px auto;
+      text-align: center; padding: 20px;
+    }
+    .placeholder .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .placeholder h2 { font-size: 1rem; color: var(--blue-dark); margin-bottom: 6px; }
+    .placeholder p  { font-size: .75rem; color: var(--text-mid); }
+
+    @media (max-width: 640px) {
+      header h1 { font-size: 1rem; }
+      .opex-grid { grid-template-columns: 1fr; }
+      .header-meta { gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- =============================================
+     DADOS POR ABA
+     Para adicionar uma nova aba com conteúdo, preencha o objeto
+     correspondente seguindo a mesma estrutura de "hidrometros".
+     Aba sem dados (null) mostra placeholder automático.
+     ============================================= -->
+<script>
+const TABS = [
+  { id: 'hidrometros',    label: 'Hidrômetros Inteligentes',    icon: '💧' },
+  { id: 'ilum',           label: 'Ilum. Pública Inteligente',   icon: '🏙️' },
+  { id: 'cameras',        label: 'Monitoramento Câmeras',        icon: '📷' },
+  { id: 'led',            label: 'IP LED Simples',               icon: '💡' },
+  { id: 'ar',             label: 'Qualidade do Ar',              icon: '🌬️' },
+  { id: 'enchentes',      label: 'Alerta Enchentes',             icon: '🌊' },
+  { id: 'met',            label: 'Estação Meteorológica',        icon: '🌡️' },
+  { id: 'semaforos',      label: 'Semáforos IA',                 icon: '🚦' },
+  { id: 'frota',          label: 'Frota GPS',                    icon: '🚛' },
+  { id: 'estacionamento', label: 'Estacionamento',               icon: '🅿️' },
+  { id: 'energia',        label: 'Smart Meter Energia (AMI)',    icon: '⚡' },
+  { id: 'wifi',           label: 'Wi-Fi Público',                icon: '📶' },
+  { id: 'solar',          label: 'Solar Municipal',              icon: '☀️' },
+];
+
+const DATA = {
+
+  /* ==================================================
+     HIDRÔMETROS INTELIGENTES
+     ================================================== */
+  hidrometros: {
+    desc: 'Estudo completo sobre o mercado global de smart metering, concorrentes e posicionamento estratégico.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2023,
+      tamanho_bi:     3.88,
+      cagr_historico: 8.14,   // % desde 2018
+      proj: [
+        { ano: 2023, bi: 3.88  },
+        { ano: 2028, bi: 7.43  },
+        { ano: 2033, bi: 12.3  },
+      ],
+      cagr_projecao:  12.2,   // CAGR projetado (Research & Markets)
+    },
+
+    brasil: {
+      potencial_bi:      10,     // R$ bilhões (estimativa total)
+      barras: [
+        { label: 'Residencial (share 2023)', val: 52,    max: 100, cls: ''       },
+        { label: 'CAGR residencial 2023-28', val: 14.15, max: 30,  cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Residencial / Condomínios', share: 52, cor: '#00c8d4' },
+      { nome: 'Prefeituras / B2G',         share: 30, cor: '#2540c0' },
+      { nome: 'Indústria / Comercial',     share: 18, cor: '#a8e063' },
+    ],
+    segmentos_nota: 'O segmento residencial foi o maior em 2023 e deve crescer a um <strong>CAGR de 14,15% ao ano</strong> até 2028. Para o futuro, espera-se que <strong>soluções de TI cresçam mais rápido</strong> do que o hardware de medidores.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Conectividade nativa',        desc: 'NB-IoT / LoRaWAN com SIM próprio e gestão via Unifique — diferencial frente a players focados só em hardware ou software.' },
+      { icon: '📊', titulo: 'Plataforma de dados própria', desc: 'Dashboards preditivos, alertas de vazamento, análises de consumo por perfil e APIs abertas (Smart City).' },
+      { icon: '💼', titulo: 'Modelo SaaS + HaaS',          desc: 'Reduz custo inicial para prefeituras e condomínios, viabilizando contratos sem CAPEX elevado.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Mueller Water Products',  nivel: 'Alto'     },
+      { nome: 'Landis + Gyr',            nivel: 'Alto'     },
+      { nome: 'Xylem Inc.',              nivel: 'Alto'     },
+      { nome: 'Apator SA',               nivel: 'Médio'    },
+      { nome: 'Arad Group',              nivel: 'Médio'    },
+      { nome: 'Ningbo Water Meter',      nivel: 'Médio'    },
+      { nome: 'Kamstrup A/S',            nivel: 'Médio'    },
+      { nome: 'Diehl Stiftung & Co',     nivel: 'Moderado' },
+      { nome: 'Hubbell Incorporated',    nivel: 'Moderado' },
+      { nome: 'Itron Inc.',              nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'A <strong>Kaifa</strong> tem menor representatividade global, mas boa competitividade de preço em volume no Brasil. Concorrente de referência para benchmarking: <strong style="color:var(--yellow)">Stattus 4</strong> — foco em plataforma de dados e analytics.',
+
+    benchmark: {
+      nome:           'Stattus 4',
+      produtos: [
+        { titulo: 'Hidrômetro',      val_unit: 2500,  sufixo: '/ponto (CAPEX)', desc: 'NB-IoT/CAT-M + válvula de corte remoto' },
+        { titulo: 'Sistema Turing',  val_unit: 20,    sufixo: '/ponto/mês',     desc: 'Gestão de dispositivos' },
+        { titulo: 'Sistema Ada (IA)',val_unit: 48,    sufixo: '/ponto/mês',     desc: 'Analytics + algoritmos próprios' },
+      ],
+      capex: {
+        mobilizacao:    13520,  // R$ (custo único)
+        hardware_unit:  2500,   // R$ por ponto
+        pontos_modelo:  20,
+        meses_contrato: 48,
+      },
+      opex_por_ponto: {
+        Turing:        20,
+        Ada:           48,
+        Conectividade:  7,
+        Suporte:       15,
+      },
+      margem_opex: 35, // %
+    },
+
+    riscos: [
+      { desafio: 'Integração com legado IT/OT',          impacto: -2.2, periodo: 'Médio prazo (2025-2030)',    regiao: 'Global' },
+      { desafio: 'Cibersegurança e privacidade de dados', impacto: -1.9, periodo: 'Contínuo (2025-2033)',       regiao: 'América do Norte, Europa' },
+      { desafio: 'Aceitação do consumidor',               impacto: -1.5, periodo: 'Curto/médio (2025-2028)',   regiao: 'Global' },
+      { desafio: 'Falta de mão de obra qualificada',      impacto: -1.0, periodo: 'Longo prazo (2025-2033)',   regiao: 'Global / Economias em dev.' },
+    ],
+  },
+
+  /* ==================================================
+     ILUMINAÇÃO PÚBLICA INTELIGENTE
+     ================================================== */
+  ilum: {
+    desc: 'Mercado global de smart street lighting: telegestão, LED conectado e plataformas de cidade inteligente — com foco no potencial brasileiro de PPPs municipais.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     3.4,
+      cagr_historico: 17.1,   // % CAGR observado 2019–2024 (Fortune BI / GlobeNewswire)
+      proj: [
+        { ano: 2024, bi: 3.4  },
+        { ano: 2029, bi: 8.23 },
+        { ano: 2033, bi: 15.3 },
+      ],
+      cagr_projecao: 19.2,    // CAGR 2024–2029 (Fortune Business Insights)
+    },
+
+    brasil: {
+      potencial_bi:  32,      // R$ bilhões em contratos PPP ativos (ABCIP 2024)
+      barras: [
+        { label: 'Municipal / Vias Públicas (share)',    val: 56,   max: 100, cls: ''       },
+        { label: 'CAGR segmento comercial (2024–2029)', val: 18.0, max: 30,  cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Municipal / Vias Públicas', share: 56, cor: '#00c8d4' },
+      { nome: 'Comercial (shoppings/parking)', share: 28, cor: '#2540c0' },
+      { nome: 'Industrial (parques/fábricas)', share: 13, cor: '#a8e063' },
+      { nome: 'Residencial / Condomínios',    share:  3, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O segmento municipal é dominante (55–58%) impulsionado por PPPs e obrigações regulatórias. O segmento <strong>comercial cresce mais rápido (~18% CAGR)</strong> pelo ROI direto em economia de energia. O Brasil possui ~22 milhões de pontos de IP, com apenas <strong>45% já convertidos para LED</strong> — restam ~12 milhões de pontos a modernizar.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'NB-IoT e LoRaWAN próprios',         desc: 'Operação de redes LPWAN dedicadas para telegestão com custo por ponto até 60% menor que 4G/LTE em volume — competitividade direta em licitações.' },
+      { icon: '🌐', titulo: 'Neutralidade de rede (multi-vendor)', desc: 'A Unifique conecta qualquer solução de telegestão (Schreder, KDL, M2M Telemetria) sem lock-in de hardware, ampliando o mercado endereçável e a confiança de gestores públicos.' },
+      { icon: '🏙️', titulo: 'Hub urbano — upsell smart city',    desc: 'A mesma infraestrutura de IP conectada habilita câmeras, sensores de tráfego, Wi-Fi público e monitoramento ambiental — aumenta o ARPU por ponto e fideliza municípios.' },
+      { icon: '⚖️', titulo: 'COSIP como alavanca regulatória',   desc: 'Com a LC 227/2024 (Reforma Tributária), o COSIP pode financiar "inteligência urbana" além de IP — Unifique pode estruturar propostas que usem o fundo municipal para cobrir conectividade smart city completa.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Signify (Philips + Telensa)',    nivel: 'Alto'     },
+      { nome: 'Osram / Ledvance',              nivel: 'Alto'     },
+      { nome: 'Itron Inc.',                    nivel: 'Alto'     },
+      { nome: 'Acuity Brands',                 nivel: 'Alto'     },
+      { nome: 'Schneider Electric',            nivel: 'Alto'     },
+      { nome: 'Schreder',                      nivel: 'Médio'    },
+      { nome: 'Citelum (EDF Group)',            nivel: 'Médio'    },
+      { nome: 'Eaton Corporation',             nivel: 'Médio'    },
+      { nome: 'Hubbell Lighting',              nivel: 'Médio'    },
+      { nome: 'ENGIE Brasil (PPPs)',            nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'No Brasil, os principais players são <strong>ENGIE Brasil</strong> (PPP Curitiba — 163 mil pontos, R$ 450 mi), <strong>TIM IoT Solutions</strong> (22 mil pontos em Porto Alegre via NB-IoT) e <strong>Grupo Houer</strong> (estruturador de PPPs). O concorrente mais relevante para benchmarking de conectividade: <strong style="color:var(--yellow)">TIM IoT + M2M Telemetria</strong> — referência em telegestão via NB-IoT com homologação INMETRO.',
+
+    benchmark: {
+      nome:           'TIM IoT + M2M Telemetria',
+      produtos: [
+        { titulo: 'Módulo IoT (retrofit)',  val_unit: 350,  sufixo: '/ponto (CAPEX)',   desc: 'Sensor NB-IoT + dimmer; instalação em luminária existente com LED' },
+        { titulo: 'Plataforma de gestão',   val_unit: 12,   sufixo: '/ponto/mês',       desc: 'Dashboard, agendamentos, alertas de falha e relatórios energéticos' },
+        { titulo: 'Conectividade NB-IoT',   val_unit: 18,   sufixo: '/ponto/mês',       desc: 'SIM IoT dedicado + backhaul; SLA 99,5%' },
+      ],
+      capex: {
+        mobilizacao:    8500,   // R$ (projeto, integração e comissionamento)
+        hardware_unit:  350,    // R$ por ponto (módulo retrofit)
+        pontos_modelo:  50,
+        meses_contrato: 60,
+      },
+      opex_por_ponto: {
+        Plataforma:    12,
+        Conectividade: 18,
+        Suporte:       10,
+      },
+      margem_opex: 35,
+    },
+
+    riscos: [
+      { desafio: 'Alto CAPEX inicial — barreira para municípios sem capacidade fiscal', impacto: -3.0, periodo: 'Curto/médio prazo (2024–2028)', regiao: 'Brasil / Economias emergentes' },
+      { desafio: 'Dependência de ciclos eleitorais — PPPs vulneráveis a troca de gestão', impacto: -2.5, periodo: 'Contínuo (2024–2033)',          regiao: 'Brasil' },
+      { desafio: 'Cibersegurança — redes IoT urbanas como vetor de ataque',             impacto: -1.8, periodo: 'Médio prazo (2025–2030)',         regiao: 'Global' },
+      { desafio: 'Fragmentação regulatória — falta de padrão técnico nacional',         impacto: -1.5, periodo: 'Curto prazo (2024–2027)',          regiao: 'Brasil' },
+      { desafio: 'Complexidade de integração com sistemas legados e protocolos distintos', impacto: -1.2, periodo: 'Médio prazo (2025–2030)',       regiao: 'Global' },
+    ],
+  },
+
+  /* ==================================================
+     DEMAIS ABAS — preencha com a mesma estrutura acima
+     ================================================== */
+  cameras:        null,
+  led:            null,
+  ar:             null,
+  enchentes:      null,
+  met:            null,
+  semaforos:      null,
+  frota:          null,
+  estacionamento: null,
+  energia:        null,
+  wifi:           null,
+  solar:          null,
+};
+</script>
+
+<!-- =============================================
+     MARKUP
+     ============================================= -->
+
+<header>
+  <div class="header-inner">
+    <div class="brand">Unifique — Pesquisa de mercado</div>
+    <p id="page-desc">Estudo completo sobre o mercado global de smart metering, concorrentes e posicionamento estratégico.</p>
+  </div>
+</header>
+
+<!-- BARRA DE ABAS -->
+<nav class="tab-bar">
+  <div class="tab-bar-inner" id="tab-bar"></div>
+</nav>
+
+<!-- PAINÉIS — renderizados via JS -->
+<div class="tab-panel active" id="panel-hidrometros"></div>
+<div class="tab-panel" id="panel-ilum"></div>
+<div class="tab-panel" id="panel-cameras"></div>
+<div class="tab-panel" id="panel-led"></div>
+<div class="tab-panel" id="panel-ar"></div>
+<div class="tab-panel" id="panel-enchentes"></div>
+<div class="tab-panel" id="panel-met"></div>
+<div class="tab-panel" id="panel-semaforos"></div>
+<div class="tab-panel" id="panel-frota"></div>
+<div class="tab-panel" id="panel-estacionamento"></div>
+<div class="tab-panel" id="panel-energia"></div>
+<div class="tab-panel" id="panel-wifi"></div>
+<div class="tab-panel" id="panel-solar"></div>
+
+<footer>
+  Fontes: Research and Markets · Industry Research · Reports Insights
+  &nbsp;|&nbsp; Unifique &copy; <span id="ano"></span>
+</footer>
+
+<!-- =============================================
+     SCRIPT DE RENDERIZAÇÃO
+     ============================================= -->
+<script>
+document.getElementById('ano').textContent = new Date().getFullYear();
+
+/* ---- Formatadores ---- */
+const fmtBRL = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/* ---- Barra de abas ---- */
+document.getElementById('tab-bar').innerHTML = TABS.map(t =>
+  `<button class="tab-btn${t.id === 'hidrometros' ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`
+).join('');
+
+/* ---- Registro de charts (para destruir antes de re-renderizar) ---- */
+const chartReg = {};
+
+function destroyCharts(id) {
+  ['bar', 'donut'].forEach(type => {
+    const key = `${type}-${id}`;
+    if (chartReg[key]) { chartReg[key].destroy(); delete chartReg[key]; }
+  });
+}
+
+/* ====================================================
+   defaultData — estrutura vazia para abas sem dados
+   ==================================================== */
+function defaultData(id, tab) {
+  return {
+    desc: 'Pesquisa em andamento.',
+    mercado: {
+      moeda: 'US$',
+      tamanho_ano: new Date().getFullYear(),
+      tamanho_bi: 0,
+      cagr_historico: 0,
+      proj: [
+        { ano: new Date().getFullYear(),     bi: 0 },
+        { ano: new Date().getFullYear() + 5, bi: 0 },
+        { ano: new Date().getFullYear() + 10,bi: 0 },
+      ],
+      cagr_projecao: 0,
+    },
+    brasil: {
+      potencial_bi: 0,
+      titulo: 'Contexto Brasil',
+      barras: [],
+    },
+    segmentos: [],
+    segmentos_nota: '',
+    diferenciais: [],
+    concorrentes: [],
+    concorrentes_nota: '',
+    benchmark: {
+      nome: '—',
+      produtos: [],
+      capex: { mobilizacao: 0, hardware_unit: 0, pontos_modelo: 10, meses_contrato: 12 },
+      opex_por_ponto: {},
+      margem_opex: 0,
+    },
+    riscos: [],
+  };
+}
+
+/* ====================================================
+   renderPanel(id) — lê DATA[id] e gera todo o conteúdo
+   ==================================================== */
+function renderPanel(id) {
+  const panel = document.getElementById('panel-' + id);
+  const tab = TABS.find(t => t.id === id) || {};
+  if (!DATA[id]) DATA[id] = defaultData(id, tab);
+  const d = DATA[id];
+
+  /* Atualiza descrição no header */
+  document.getElementById('page-desc').textContent = d.desc || '';
+
+  destroyCharts(id);
+
+  /* ---- Atalhos ---- */
+  const m  = d.mercado;
+  const b  = d.brasil;
+  const bm = d.benchmark;
+
+  const maxRisco = d.riscos.length ? Math.max(...d.riscos.map(r => Math.abs(r.impacto))) : 1;
+
+  /* ---- HTML completo do painel ---- */
+  panel.innerHTML = `<main>
+
+  <!-- 1. MERCADO GLOBAL -->
+  <section class="section" id="sec1-section-${id}">
+    <div class="section-title">
+      <span>1. Mercado de ${tab.label}</span>
+      <span class="badge">Global</span>
+      <button class="calc-edit-toggle" id="sec1-toggle-${id}" onclick="toggleSec1Edit('${id}')">Editar</button>
+      <span id="sec1-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
+        <button class="calc-action-btn save"    onclick="saveSec1('${id}')">Salvar</button>
+        <button class="calc-action-btn discard" onclick="discardSec1('${id}')">Descartar</button>
+      </span>
+    </div>
+
+    <!-- VIEW -->
+    <div class="sec1-view">
+      <div class="cards cards-4">
+        ${(() => {
+          const _defCM = [
+            { title: `Mercado ${m.tamanho_ano}`,  sub: 'Smart metering global',           delta: `CAGR ${m.cagr_historico}% histórico` },
+            { title: `Projeção ${m.proj[1].ano}`, sub: 'Crescimento de ~2× em 5 anos',    delta: '' },
+            { title: `Projeção ${m.proj[2].ano}`, sub: 'Research and Markets',            delta: `CAGR ${m.cagr_projecao}%` },
+            { title: 'Potencial Brasil',           sub: 'Estimativa do mercado brasileiro', delta: '' },
+          ];
+          const _cm = m.cards_meta ? m.cards_meta.map((c,i) => ({ ..._defCM[i], ...c })) : _defCM;
+          return [
+            { ..._cm[0], val: `${m.moeda} ${m.tamanho_bi}bi`,  cls: '',      url: (m.cards_url||[])[0]||'' },
+            { ..._cm[1], val: `${m.moeda} ${m.proj[1].bi}bi`,  cls: 'yellow', url: (m.cards_url||[])[1]||'' },
+            { ..._cm[2], val: `${m.moeda} ${m.proj[2].bi}bi`,  cls: 'green',  url: (m.cards_url||[])[2]||'' },
+            { ..._cm[3], val: `R$ ${b.potencial_bi}bi`,         cls: 'dark',   url: (m.cards_url||[])[3]||'' },
+          ].map(c => `
+            <div class="card ${c.cls}" style="position:relative">
+              <h3>${c.title}${c.url ? `<a href="${c.url}" target="_blank" class="uplink" style="position:absolute;top:8px;right:10px;font-size:.7rem;opacity:.8" title="Ver fonte">↗</a>` : ''}</h3>
+              <div class="big-num">${c.val}</div>
+              <div class="sub">${c.sub}</div>
+              ${c.delta ? `<span class="delta">${c.delta}</span>` : ''}
+            </div>`).join('');
+        })()}
+      </div>
+      <br>
+      <div class="cards cards-2">
+        <div class="chart-wrap"><canvas id="chart-bar-${id}"></canvas></div>
+        <div class="card">
+          <h3>${b.titulo||'Contexto Brasil'}</h3>
+          <div class="progress-list">
+            ${b.barras.map(bar => `
+              <div class="progress-item">
+                <label>
+                  <span>${bar.label}${bar.url ? `<a href="${bar.url}" target="_blank" class="uplink" title="Ver fonte">↗</a>` : ''}</span>
+                  <span>${bar.val}%</span>
+                </label>
+                <div class="progress-track"><div class="progress-fill ${bar.cls||''}" style="width:${(bar.val/bar.max)*100}%"></div></div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>
+      ${(m.fontes||[]).length ? `<div class="fontes-row"><span class="fonte-label">Fontes:</span>${(m.fontes||[]).map(f=>`<a href="${f.url}" target="_blank" class="fonte-pill">${f.label} ↗</a>`).join('')}</div>` : ''}
+    </div>
+
+    <!-- EDIT -->
+    <div class="sec1-edit">
+      <p class="sec-edit-subtitle">Cards de mercado</p>
+      ${(() => {
+        const _defCM = [
+          { title: `Mercado ${m.tamanho_ano}`,  sub: 'Smart metering global',           delta: `CAGR ${m.cagr_historico}% histórico` },
+          { title: `Projeção ${m.proj[1].ano}`, sub: 'Crescimento de ~2× em 5 anos',    delta: '' },
+          { title: `Projeção ${m.proj[2].ano}`, sub: 'Research and Markets',            delta: `CAGR ${m.cagr_projecao}%` },
+          { title: 'Potencial Brasil',           sub: 'Estimativa do mercado brasileiro', delta: '' },
+        ];
+        const _cm = m.cards_meta ? m.cards_meta.map((c,i) => ({ ..._defCM[i], ...c })) : _defCM;
+        const _valIds = ['s1-tamanho-','s1-proj1-','s1-proj2-','s1-potencial-'];
+        const _vals   = [m.tamanho_bi, m.proj[1].bi, m.proj[2].bi, b.potencial_bi];
+        const _clrs   = ['var(--blue-dark)','#b88000','#006940','#fff'];
+        return _cm.map((c,i) => `
+          <div class="sec-card-edit-block" style="border-left-color:${_clrs[i]}">
+            <div class="sec-card-edit-row">
+              <label style="flex:2">Título
+                <input class="sec-edit-input" id="s1-ctitle${i}-${id}" type="text" value="${c.title.replace(/"/g,'&quot;')}" oninput="markDirtySec1('${id}')">
+              </label>
+              <label style="width:88px;flex-shrink:0">Valor
+                <input class="sec-edit-input" id="${_valIds[i]}${id}" type="number" step="0.01" value="${_vals[i]}" oninput="markDirtySec1('${id}')">
+              </label>
+            </div>
+            <div class="sec-card-edit-row">
+              <label style="flex:2">Subtítulo
+                <input class="sec-edit-input" id="s1-csub${i}-${id}" type="text" value="${c.sub.replace(/"/g,'&quot;')}" oninput="markDirtySec1('${id}')">
+              </label>
+              <label style="flex:1">Tag
+                <input class="sec-edit-input" id="s1-cdelta${i}-${id}" type="text" value="${c.delta.replace(/"/g,'&quot;')}" oninput="markDirtySec1('${id}')">
+              </label>
+            </div>
+            <input class="sec-url-input" id="s1-url${i}-${id}" type="url" placeholder="URL do card..." value="${(m.cards_url||[])[i]||''}" style="width:100%;box-sizing:border-box;margin-top:2px" oninput="markDirtySec1('${id}')">
+          </div>`).join('');
+      })()}
+
+      <p class="sec-edit-subtitle">Contexto Brasil</p>
+      <div class="sec-row-edit" style="margin-bottom:8px">
+        <label style="flex:1;font-size:.65rem;color:var(--text-mid)">Título do card
+          <input class="sec-edit-input" id="s1-btitle-${id}" type="text" value="${(b.titulo||'Contexto Brasil').replace(/"/g,'&quot;')}" oninput="markDirtySec1('${id}')">
+        </label>
+      </div>
+      <div id="s1-barras-${id}">
+        ${b.barras.map(bar => `
+          <div class="sec-row-edit" data-cls="${bar.cls||''}">
+            <input class="sec-edit-input" type="text" placeholder="Label" value="${bar.label.replace(/"/g,'&quot;')}" style="flex:2" oninput="markDirtySec1('${id}')">
+            <input class="sec-edit-input" type="number" placeholder="Val" value="${bar.val}" style="width:65px;flex-shrink:0" oninput="markDirtySec1('${id}')">
+            <input class="sec-edit-input" type="number" placeholder="Max" value="${bar.max}" style="width:55px;flex-shrink:0" oninput="markDirtySec1('${id}')">
+            <input class="sec-url-input" type="url" placeholder="URL da fonte..." value="${bar.url||''}" oninput="markDirtySec1('${id}')">
+            <button class="sec-row-del" onclick="delSec1Bar('${id}',this)">×</button>
+          </div>`).join('')}
+      </div>
+      <button class="sec-add-btn" onclick="addSec1Bar('${id}')">+ Adicionar barra</button>
+
+      <p class="sec-edit-subtitle">Fontes da seção</p>
+      <div id="s1-fontes-${id}">
+        ${(m.fontes||[]).map(f => `
+          <div class="sec-row-edit">
+            <input class="sec-edit-input" type="text" placeholder="Nome da fonte" value="${f.label.replace(/"/g,'&quot;')}" style="flex:1" oninput="markDirtySec1('${id}')">
+            <input class="sec-url-input" type="url" placeholder="URL..." value="${f.url||''}" oninput="markDirtySec1('${id}')">
+            <button class="sec-row-del" onclick="delSec1Fonte('${id}',this)">×</button>
+          </div>`).join('')}
+      </div>
+      <button class="sec-add-btn" onclick="addSec1Fonte('${id}')">+ Adicionar fonte</button>
+    </div>
+  </section>
+
+  <!-- 2. SEGMENTOS -->
+  <section class="section" id="sec2-section-${id}">
+    <div class="section-title">
+      <span>2. Segmentos de Mercado</span>
+      <span class="badge">2023</span>
+      <button class="calc-edit-toggle" id="sec2-toggle-${id}" onclick="toggleSec2Edit('${id}')">Editar</button>
+      <span id="sec2-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
+        <button class="calc-action-btn save"    onclick="saveSec2('${id}')">Salvar</button>
+        <button class="calc-action-btn discard" onclick="discardSec2('${id}')">Descartar</button>
+      </span>
+    </div>
+
+    <!-- VIEW -->
+    <div class="sec2-view">
+      <div class="cards cards-2">
+        <div class="chart-wrap"><canvas id="chart-donut-${id}"></canvas></div>
+        <div class="card" style="border-top-color:var(--blue-mid)">
+          <h3>Principais segmentos</h3><br>
+          <div class="progress-list">
+            ${d.segmentos.map(s => `
+              <div class="progress-item">
+                <label>
+                  <span>${s.nome}${s.url ? `<a href="${s.url}" target="_blank" class="uplink" title="Ver fonte">↗</a>` : ''}</span>
+                  <span>${s.share}%</span>
+                </label>
+                <div class="progress-track"><div class="progress-fill" style="width:${s.share}%; background:${s.cor}"></div></div>
+              </div>`).join('')}
+          </div>
+          <br>
+          <p style="font-size:.82rem; color:var(--text-mid)">${d.segmentos_nota}</p>
+        </div>
+      </div>
+      ${(d.segmentos_fontes||[]).length ? `<div class="fontes-row"><span class="fonte-label">Fontes:</span>${(d.segmentos_fontes||[]).map(f=>`<a href="${f.url}" target="_blank" class="fonte-pill">${f.label} ↗</a>`).join('')}</div>` : ''}
+    </div>
+
+    <!-- EDIT -->
+    <div class="sec2-edit">
+      <p class="sec-edit-subtitle">Segmentos</p>
+      <div id="s2-segs-${id}">
+        ${d.segmentos.map(s => `
+          <div class="sec-row-edit" data-cor="${s.cor}">
+            <div class="seg-color-dot" style="width:14px;height:14px;border-radius:50%;background:${s.cor};flex-shrink:0"></div>
+            <input class="sec-edit-input" type="text" placeholder="Nome" value="${s.nome.replace(/"/g,'&quot;')}" style="flex:2" oninput="markDirtySec2('${id}')">
+            <input class="sec-edit-input" type="number" placeholder="%" value="${s.share}" style="width:60px;flex-shrink:0" oninput="markDirtySec2('${id}')">
+            <input type="color" value="${s.cor}" style="width:28px;height:26px;padding:1px 2px;border:1px solid var(--gray-mid);border-radius:4px;cursor:pointer;flex-shrink:0" oninput="this.parentElement.querySelector('.seg-color-dot').style.background=this.value;this.parentElement.dataset.cor=this.value;markDirtySec2('${id}')">
+            <input class="sec-url-input" type="url" placeholder="URL da fonte..." value="${s.url||''}" oninput="markDirtySec2('${id}')">
+            <button class="sec-row-del" onclick="delSec2Seg('${id}',this)">×</button>
+          </div>`).join('')}
+      </div>
+      <button class="sec-add-btn" onclick="addSec2Seg('${id}')">+ Adicionar segmento</button>
+
+      <p class="sec-edit-subtitle">Nota</p>
+      <textarea class="conc-nota-ta" style="display:block;margin-top:4px;color:var(--blue-dark);background:#f3f5fa;border-color:var(--gray-mid)" id="s2-nota-${id}" oninput="markDirtySec2('${id}')">${d.segmentos_nota}</textarea>
+
+      <p class="sec-edit-subtitle">Fontes</p>
+      <div id="s2-fontes-${id}">
+        ${(d.segmentos_fontes||[]).map(f => `
+          <div class="sec-row-edit">
+            <input class="sec-edit-input" type="text" placeholder="Nome da fonte" value="${f.label.replace(/"/g,'&quot;')}" style="flex:1" oninput="markDirtySec2('${id}')">
+            <input class="sec-url-input" type="url" placeholder="URL..." value="${f.url||''}" oninput="markDirtySec2('${id}')">
+            <button class="sec-row-del" onclick="delSec2Fonte('${id}',this)">×</button>
+          </div>`).join('')}
+      </div>
+      <button class="sec-add-btn" onclick="addSec2Fonte('${id}')">+ Adicionar fonte</button>
+    </div>
+  </section>
+
+  <!-- 3. DIFERENCIAIS -->
+  <section class="section" id="diff-section-${id}">
+    <div class="section-title">
+      <span>3. Diferenciais Competitivos — Unifique</span>
+      <span class="badge">Estratégia</span>
+      <button class="calc-edit-toggle" id="diff-toggle-${id}" onclick="toggleDiffEdit('${id}')">Editar</button>
+      <span id="diff-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
+        <button class="calc-action-btn save"    onclick="saveDiff('${id}')">Salvar</button>
+        <button class="calc-action-btn discard" onclick="discardDiff('${id}')">Descartar</button>
+      </span>
+    </div>
+    <div class="diff-list" id="diff-list-${id}">
+      ${d.diferenciais.map((df, i) => `
+        <div class="diff-item">
+          <div class="diff-body">
+            <div class="diff-view"><h4>${df.titulo}</h4><p>${df.desc}</p></div>
+            <div class="diff-edit">
+              <input class="diff-edit-input" type="text" placeholder="Título" value="${df.titulo.replace(/"/g, '&quot;')}" oninput="markDirtyDiff('${id}')">
+              <input class="diff-edit-input" type="text" placeholder="Descrição" value="${df.desc.replace(/"/g, '&quot;')}" oninput="markDirtyDiff('${id}')">
+            </div>
+          </div>
+          <button class="diff-del" onclick="delDiffRow('${id}', this)">×</button>
+        </div>`).join('')}
+    </div>
+    <button class="diff-add-btn" onclick="addDiffRow('${id}')">+ Adicionar diferencial</button>
+  </section>
+
+  <!-- 4. CONCORRENTES -->
+  <section class="section" id="conc-section-${id}">
+    <div class="section-title">
+      <span>4. Concorrentes</span>
+      <span class="badge">Top 10 Global</span>
+      <button class="calc-edit-toggle" id="conc-toggle-${id}" onclick="toggleConcEdit('${id}')">Editar</button>
+      <span id="conc-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
+        <button class="calc-action-btn save"    onclick="saveConc('${id}')">Salvar</button>
+        <button class="calc-action-btn discard" onclick="discardConc('${id}')">Descartar</button>
+      </span>
+    </div>
+    <div class="cards cards-2">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Empresa</th><th>Representatividade</th><th class="conc-del-col" style="width:24px"></th></tr></thead>
+          <tbody id="conc-tbody-${id}">
+            ${d.concorrentes.map((c, i) => `
+              <tr>
+                <td style="font-weight:700; color:var(--text-mid)">${i + 1}</td>
+                <td>
+                  <span class="conc-view">${c.nome}</span>
+                  <input class="conc-edit conc-edit-input" type="text" value="${c.nome.replace(/"/g, '&quot;')}" oninput="markDirtyConc('${id}')">
+                </td>
+                <td>
+                  <span class="conc-view">${c.nivel === 'Alto' ? '<span style="color:#00a0a8;font-weight:700">● Alto</span>' : c.nivel === 'Médio' ? '<span style="color:#f5c842;font-weight:700">● Médio</span>' : '<span style="color:#aab">● Moderado</span>'}</span>
+                  <select class="conc-edit conc-select-nivel" onchange="markDirtyConc('${id}')">
+                    <option value="Alto"     ${c.nivel === 'Alto'     ? 'selected' : ''}>● Alto</option>
+                    <option value="Médio"    ${c.nivel === 'Médio'    ? 'selected' : ''}>● Médio</option>
+                    <option value="Moderado" ${c.nivel === 'Moderado' ? 'selected' : ''}>● Moderado</option>
+                  </select>
+                </td>
+                <td class="conc-del-col"><button class="conc-del-btn" onclick="delConcRow('${id}', this)">×</button></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        <button class="conc-add-btn" onclick="addConcRow('${id}')">+ Adicionar concorrente</button>
+      </div>
+      <div class="card dark">
+        <h3>Nota sobre concorrentes</h3><br>
+        <p class="conc-view" style="font-size:.78rem; line-height:1.7; color:rgba(255,255,255,.8)">${d.concorrentes_nota}</p>
+        <textarea class="conc-nota-ta" id="conc-nota-${id}" oninput="markDirtyConc('${id}')">${d.concorrentes_nota}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. CALCULADORA DE PREÇO -->
+  <section class="section" id="calc-section-${id}">
+    <div class="section-title">
+      <span>5. Calculadora de Preço — ${bm.nome}</span>
+      <span class="badge">Interativo</span>
+      <button class="calc-edit-toggle" id="calc-toggle-${id}" onclick="toggleCalcEdit('${id}')">Editar</button>
+      <span id="calc-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
+        <button class="calc-action-btn save"    onclick="saveCalc('${id}')">Salvar</button>
+        <button class="calc-action-btn discard" onclick="discardCalc('${id}')">Descartar</button>
+      </span>
+    </div>
+
+    <!-- Parâmetros compartilhados -->
+    <div class="cards cards-2" style="margin-bottom:8px">
+      <div class="opex-box">
+        <div class="opex-line">
+          <span class="op-badge op-mul">×</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Nº de pontos</span>
+          <input class="calc-input" id="ci-pts-${id}" type="number" min="1" value="${bm.capex.pontos_modelo}" oninput="recalc('${id}')">
+        </div>
+      </div>
+      <div class="opex-box">
+        <div class="opex-line">
+          <span class="op-badge op-div">÷</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Meses de contrato</span>
+          <input class="calc-input" id="ci-mes-${id}" type="number" min="1" value="${bm.capex.meses_contrato}" oninput="recalc('${id}')">
+        </div>
+      </div>
+    </div>
+
+    <div class="opex-grid">
+      <!-- CAPEX -->
+      <div class="opex-box">
+        <h4>CAPEX</h4>
+        <div class="opex-line">
+          <span class="op-badge op-mul">×</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Hardware por ponto (R$)</span>
+          <input class="calc-input" id="ci-hw-${id}" type="number" min="0" value="${bm.capex.hardware_unit}" oninput="recalc('${id}')">
+          <span class="calc-del-spacer"></span>
+        </div>
+        <div class="opex-line" style="padding-left:24px; border-bottom:none">
+          <span class="calc-hint">× <span id="co-hw-pts-${id}">${bm.capex.pontos_modelo}</span> pontos =</span>
+          <span style="flex:1"></span>
+          <span class="calc-output" id="co-hw-sub-${id}"></span>
+        </div>
+        <div id="capex-rows-${id}">
+          <div class="opex-line">
+            <span class="op-badge op-add op-clickable" data-op="+" onclick="cycleOp(this,'${id}')">+</span>
+            <input class="calc-input lbl-input" type="text" value="Mobilização única">
+            <input class="calc-input calc-capex-extra" data-tab="${id}" type="number" min="0" value="${bm.capex.mobilizacao}" oninput="recalc('${id}')">
+            <button class="calc-del" onclick="removeCalcRow(this,'${id}')" title="Remover">×</button>
+          </div>
+        </div>
+        <button class="calc-add-btn" onclick="addCalcRow('capex-rows-${id}','${id}','calc-capex-extra')">+ Adicionar custo CAPEX</button>
+        <div class="opex-total" style="margin-top:10px"><span class="lbl">CAPEX Total</span><span class="val calc-output" id="co-capex-total-${id}"></span></div>
+        <br>
+        <div class="opex-line">
+          <span class="op-badge op-div">÷</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Por ponto</span>
+          <span class="calc-output" id="co-capex-pp-${id}"></span>
+        </div>
+        <div class="opex-line">
+          <span class="op-badge op-div">÷</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Diluído / mês</span>
+          <span class="calc-output" id="co-capex-dil-${id}"></span>
+        </div>
+      </div>
+
+      <!-- OPEX -->
+      <div class="opex-box">
+        <h4>OPEX mensal por ponto</h4>
+        <div id="opex-rows-${id}">
+          ${Object.entries(bm.opex_por_ponto).map(([k, v]) => `
+            <div class="opex-line">
+              <span class="op-badge op-add op-clickable" data-op="+" onclick="cycleOp(this,'${id}')">+</span>
+              <input class="calc-input lbl-input" type="text" value="${k}">
+              <input class="calc-input calc-opex" data-tab="${id}" type="number" min="0" value="${v}" oninput="recalc('${id}')">
+              <button class="calc-del" onclick="removeCalcRow(this,'${id}')" title="Remover">×</button>
+            </div>`).join('')}
+        </div>
+        <button class="calc-add-btn" onclick="addCalcRow('opex-rows-${id}','${id}','calc-opex')">+ Adicionar custo OPEX</button>
+        <div class="opex-line" style="margin-top:8px">
+          <span class="op-badge op-pct">%</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Margem sobre OPEX</span>
+          <input class="calc-input" id="ci-marg-${id}" type="number" min="0" max="99" value="${bm.margem_opex}" oninput="recalc('${id}')">
+          <span class="calc-del-spacer"></span>
+        </div>
+        <div class="opex-total" style="margin-top:10px"><span class="lbl">Total OPEX</span><span class="val calc-output" id="co-opex-total-${id}"></span></div>
+        <br>
+        <div class="opex-line">
+          <span class="op-badge op-pct">%</span>
+          <span style="flex:1;font-size:.72rem;color:var(--text-mid)">Com margem</span>
+          <span class="calc-output" id="co-opex-marg-${id}"></span>
+        </div>
+      </div>
+    </div>
+    <br>
+    <div class="card dark" style="text-align:center; padding:14px">
+      <h3 style="font-size:.68rem">Mensalidade Full OPEX (CAPEX diluído + operação c/ margem)</h3>
+      <div class="big-num" style="font-size:1.2rem; margin-top:6px" id="co-final-${id}"></div>
+      <div class="sub" style="margin-top:4px; font-size:.65rem" id="co-sub-${id}"></div>
+    </div>
+  </section>
+
+  <!-- 6. RISCOS -->
+  <section class="section">
+    <div class="section-title"><span>6. Riscos e Desafios</span><span class="badge">Mercado Global</span></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Desafio</th><th>Impacto no CAGR</th><th>Relevância Regional</th><th>Período</th></tr></thead>
+        <tbody>
+          ${d.riscos.map(r => `
+            <tr>
+              <td>${r.desafio}</td>
+              <td class="risk-impact">${r.impacto}%</td>
+              <td>${r.regiao}</td>
+              <td>${r.periodo}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+    <br>
+    <div class="card">
+      <h3>Impacto acumulado estimado nos riscos</h3><br>
+      <div class="progress-list">
+        ${d.riscos.map(r => `
+          <div class="progress-item">
+            <label><span>${r.desafio}</span><span>${r.impacto}%</span></label>
+            <div class="progress-track"><div class="progress-fill red" style="width:${(Math.abs(r.impacto) / maxRisco) * 100}%"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+  </section>
+
+</main>`;
+
+  /* ---- Charts (criados após innerHTML estar no DOM) ---- */
+  chartReg[`bar-${id}`] = new Chart(document.getElementById(`chart-bar-${id}`), {
+    type: 'bar',
+    data: {
+      labels: m.proj.map(p => String(p.ano)),
+      datasets: [{
+        label: `${m.moeda} bilhões`,
+        data: m.proj.map(p => p.bi),
+        backgroundColor: ['#2540c0', '#00c8d4', '#a8e063'],
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: `Mercado Global (${m.moeda} bi)`, font: { size: 14 }, color: '#1a2340' }
+      },
+      scales: { y: { beginAtZero: true, grid: { color: '#eee' } }, x: { grid: { display: false } } }
+    }
+  });
+
+  chartReg[`donut-${id}`] = new Chart(document.getElementById(`chart-donut-${id}`), {
+    type: 'doughnut',
+    data: {
+      labels: d.segmentos.map(s => s.nome),
+      datasets: [{ data: d.segmentos.map(s => s.share), backgroundColor: d.segmentos.map(s => s.cor), borderWidth: 0 }]
+    },
+    options: {
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 12 }, color: '#3a4a6b' } },
+        title: { display: true, text: 'Distribuição por Segmento (%)', font: { size: 14 }, color: '#1a2340' }
+      }
+    }
+  });
+
+  recalc(id);
+  initializedSec1.add(id);
+  initializedSec2.add(id);
+  initializedDiff.add(id);
+  initializedConc.add(id);
+  initializedPanels.add(id);
+  setCalcReadonly(id, true);
+}
+
+/* ---- Shared helper ---- */
+const initializedSec1 = new Set();
+const initializedSec2 = new Set();
+
+function resetInitialized(id) {
+  [initializedSec1, initializedSec2, initializedDiff, initializedConc, initializedPanels].forEach(s => s.delete(id));
+}
+
+/* ---- Section 1 edit ---- */
+function markDirtySec1(id) {
+  if (!initializedSec1.has(id)) return;
+  const el = document.getElementById('sec1-dirty-' + id);
+  if (el) el.style.display = 'inline-flex';
+}
+function hideDirtySec1(id) {
+  const el = document.getElementById('sec1-dirty-' + id);
+  if (el) el.style.display = 'none';
+}
+function toggleSec1Edit(id) {
+  const section = document.getElementById('sec1-section-' + id);
+  const toggle  = document.getElementById('sec1-toggle-'  + id);
+  const isEdit  = section.classList.toggle('sec1-editing');
+  if (toggle) { toggle.textContent = isEdit ? 'Concluir' : 'Editar'; toggle.classList.toggle('active', isEdit); }
+  if (!isEdit) hideDirtySec1(id);
+}
+function saveSec1(id) {
+  const d = DATA[id]; const m = d.mercado; const b = d.brasil;
+  const gi = s => document.getElementById(s + id);
+  const v  = s => parseFloat(gi(s)?.value) || 0;
+  m.tamanho_bi   = v('s1-tamanho-');
+  m.proj[1].bi   = v('s1-proj1-');
+  m.proj[2].bi   = v('s1-proj2-');
+  b.potencial_bi = v('s1-potencial-');
+  m.cards_meta = [0,1,2,3].map(i => ({
+    title: gi('s1-ctitle'+i+'-')?.value || '',
+    sub:   gi('s1-csub'+i+'-')?.value   || '',
+    delta: gi('s1-cdelta'+i+'-')?.value || '',
+  }));
+  m.cards_url = [0,1,2,3].map(i => (gi('s1-url'+i+'-')?.value || ''));
+  b.titulo = gi('s1-btitle-')?.value || 'Contexto Brasil';
+  const barCont = gi('s1-barras-');
+  if (barCont) b.barras = Array.from(barCont.querySelectorAll('.sec-row-edit')).map(row => {
+    const ins = row.querySelectorAll('input');
+    return { label: ins[0].value, val: parseFloat(ins[1].value)||0, max: parseFloat(ins[2].value)||100, cls: row.dataset.cls||'', url: ins[3].value };
+  });
+  const fontCont = gi('s1-fontes-');
+  if (fontCont) m.fontes = Array.from(fontCont.querySelectorAll('.sec-row-edit')).map(row => {
+    const ins = row.querySelectorAll('input');
+    return { label: ins[0].value, url: ins[1].value };
+  });
+  resetInitialized(id); renderPanel(id);
+}
+function discardSec1(id) { resetInitialized(id); renderPanel(id); }
+function addSec1Bar(id) {
+  const cont = document.getElementById('s1-barras-' + id);
+  const div = document.createElement('div');
+  div.className = 'sec-row-edit'; div.dataset.cls = '';
+  div.innerHTML = `
+    <input class="sec-edit-input" type="text" placeholder="Label" value="" style="flex:2" oninput="markDirtySec1('${id}')">
+    <input class="sec-edit-input" type="number" placeholder="Val" value="0" style="width:65px;flex-shrink:0" oninput="markDirtySec1('${id}')">
+    <input class="sec-edit-input" type="number" placeholder="Max" value="100" style="width:55px;flex-shrink:0" oninput="markDirtySec1('${id}')">
+    <input class="sec-url-input" type="url" placeholder="URL da fonte..." value="" oninput="markDirtySec1('${id}')">
+    <button class="sec-row-del" onclick="delSec1Bar('${id}',this)">×</button>`;
+  cont.appendChild(div); markDirtySec1(id);
+}
+function delSec1Bar(id, btn)   { btn.closest('.sec-row-edit').remove(); markDirtySec1(id); }
+function addSec1Fonte(id) {
+  const cont = document.getElementById('s1-fontes-' + id);
+  const div = document.createElement('div');
+  div.className = 'sec-row-edit';
+  div.innerHTML = `
+    <input class="sec-edit-input" type="text" placeholder="Nome da fonte" value="" style="flex:1" oninput="markDirtySec1('${id}')">
+    <input class="sec-url-input" type="url" placeholder="URL..." value="" oninput="markDirtySec1('${id}')">
+    <button class="sec-row-del" onclick="delSec1Fonte('${id}',this)">×</button>`;
+  cont.appendChild(div); markDirtySec1(id);
+}
+function delSec1Fonte(id, btn) { btn.closest('.sec-row-edit').remove(); markDirtySec1(id); }
+
+/* ---- Section 2 edit ---- */
+function markDirtySec2(id) {
+  if (!initializedSec2.has(id)) return;
+  const el = document.getElementById('sec2-dirty-' + id);
+  if (el) el.style.display = 'inline-flex';
+}
+function hideDirtySec2(id) {
+  const el = document.getElementById('sec2-dirty-' + id);
+  if (el) el.style.display = 'none';
+}
+function toggleSec2Edit(id) {
+  const section = document.getElementById('sec2-section-' + id);
+  const toggle  = document.getElementById('sec2-toggle-'  + id);
+  const isEdit  = section.classList.toggle('sec2-editing');
+  if (toggle) { toggle.textContent = isEdit ? 'Concluir' : 'Editar'; toggle.classList.toggle('active', isEdit); }
+  if (!isEdit) hideDirtySec2(id);
+}
+function saveSec2(id) {
+  const d = DATA[id];
+  const gi = s => document.getElementById(s + id);
+  const segCont = gi('s2-segs-');
+  if (segCont) d.segmentos = Array.from(segCont.querySelectorAll('.sec-row-edit')).map(row => {
+    const ins = row.querySelectorAll('input');
+    return { nome: ins[0].value, share: parseFloat(ins[1].value)||0, cor: ins[2].value||'#ccc', url: ins[3].value };
+  });
+  const nota = gi('s2-nota-');
+  if (nota) d.segmentos_nota = nota.value;
+  const fontCont = gi('s2-fontes-');
+  if (fontCont) d.segmentos_fontes = Array.from(fontCont.querySelectorAll('.sec-row-edit')).map(row => {
+    const ins = row.querySelectorAll('input');
+    return { label: ins[0].value, url: ins[1].value };
+  });
+  resetInitialized(id); renderPanel(id);
+}
+function discardSec2(id) { resetInitialized(id); renderPanel(id); }
+function addSec2Seg(id) {
+  const cont = document.getElementById('s2-segs-' + id);
+  const div = document.createElement('div');
+  div.className = 'sec-row-edit'; div.dataset.cor = '#cccccc';
+  div.innerHTML = `
+    <div class="seg-color-dot" style="width:14px;height:14px;border-radius:50%;background:#cccccc;flex-shrink:0"></div>
+    <input class="sec-edit-input" type="text" placeholder="Nome" value="" style="flex:2" oninput="markDirtySec2('${id}')">
+    <input class="sec-edit-input" type="number" placeholder="%" value="0" style="width:60px;flex-shrink:0" oninput="markDirtySec2('${id}')">
+    <input type="color" value="#cccccc" style="width:28px;height:26px;padding:1px 2px;border:1px solid var(--gray-mid);border-radius:4px;cursor:pointer;flex-shrink:0" oninput="this.parentElement.querySelector('.seg-color-dot').style.background=this.value;this.parentElement.dataset.cor=this.value;markDirtySec2('${id}')">
+    <input class="sec-url-input" type="url" placeholder="URL da fonte..." value="" oninput="markDirtySec2('${id}')">
+    <button class="sec-row-del" onclick="delSec2Seg('${id}',this)">×</button>`;
+  cont.appendChild(div); markDirtySec2(id);
+}
+function delSec2Seg(id, btn)   { btn.closest('.sec-row-edit').remove(); markDirtySec2(id); }
+function addSec2Fonte(id) {
+  const cont = document.getElementById('s2-fontes-' + id);
+  const div = document.createElement('div');
+  div.className = 'sec-row-edit';
+  div.innerHTML = `
+    <input class="sec-edit-input" type="text" placeholder="Nome da fonte" value="" style="flex:1" oninput="markDirtySec2('${id}')">
+    <input class="sec-url-input" type="url" placeholder="URL..." value="" oninput="markDirtySec2('${id}')">
+    <button class="sec-row-del" onclick="delSec2Fonte('${id}',this)">×</button>`;
+  cont.appendChild(div); markDirtySec2(id);
+}
+function delSec2Fonte(id, btn) { btn.closest('.sec-row-edit').remove(); markDirtySec2(id); }
+
+/* ---- Diferenciais edit ---- */
+const initializedDiff = new Set();
+
+function markDirtyDiff(id) {
+  if (!initializedDiff.has(id)) return;
+  const el = document.getElementById('diff-dirty-' + id);
+  if (el) el.style.display = 'inline-flex';
+}
+function hideDirtyDiff(id) {
+  const el = document.getElementById('diff-dirty-' + id);
+  if (el) el.style.display = 'none';
+}
+function toggleDiffEdit(id) {
+  const section = document.getElementById('diff-section-' + id);
+  const toggle  = document.getElementById('diff-toggle-' + id);
+  const isEdit  = section.classList.toggle('diff-editing');
+  if (toggle) { toggle.textContent = isEdit ? 'Concluir' : 'Editar'; toggle.classList.toggle('active', isEdit); }
+  if (!isEdit) hideDirtyDiff(id);
+}
+function saveDiff(id) {
+  const list = document.getElementById('diff-list-' + id);
+  DATA[id].diferenciais = Array.from(list.querySelectorAll('.diff-item')).map(item => {
+    const inputs = item.querySelectorAll('.diff-edit-input');
+    return { icon: '', titulo: inputs[0] ? inputs[0].value : '', desc: inputs[1] ? inputs[1].value : '' };
+  });
+  hideDirtyDiff(id);
+  const section = document.getElementById('diff-section-' + id);
+  const toggle  = document.getElementById('diff-toggle-' + id);
+  if (section) section.classList.remove('diff-editing');
+  if (toggle) { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+}
+function discardDiff(id) { resetInitialized(id); renderPanel(id); }
+function addDiffRow(id) {
+  const list = document.getElementById('diff-list-' + id);
+  const div = document.createElement('div');
+  div.className = 'diff-item';
+  div.innerHTML = `
+    <div class="diff-body">
+      <div class="diff-view" style="display:none"></div>
+      <div class="diff-edit" style="display:flex">
+        <input class="diff-edit-input" type="text" placeholder="Título" value="" oninput="markDirtyDiff('${id}')">
+        <input class="diff-edit-input" type="text" placeholder="Descrição" value="" oninput="markDirtyDiff('${id}')">
+      </div>
+    </div>
+    <button class="diff-del" style="display:inline-flex" onclick="delDiffRow('${id}', this)">×</button>`;
+  list.appendChild(div);
+  markDirtyDiff(id);
+}
+function delDiffRow(id, btn) { btn.closest('.diff-item').remove(); markDirtyDiff(id); }
+
+/* ---- Concorrentes edit ---- */
+const initializedConc = new Set();
+
+function markDirtyConc(id) {
+  if (!initializedConc.has(id)) return;
+  const el = document.getElementById('conc-dirty-' + id);
+  if (el) el.style.display = 'inline-flex';
+}
+function hideDirtyConc(id) {
+  const el = document.getElementById('conc-dirty-' + id);
+  if (el) el.style.display = 'none';
+}
+function toggleConcEdit(id) {
+  const section = document.getElementById('conc-section-' + id);
+  const toggle  = document.getElementById('conc-toggle-' + id);
+  const isEdit  = section.classList.toggle('conc-editing');
+  if (toggle) { toggle.textContent = isEdit ? 'Concluir' : 'Editar'; toggle.classList.toggle('active', isEdit); }
+  if (!isEdit) hideDirtyConc(id);
+}
+function saveConc(id) {
+  const tbody = document.getElementById('conc-tbody-' + id);
+  DATA[id].concorrentes = Array.from(tbody.querySelectorAll('tr')).map(tr => {
+    const nome  = tr.querySelector('.conc-edit-input');
+    const nivel = tr.querySelector('.conc-select-nivel');
+    return { nome: nome ? nome.value : '', nivel: nivel ? nivel.value : 'Alto' };
+  });
+  const nota = document.getElementById('conc-nota-' + id);
+  if (nota) DATA[id].concorrentes_nota = nota.value;
+  hideDirtyConc(id);
+  const section = document.getElementById('conc-section-' + id);
+  const toggle  = document.getElementById('conc-toggle-' + id);
+  if (section) section.classList.remove('conc-editing');
+  if (toggle) { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+}
+function discardConc(id) { resetInitialized(id); renderPanel(id); }
+function addConcRow(id) {
+  const tbody = document.getElementById('conc-tbody-' + id);
+  const num = tbody.querySelectorAll('tr').length + 1;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td style="font-weight:700; color:var(--text-mid)">${num}</td>
+    <td>
+      <span class="conc-view" style="display:none"></span>
+      <input class="conc-edit conc-edit-input" type="text" value="" style="display:inline-block;width:100%" oninput="markDirtyConc('${id}')">
+    </td>
+    <td>
+      <span class="conc-view" style="display:none"></span>
+      <select class="conc-edit conc-select-nivel" style="display:inline-block" onchange="markDirtyConc('${id}')">
+        <option value="Alto">● Alto</option>
+        <option value="Médio">● Médio</option>
+        <option value="Moderado">● Moderado</option>
+      </select>
+    </td>
+    <td class="conc-del-col" style="display:table-cell"><button class="conc-del-btn" onclick="delConcRow('${id}', this)">×</button></td>`;
+  tbody.appendChild(tr);
+  markDirtyConc(id);
+}
+function delConcRow(id, btn) { btn.closest('tr').remove(); markDirtyConc(id); }
+
+/* ---- Calculadora de preço ---- */
+const initializedPanels = new Set();
+
+function setCalcReadonly(id, readonly) {
+  document.querySelectorAll(`#calc-section-${id} .calc-input`).forEach(el => {
+    el.readOnly = readonly;
+    el.tabIndex = readonly ? -1 : 0;
+  });
+}
+
+function toggleCalcEdit(id) {
+  const section = document.getElementById('calc-section-' + id);
+  const toggle  = document.getElementById('calc-toggle-'  + id);
+  const isEdit  = section.classList.toggle('calc-editing');
+  if (toggle) { toggle.textContent = isEdit ? 'Concluir' : 'Editar'; toggle.classList.toggle('active', isEdit); }
+  setCalcReadonly(id, !isEdit);
+  if (!isEdit) hideDirty(id);
+}
+
+function markDirty(id) {
+  if (!initializedPanels.has(id)) return;
+  const el = document.getElementById('calc-dirty-' + id);
+  if (el) el.style.display = 'inline-flex';
+}
+
+function hideDirty(id) {
+  const el = document.getElementById('calc-dirty-' + id);
+  if (el) el.style.display = 'none';
+}
+
+function saveCalc(id) {
+  const bm = DATA[id].benchmark;
+  const gi  = s => document.getElementById(s + id);
+  const val = s => { const el = gi(s); return el ? (parseFloat(el.value) || 0) : 0; };
+  bm.capex.pontos_modelo  = val('ci-pts-');
+  bm.capex.meses_contrato = val('ci-mes-');
+  bm.capex.hardware_unit  = val('ci-hw-');
+  bm.margem_opex          = val('ci-marg-');
+  const firstExtra = document.querySelector(`#capex-rows-${id} .calc-capex-extra`);
+  if (firstExtra) bm.capex.mobilizacao = parseFloat(firstExtra.value) || 0;
+  bm.opex_por_ponto = {};
+  document.querySelectorAll(`#opex-rows-${id} .opex-line`).forEach(row => {
+    const lbl = row.querySelector('.lbl-input');
+    const num = row.querySelector('.calc-opex');
+    if (lbl && num) bm.opex_por_ponto[lbl.value || 'Item'] = parseFloat(num.value) || 0;
+  });
+  hideDirty(id);
+  const section = document.getElementById('calc-section-' + id);
+  const toggle  = document.getElementById('calc-toggle-'  + id);
+  if (section) section.classList.remove('calc-editing');
+  if (toggle)  { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+}
+
+function discardCalc(id) { resetInitialized(id); renderPanel(id); }
+
+const OP_CYCLE = [
+  { sym: '+', cls: 'op-add' },
+  { sym: '−', cls: 'op-sub' },
+  { sym: '×', cls: 'op-mul' },
+  { sym: '÷', cls: 'op-div' },
+];
+
+function cycleOp(badge, tabId) {
+  const cur  = badge.dataset.op || '+';
+  const next = OP_CYCLE[(OP_CYCLE.findIndex(o => o.sym === cur) + 1) % OP_CYCLE.length];
+  badge.dataset.op  = next.sym;
+  badge.textContent = next.sym;
+  badge.className   = `op-badge op-clickable ${next.cls}`;
+  recalc(tabId);
+}
+
+function applyOp(running, op, v) {
+  if      (op === '+') return running + v;
+  else if (op === '−') return running - v;
+  else if (op === '×') return running * v;
+  else if (op === '÷') return v !== 0 ? running / v : running;
+  return running;
+}
+
+function recalc(id) {
+  markDirty(id);
+  const gi  = s => document.getElementById(s + id);
+  const val = s => { const el = gi(s); return el ? (parseFloat(el.value) || 0) : 0; };
+
+  const hw   = val('ci-hw-');
+  const pts  = val('ci-pts-') || 1;
+  const mes  = val('ci-mes-') || 1;
+  const marg = val('ci-marg-');
+
+  const hintEl = gi('co-hw-pts-'); if (hintEl) hintEl.textContent = pts;
+  const hwSub = hw * pts;
+
+  // CAPEX: começa com hwSub e aplica cada linha extra em cadeia
+  let capexRunning = hwSub;
+  document.querySelectorAll(`#capex-rows-${id} .opex-line`).forEach(row => {
+    const badge = row.querySelector('.op-badge');
+    const input = row.querySelector('.calc-capex-extra');
+    if (!input) return;
+    capexRunning = applyOp(capexRunning, badge ? (badge.dataset.op || '+') : '+', parseFloat(input.value) || 0);
+  });
+  const capexTotal    = capexRunning;
+  const capexPorPonto = capexTotal / pts;
+  const capexDiluido  = capexPorPonto / mes;
+
+  // OPEX: começa em 0 e aplica cada linha em cadeia
+  let opexRunning = 0;
+  document.querySelectorAll(`#opex-rows-${id} .opex-line`).forEach(row => {
+    const badge = row.querySelector('.op-badge');
+    const input = row.querySelector('.calc-opex');
+    if (!input) return;
+    opexRunning = applyOp(opexRunning, badge ? (badge.dataset.op || '+') : '+', parseFloat(input.value) || 0);
+  });
+  const totalOpex  = opexRunning;
+  const opexMargem = marg < 100 ? totalOpex / (1 - marg / 100) : totalOpex;
+  const precoFinal = opexMargem + capexDiluido;
+
+  const set = (s, t) => { const el = gi(s); if (el) el.textContent = t; };
+  set('co-hw-sub-',      fmtBRL(hwSub));
+  set('co-capex-total-', fmtBRL(capexTotal));
+  set('co-capex-pp-',    fmtBRL(capexPorPonto));
+  set('co-capex-dil-',   fmtBRL(capexDiluido) + '/mês');
+  set('co-opex-total-',  fmtBRL(totalOpex) + '/mês');
+  set('co-opex-marg-',   fmtBRL(opexMargem) + '/mês');
+  set('co-final-',       fmtBRL(precoFinal) + '/mês');
+  set('co-sub-',         `por ponto / mês — modelo de ${pts} pontos em ${mes} meses`);
+}
+
+function addCalcRow(containerId, tabId, cls) {
+  const container = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = 'opex-line';
+  div.innerHTML = `
+    <span class="op-badge op-add op-clickable" data-op="+" onclick="cycleOp(this,'${tabId}')">+</span>
+    <input class="calc-input lbl-input" type="text" value="Novo custo">
+    <input class="calc-input ${cls}" data-tab="${tabId}" type="number" min="0" value="0" oninput="recalc('${tabId}')">
+    <button class="calc-del" onclick="removeCalcRow(this,'${tabId}')" title="Remover">×</button>`;
+  container.appendChild(div);
+  recalc(tabId);
+}
+
+function removeCalcRow(btn, tabId) {
+  btn.closest('.opex-line').remove();
+  recalc(tabId);
+}
+
+/* ---- Troca de abas ---- */
+function activateTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+  renderPanel(id);
+}
+
+document.getElementById('tab-bar').addEventListener('click', e => {
+  if (e.target.classList.contains('tab-btn')) activateTab(e.target.dataset.tab);
+});
+
+/* ---- Render inicial ---- */
+renderPanel('hidrometros');
+</script>
+</body>
+</html>

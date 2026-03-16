@@ -490,6 +490,36 @@
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
+    /* ---- SUB-ABAS ---- */
+    .subtab-bar {
+      background: var(--white);
+      border-bottom: 1px solid var(--gray-mid);
+      position: sticky; top: 0; z-index: 10;
+      box-shadow: 0 2px 8px rgba(26,43,140,.05);
+    }
+    .subtab-bar-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; padding: 0 14px;
+    }
+    .subtab-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--text-mid); font-family: inherit;
+      font-size: .72rem; font-weight: 600;
+      padding: 8px 14px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px; white-space: nowrap;
+      transition: color .15s, border-color .15s;
+    }
+    .subtab-btn:hover { color: var(--blue-dark); }
+    .subtab-btn.active { color: var(--blue-dark); border-bottom-color: var(--blue-mid); }
+    .subtab-panel { display: none; }
+    .subtab-panel.active { display: block; }
+    .subtab-empty {
+      max-width: 1100px; margin: 56px auto;
+      text-align: center; padding: 20px;
+      color: var(--text-mid); font-size: .78rem;
+    }
+
     .placeholder {
       max-width: 1100px; margin: 48px auto;
       text-align: center; padding: 20px;
@@ -860,7 +890,16 @@ function renderPanel(id) {
   const maxRisco = d.riscos.length ? Math.max(...d.riscos.map(r => Math.abs(r.impacto))) : 1;
 
   /* ---- HTML completo do painel ---- */
-  panel.innerHTML = `<main>
+  panel.innerHTML = `
+  <div class="subtab-bar">
+    <div class="subtab-bar-inner" id="subtab-bar-${id}">
+      <button class="subtab-btn active" data-subtab="mercado"   onclick="activateSubTab('${id}','mercado')">Mercado</button>
+      <button class="subtab-btn"        data-subtab="tecnologia" onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
+      <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
+      <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
+    </div>
+  </div>
+  <div class="subtab-panel active" data-tab="${id}" data-subtab="mercado"><main>
 
   <!-- 1. MERCADO GLOBAL -->
   <section class="section" id="sec1-section-${id}">
@@ -1259,7 +1298,11 @@ function renderPanel(id) {
     </div>
   </section>
 
-</main>`;
+</main></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div class="subtab-empty">Em desenvolvimento.</div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div class="subtab-empty">Em desenvolvimento.</div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div class="subtab-empty">Em desenvolvimento.</div></div>
+`;
 
   /* ---- Charts (criados após innerHTML estar no DOM) ---- */
   chartReg[`bar-${id}`] = new Chart(document.getElementById(`chart-bar-${id}`), {
@@ -1304,6 +1347,9 @@ function renderPanel(id) {
   initializedConc.add(id);
   initializedPanels.add(id);
   setCalcReadonly(id, true);
+  // restaura sub-aba ativa se diferente de mercado
+  const _sub = activeSubTab[id];
+  if (_sub && _sub !== 'mercado') activateSubTab(id, _sub);
 }
 
 /* ---- Shared helper ---- */
@@ -1713,6 +1759,17 @@ function activateTab(id) {
 document.getElementById('tab-bar').addEventListener('click', e => {
   if (e.target.classList.contains('tab-btn')) activateTab(e.target.dataset.tab);
 });
+
+/* ---- Sub-abas ---- */
+const activeSubTab = {};
+
+function activateSubTab(tabId, subId) {
+  activeSubTab[tabId] = subId;
+  document.querySelectorAll(`#subtab-bar-${tabId} .subtab-btn`).forEach(b =>
+    b.classList.toggle('active', b.dataset.subtab === subId));
+  document.querySelectorAll(`.subtab-panel[data-tab="${tabId}"]`).forEach(p =>
+    p.classList.toggle('active', p.dataset.subtab === subId));
+}
 
 /* ---- Ordenação de abas ---- */
 let _tabSortOrder = null;

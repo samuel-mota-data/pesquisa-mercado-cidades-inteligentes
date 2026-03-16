@@ -27,16 +27,20 @@ module.exports = async function handler(req, res) {
     await ensureTable(client);
 
     if (req.method === 'GET') {
-      const result = await client.query("SELECT data FROM site_data WHERE id = 'main'");
-      return res.status(200).json(result.rows.length ? result.rows[0].data : null);
+      const result = await client.query('SELECT id, data FROM site_data');
+      const out = {};
+      result.rows.forEach(row => { out[row.id] = row.data; });
+      return res.status(200).json(out);
     }
 
     if (req.method === 'POST') {
+      const { id, data } = req.body;
+      if (!id || !data) return res.status(400).json({ error: 'id e data são obrigatórios' });
       await client.query(`
         INSERT INTO site_data (id, data, updated_at)
-        VALUES ('main', $1, NOW())
-        ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = NOW()
-      `, [JSON.stringify(req.body)]);
+        VALUES ($1, $2, NOW())
+        ON CONFLICT (id) DO UPDATE SET data = $2, updated_at = NOW()
+      `, [id, JSON.stringify(data)]);
       return res.status(200).json({ ok: true });
     }
 

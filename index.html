@@ -1927,28 +1927,14 @@ function saveGestaoItem(id, i) {
 }
 
 function openAvancoForm(id, i) {
+  const formId = `tl-avform-${id}-${i}`;
+  const existing = document.getElementById(formId);
+  if (existing) { existing.remove(); return; }
   const item = document.getElementById(`tl-item-${id}-${i}`);
-  const ev   = DATA[id].gestao[i];
-  const chain = [ev, ...(ev.avancos||[])];
-  const latestStatus = chain[chain.length-1].status || 'planejado';
-
-  const prevCards = chain.map((card, j) => {
-    const isOrig = j === 0;
-    const days   = j > 0 ? _daysBetween(chain[j-1].data, card.data) : null;
-    return `<div class="timeline-card tl-dimmed" style="margin-bottom:8px">
-      ${card.data ? `<div class="tl-date">${_fmtDate(card.data)}</div>` : ''}
-      ${isOrig ? `<div class="tl-title">${card.titulo||'—'}</div>` : ''}
-      ${isOrig && card.desc  ? `<div class="tl-desc">${card.desc}</div>`  : ''}
-      ${!isOrig && card.obs  ? `<div class="tl-desc tl-obs">${card.obs}</div>` : ''}
-      ${days !== null ? `<div class="tl-dias">${days} dia${days!==1?'s':''} no status anterior</div>` : ''}
-      <span class="tl-badge ${card.status||'planejado'}">${TL_STATUS[card.status]||''}</span>
-    </div>`;
-  }).join('');
-
-  item.innerHTML = `
-    <div class="timeline-dot ${latestStatus}"></div>
-    ${prevCards}
-    <div class="timeline-card">
+  const form = document.createElement('div');
+  form.id = formId;
+  form.innerHTML = `
+    <div class="timeline-card" style="margin-top:8px;border-color:var(--teal)">
       <div style="display:flex;flex-direction:column;gap:6px">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           <input  class="sec-edit-input" id="tl-av-data-${id}-${i}" type="date" style="width:160px">
@@ -1960,11 +1946,12 @@ function openAvancoForm(id, i) {
         </div>
         <textarea class="sec-edit-input" id="tl-av-obs-${id}-${i}" placeholder="Observação" style="resize:vertical;min-height:52px"></textarea>
         <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:2px">
-          <button class="calc-action-btn discard" onclick="renderGestaoPanel('${id}')">Cancelar</button>
+          <button class="calc-action-btn discard" onclick="document.getElementById('${formId}').remove()">Cancelar</button>
           <button class="calc-action-btn save"    onclick="saveAvanco('${id}',${i})">Avançar</button>
         </div>
       </div>
     </div>`;
+  item.appendChild(form);
 }
 
 function saveAvanco(id, i) {

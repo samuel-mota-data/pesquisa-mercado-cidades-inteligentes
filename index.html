@@ -570,6 +570,9 @@
     .tl-badge.done         { background: #eaecf7; color: var(--blue-dark); }
     .tl-badge.em-andamento { background: #e0fafb; color: #007070; }
     .tl-badge.planejado    { background: var(--gray-light); color: #7a8aaa; }
+    .tl-dimmed { opacity: 0.4; }
+    .tl-dias { font-size: .6rem; color: var(--text-mid); font-style: italic; margin: 4px 0 2px; }
+    .tl-obs  { font-style: italic; color: var(--text-mid); }
     .gestao-add-btn {
       margin-left: 48px; margin-top: 4px;
       background: none; border: 1px dashed var(--gray-mid);
@@ -1826,26 +1829,54 @@ document.getElementById('tab-bar').addEventListener('click', e => {
    ==================================================== */
 const TL_STATUS = { done: 'Concluído', 'em-andamento': 'Em andamento', planejado: 'Planejado' };
 
+function _fmtDate(str) {
+  if (!str) return '';
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function _daysBetween(a, b) {
+  if (!a || !b) return null;
+  return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+}
+
 function renderGestaoPanel(id) {
   const container = document.getElementById('gestao-panel-' + id);
   if (!container) return;
   const events = DATA[id].gestao || [];
-  const items = events.length
-    ? events.map((ev, i) => `
-      <div class="timeline-item" id="tl-item-${id}-${i}">
-        <div class="timeline-dot ${ev.status || 'planejado'}"></div>
-        <div class="timeline-card">
-          <div class="timeline-actions">
-            <button class="tl-btn"     onclick="editGestaoItem('${id}',${i})" title="Editar">✏</button>
-            <button class="tl-btn tl-del" onclick="delGestaoItem('${id}',${i})"  title="Excluir">×</button>
-          </div>
-          <div class="tl-date">${ev.data ? new Date(ev.data + 'T00:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'short',year:'numeric'}) : ''}</div>
-          <div class="tl-title">${ev.titulo || '—'}</div>
-          ${ev.desc ? `<div class="tl-desc">${ev.desc}</div>` : ''}
-          <span class="tl-badge ${ev.status || 'planejado'}">${TL_STATUS[ev.status] || ev.status || ''}</span>
-        </div>
-      </div>`).join('')
-    : `<p style="padding-left:48px;color:var(--text-mid);font-size:.75rem">Nenhum evento ainda.</p>`;
+
+  const items = events.length ? events.map((ev, i) => {
+    const chain = [
+      { data: ev.data, status: ev.status, titulo: ev.titulo, desc: ev.desc, obs: null, isOrig: true },
+      ...(ev.avancos || []).map(a => ({ ...a, isOrig: false }))
+    ];
+    const latestStatus = chain[chain.length - 1].status || 'planejado';
+
+    const cards = chain.map((card, j) => {
+      const isDimmed = j < chain.length - 1;
+      const isLatest = j === chain.length - 1;
+      const days     = j > 0 ? _daysBetween(chain[j-1].data, card.data) : null;
+      return `
+        <div class="timeline-card${isDimmed ? ' tl-dimmed' : ''}" style="${!isLatest ? 'margin-bottom:8px' : ''}">
+          ${isLatest ? `<div class="timeline-actions">
+            <button class="tl-btn"        onclick="openAvancoForm('${id}',${i})" title="Avançar">→</button>
+            <button class="tl-btn"        onclick="editGestaoItem('${id}',${i})"  title="Editar">✏</button>
+            <button class="tl-btn tl-del" onclick="delGestaoItem('${id}',${i})"   title="Excluir">×</button>
+          </div>` : ''}
+          ${card.data  ? `<div class="tl-date">${_fmtDate(card.data)}</div>` : ''}
+          ${card.isOrig ? `<div class="tl-title">${card.titulo || '—'}</div>` : ''}
+          ${card.isOrig && card.desc  ? `<div class="tl-desc">${card.desc}</div>`  : ''}
+          ${!card.isOrig && card.obs  ? `<div class="tl-desc tl-obs">${card.obs}</div>` : ''}
+          ${days !== null ? `<div class="tl-dias">${days} dia${days !== 1 ? 's' : ''} no status anterior</div>` : ''}
+          <span class="tl-badge ${card.status || 'planejado'}">${TL_STATUS[card.status] || ''}</span>
+        </div>`;
+    }).join('');
+
+    return `<div class="timeline-item" id="tl-item-${id}-${i}">
+      <div class="timeline-dot ${latestStatus}"></div>
+      ${cards}
+    </div>`;
+  }).join('')
+  : `<p style="padding-left:48px;color:var(--text-mid);font-size:.75rem">Nenhum evento ainda.</p>`;
 
   container.innerHTML = `
     <div class="timeline-wrap">
@@ -1857,53 +1888,107 @@ function renderGestaoPanel(id) {
 function _tlEditForm(id, i, ev) {
   const item = document.getElementById(`tl-item-${id}-${i}`);
   if (!item) return;
-  item.querySelector('.timeline-dot').className = `timeline-dot ${ev.status || 'planejado'}`;
-  item.querySelector('.timeline-card').innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:6px">
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <input  class="sec-edit-input" id="tl-data-${id}-${i}"   type="date" value="${ev.data || ''}" style="width:160px">
-        <select class="sec-edit-input" id="tl-stat-${id}-${i}"   style="flex:1">
-          <option value="planejado"    ${(ev.status||'planejado')==='planejado'    ?'selected':''}>Planejado</option>
-          <option value="em-andamento" ${ev.status==='em-andamento'?'selected':''}>Em andamento</option>
-          <option value="done"         ${ev.status==='done'        ?'selected':''}>Concluído</option>
-        </select>
-      </div>
-      <input    class="sec-edit-input" id="tl-tit-${id}-${i}"  placeholder="Título" value="${ev.titulo || ''}">
-      <textarea class="sec-edit-input" id="tl-desc-${id}-${i}" placeholder="Descrição (opcional)" style="resize:vertical;min-height:52px">${ev.desc || ''}</textarea>
-      <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:2px">
-        <button class="calc-action-btn discard" onclick="renderGestaoPanel('${id}')">Cancelar</button>
-        <button class="calc-action-btn save"    onclick="saveGestaoItem('${id}',${i})">Salvar</button>
+  item.innerHTML = `
+    <div class="timeline-dot ${ev.status || 'planejado'}"></div>
+    <div class="timeline-card">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input  class="sec-edit-input" id="tl-data-${id}-${i}" type="date" value="${ev.data||''}" style="width:160px">
+          <select class="sec-edit-input" id="tl-stat-${id}-${i}" style="flex:1">
+            <option value="planejado"    ${(ev.status||'planejado')==='planejado'    ?'selected':''}>Planejado</option>
+            <option value="em-andamento" ${ev.status==='em-andamento'?'selected':''}>Em andamento</option>
+            <option value="done"         ${ev.status==='done'        ?'selected':''}>Concluído</option>
+          </select>
+        </div>
+        <input    class="sec-edit-input" id="tl-tit-${id}-${i}"  placeholder="Título"  value="${ev.titulo||''}">
+        <textarea class="sec-edit-input" id="tl-desc-${id}-${i}" placeholder="Descrição (opcional)" style="resize:vertical;min-height:52px">${ev.desc||''}</textarea>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:2px">
+          <button class="calc-action-btn discard" onclick="renderGestaoPanel('${id}')">Cancelar</button>
+          <button class="calc-action-btn save"    onclick="saveGestaoItem('${id}',${i})">Salvar</button>
+        </div>
       </div>
     </div>`;
 }
 
-function editGestaoItem(id, i) {
-  _tlEditForm(id, i, DATA[id].gestao[i]);
-}
+function editGestaoItem(id, i) { _tlEditForm(id, i, DATA[id].gestao[i]); }
 
 function saveGestaoItem(id, i) {
   const g = s => document.getElementById(s);
+  const avancos = DATA[id].gestao[i].avancos;
   DATA[id].gestao[i] = {
-    data:   g(`tl-data-${id}-${i}`)?.value || '',
-    status: g(`tl-stat-${id}-${i}`)?.value || 'planejado',
-    titulo: g(`tl-tit-${id}-${i}`)?.value  || '',
-    desc:   g(`tl-desc-${id}-${i}`)?.value || '',
+    data:    g(`tl-data-${id}-${i}`)?.value || '',
+    status:  g(`tl-stat-${id}-${i}`)?.value || 'planejado',
+    titulo:  g(`tl-tit-${id}-${i}`)?.value  || '',
+    desc:    g(`tl-desc-${id}-${i}`)?.value || '',
+    avancos: avancos || [],
   };
-  DATA[id].gestao.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
-  persistData(id);
-  renderGestaoPanel(id);
+  DATA[id].gestao.sort((a, b) => (a.data||'').localeCompare(b.data||''));
+  persistData(id); renderGestaoPanel(id);
+}
+
+function openAvancoForm(id, i) {
+  const item = document.getElementById(`tl-item-${id}-${i}`);
+  const ev   = DATA[id].gestao[i];
+  const chain = [ev, ...(ev.avancos||[])];
+  const latestStatus = chain[chain.length-1].status || 'planejado';
+
+  const prevCards = chain.map((card, j) => {
+    const isOrig = j === 0;
+    const days   = j > 0 ? _daysBetween(chain[j-1].data, card.data) : null;
+    return `<div class="timeline-card tl-dimmed" style="margin-bottom:8px">
+      ${card.data ? `<div class="tl-date">${_fmtDate(card.data)}</div>` : ''}
+      ${isOrig ? `<div class="tl-title">${card.titulo||'—'}</div>` : ''}
+      ${isOrig && card.desc  ? `<div class="tl-desc">${card.desc}</div>`  : ''}
+      ${!isOrig && card.obs  ? `<div class="tl-desc tl-obs">${card.obs}</div>` : ''}
+      ${days !== null ? `<div class="tl-dias">${days} dia${days!==1?'s':''} no status anterior</div>` : ''}
+      <span class="tl-badge ${card.status||'planejado'}">${TL_STATUS[card.status]||''}</span>
+    </div>`;
+  }).join('');
+
+  item.innerHTML = `
+    <div class="timeline-dot ${latestStatus}"></div>
+    ${prevCards}
+    <div class="timeline-card">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <input  class="sec-edit-input" id="tl-av-data-${id}-${i}" type="date" style="width:160px">
+          <select class="sec-edit-input" id="tl-av-stat-${id}-${i}" style="flex:1">
+            <option value="planejado">Planejado</option>
+            <option value="em-andamento">Em andamento</option>
+            <option value="done">Concluído</option>
+          </select>
+        </div>
+        <textarea class="sec-edit-input" id="tl-av-obs-${id}-${i}" placeholder="Observação" style="resize:vertical;min-height:52px"></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:6px;margin-top:2px">
+          <button class="calc-action-btn discard" onclick="renderGestaoPanel('${id}')">Cancelar</button>
+          <button class="calc-action-btn save"    onclick="saveAvanco('${id}',${i})">Avançar</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function saveAvanco(id, i) {
+  const g = s => document.getElementById(s);
+  if (!DATA[id].gestao[i].avancos) DATA[id].gestao[i].avancos = [];
+  const novoStatus = g(`tl-av-stat-${id}-${i}`)?.value || 'planejado';
+  DATA[id].gestao[i].avancos.push({
+    data:   g(`tl-av-data-${id}-${i}`)?.value || '',
+    status: novoStatus,
+    obs:    g(`tl-av-obs-${id}-${i}`)?.value  || '',
+  });
+  DATA[id].gestao[i].status = novoStatus;
+  persistData(id); renderGestaoPanel(id);
 }
 
 function delGestaoItem(id, i) {
   DATA[id].gestao.splice(i, 1);
-  persistData(id);
-  renderGestaoPanel(id);
+  persistData(id); renderGestaoPanel(id);
 }
 
 function addGestaoItem(id) {
   if (!DATA[id].gestao) DATA[id].gestao = [];
   const i = DATA[id].gestao.length;
-  DATA[id].gestao.push({ data: '', titulo: '', desc: '', status: 'planejado' });
+  DATA[id].gestao.push({ data: '', titulo: '', desc: '', status: 'planejado', avancos: [] });
   renderGestaoPanel(id);
   _tlEditForm(id, i, DATA[id].gestao[i]);
 }

@@ -402,15 +402,56 @@
     .tab-bar {
       background: var(--blue-dark);
       border-bottom: 2px solid var(--teal);
-      overflow-x: auto;
-      white-space: nowrap;
-      scrollbar-width: none;
+      display: flex; align-items: stretch;
     }
-    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-sort-btn {
+      flex-shrink: 0;
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.55);
+      font-size: 1.1rem; line-height: 1;
+      padding: 0 12px;
+      border-right: 1px solid rgba(255,255,255,.12);
+      transition: color .15s;
+      font-family: inherit;
+    }
+    .tab-sort-btn:hover { color: var(--teal); }
+    .tab-bar-scroll {
+      flex: 1; overflow-x: auto;
+      scrollbar-width: none; white-space: nowrap;
+    }
+    .tab-bar-scroll::-webkit-scrollbar { display: none; }
     .tab-bar-inner {
-      max-width: 1100px; margin: 0 auto;
-      display: flex; gap: 0;
-      padding: 0 14px;
+      display: inline-flex; gap: 0;
+      padding: 0 14px; min-width: 100%;
+    }
+    /* modal de ordenação */
+    .tab-sort-overlay {
+      display: none; position: fixed; inset: 0; z-index: 900;
+    }
+    .tab-sort-overlay.open { display: block; }
+    .tab-sort-panel {
+      position: fixed; top: 78px; left: 0;
+      background: var(--white); border-radius: 0 0 8px 0;
+      padding: 12px 14px; min-width: 250px;
+      box-shadow: 4px 4px 24px rgba(26,43,140,.18);
+      z-index: 901;
+    }
+    .tab-sort-panel h4 { font-size: .72rem; color: var(--blue-dark); margin-bottom: 8px; }
+    .tab-sort-item {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 8px; border-radius: 4px; margin-bottom: 2px;
+      cursor: grab; font-size: .72rem; color: var(--text-dark);
+      border: 1px solid transparent; background: var(--gray-light);
+      user-select: none;
+    }
+    .tab-sort-item:hover { border-color: var(--gray-mid); }
+    .tab-sort-item.dragging { opacity: .3; }
+    .tab-sort-item.drag-over { border-color: var(--teal); background: #e6feff; }
+    .tab-sort-handle { color: #aab; font-size: .85rem; }
+    .tab-sort-footer {
+      display: flex; justify-content: flex-end; gap: 6px;
+      margin-top: 10px; padding-top: 8px;
+      border-top: 1px solid var(--gray-mid);
     }
     .tab-btn {
       background: none; border: none; cursor: pointer;
@@ -672,8 +713,22 @@ let DATA = {
 
 <!-- BARRA DE ABAS -->
 <nav class="tab-bar">
-  <div class="tab-bar-inner" id="tab-bar"></div>
+  <button class="tab-sort-btn" onclick="openTabSort()" title="Reordenar abas">⌄</button>
+  <div class="tab-bar-scroll">
+    <div class="tab-bar-inner" id="tab-bar"></div>
+  </div>
 </nav>
+
+<!-- MODAL ORDENAÇÃO DE ABAS -->
+<div id="tab-sort-overlay" class="tab-sort-overlay" onclick="closeTabSort(false)"></div>
+<div id="tab-sort-panel" class="tab-sort-panel" style="display:none">
+  <h4>Reordenar abas</h4>
+  <div id="tab-sort-list"></div>
+  <div class="tab-sort-footer">
+    <button class="calc-action-btn discard" onclick="closeTabSort(false)">Cancelar</button>
+    <button class="calc-action-btn save"    onclick="closeTabSort(true)">Salvar ordem</button>
+  </div>
+</div>
 
 <!-- PAINÉIS — renderizados via JS -->
 <div class="tab-panel active" id="panel-hidrometros"></div>
@@ -705,9 +760,13 @@ document.getElementById('ano').textContent = new Date().getFullYear();
 const fmtBRL = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /* ---- Barra de abas ---- */
-document.getElementById('tab-bar').innerHTML = TABS.map(t =>
-  `<button class="tab-btn${t.id === 'hidrometros' ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`
-).join('');
+let activeTabId = 'hidrometros';
+
+function renderTabBar() {
+  document.getElementById('tab-bar').innerHTML = TABS.map(t =>
+    `<button class="tab-btn${t.id === activeTabId ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`
+  ).join('');
+}
 
 /* ---- Registro de charts (para destruir antes de re-renderizar) ---- */
 const chartReg = {};
@@ -1624,7 +1683,8 @@ function removeCalcRow(btn, tabId) {
 
 /* ---- Troca de abas ---- */
 function activateTab(id) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  activeTabId = id;
+  renderTabBar();
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
   renderPanel(id);
 }
@@ -1632,6 +1692,57 @@ function activateTab(id) {
 document.getElementById('tab-bar').addEventListener('click', e => {
   if (e.target.classList.contains('tab-btn')) activateTab(e.target.dataset.tab);
 });
+
+/* ---- Ordenação de abas ---- */
+let _tabSortOrder = null;
+
+function openTabSort() {
+  _tabSortOrder = [...TABS];
+  _renderSortList();
+  document.getElementById('tab-sort-overlay').classList.add('open');
+  document.getElementById('tab-sort-panel').style.display = 'block';
+}
+
+function _renderSortList() {
+  const list = document.getElementById('tab-sort-list');
+  list.innerHTML = _tabSortOrder.map((t, i) => `
+    <div class="tab-sort-item" draggable="true" data-idx="${i}">
+      <span class="tab-sort-handle">⠿</span>
+      <span>${t.label}</span>
+    </div>`).join('');
+  let dragIdx = null;
+  list.querySelectorAll('.tab-sort-item').forEach(el => {
+    el.addEventListener('dragstart', () => { dragIdx = +el.dataset.idx; setTimeout(() => el.classList.add('dragging'), 0); });
+    el.addEventListener('dragend',   () => el.classList.remove('dragging'));
+    el.addEventListener('dragover',  e => { e.preventDefault(); el.classList.add('drag-over'); });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', e => {
+      e.preventDefault(); el.classList.remove('drag-over');
+      const dropIdx = +el.dataset.idx;
+      if (dragIdx === dropIdx) return;
+      const [moved] = _tabSortOrder.splice(dragIdx, 1);
+      _tabSortOrder.splice(dropIdx, 0, moved);
+      _renderSortList();
+    });
+  });
+}
+
+async function closeTabSort(save) {
+  document.getElementById('tab-sort-overlay').classList.remove('open');
+  document.getElementById('tab-sort-panel').style.display = 'none';
+  if (save && _tabSortOrder) {
+    TABS = _tabSortOrder;
+    renderTabBar();
+    try {
+      await fetch('/api/data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: '__tabs__', data: TABS }),
+      });
+    } catch(e) { console.warn('Erro ao salvar ordem das abas:', e); }
+  }
+  _tabSortOrder = null;
+}
 
 /* ---- persistData(id) — salva só a aba que foi editada ---- */
 async function persistData(id) {
@@ -1652,11 +1763,16 @@ async function persistData(id) {
     const res = await fetch('/api/data');
     if (res.ok) {
       const dbData = await res.json();
-      if (dbData) Object.assign(DATA, dbData);
+      if (dbData) {
+        if (dbData.__tabs__) TABS = dbData.__tabs__;
+        const { __tabs__: _, ...rest } = dbData;
+        Object.assign(DATA, rest);
+      }
     }
   } catch (e) {
     console.warn('Banco indisponível, usando dados locais.');
   }
+  renderTabBar();
   renderPanel('hidrometros');
 })();
 </script>

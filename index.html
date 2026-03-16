@@ -1860,7 +1860,7 @@ function renderGestaoPanel(id) {
         <div class="timeline-card${isDimmed ? ' tl-dimmed' : ''}" style="${!isLatest ? 'margin-bottom:8px' : ''}">
           ${isLatest ? `<div class="timeline-actions">
             ${hasAvancos ? `<button class="tl-btn" onclick="reverterAvanco('${id}',${i})" title="Reverter">←</button>` : ''}
-            <button class="tl-btn"        onclick="openAvancoForm('${id}',${i})" title="Avançar">→</button>
+            <button class="tl-btn"        onclick="openAvancoForm('${id}',${i},'${chain[chain.length-1].data||''}')" title="Avançar">→</button>
             <button class="tl-btn"        onclick="editGestaoItem('${id}',${i})"  title="Editar">✏</button>
             <button class="tl-btn tl-del" onclick="delGestaoItem('${id}',${i})"   title="Excluir">×</button>
           </div>` : ''}
@@ -1928,7 +1928,7 @@ function saveGestaoItem(id, i) {
   persistData(id); renderGestaoPanel(id);
 }
 
-function openAvancoForm(id, i) {
+function openAvancoForm(id, i, minDate) {
   const formId = `tl-avform-${id}-${i}`;
   const existing = document.getElementById(formId);
   if (existing) { existing.remove(); return; }
@@ -1939,7 +1939,7 @@ function openAvancoForm(id, i) {
     <div class="timeline-card" style="margin-top:8px;border-color:var(--teal)">
       <div style="display:flex;flex-direction:column;gap:6px">
         <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <input  class="sec-edit-input" id="tl-av-data-${id}-${i}" type="date" style="width:160px">
+          <input  class="sec-edit-input" id="tl-av-data-${id}-${i}" type="date" style="width:160px"${minDate ? ` min="${minDate}"` : ''}>
           <select class="sec-edit-input" id="tl-av-stat-${id}-${i}" style="flex:1">
             <option value="planejado">Planejado</option>
             <option value="em-andamento">Em andamento</option>

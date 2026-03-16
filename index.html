@@ -470,7 +470,7 @@ const TABS = [
   { id: 'solar',          label: 'Solar Municipal',              icon: '☀️' },
 ];
 
-const DATA = {
+let DATA = {
 
   /* ==================================================
      HIDRÔMETROS INTELIGENTES
@@ -1276,7 +1276,7 @@ function saveSec1(id) {
     const ins = row.querySelectorAll('input');
     return { label: ins[0].value, url: ins[1].value };
   });
-  resetInitialized(id); renderPanel(id);
+  resetInitialized(id); renderPanel(id); persistData();
 }
 function discardSec1(id) { resetInitialized(id); renderPanel(id); }
 function addSec1Bar(id) {
@@ -1336,7 +1336,7 @@ function saveSec2(id) {
     const ins = row.querySelectorAll('input');
     return { label: ins[0].value, url: ins[1].value };
   });
-  resetInitialized(id); renderPanel(id);
+  resetInitialized(id); renderPanel(id); persistData();
 }
 function discardSec2(id) { resetInitialized(id); renderPanel(id); }
 function addSec2Seg(id) {
@@ -1395,6 +1395,7 @@ function saveDiff(id) {
   const toggle  = document.getElementById('diff-toggle-' + id);
   if (section) section.classList.remove('diff-editing');
   if (toggle) { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+  persistData();
 }
 function discardDiff(id) { resetInitialized(id); renderPanel(id); }
 function addDiffRow(id) {
@@ -1448,6 +1449,7 @@ function saveConc(id) {
   const toggle  = document.getElementById('conc-toggle-' + id);
   if (section) section.classList.remove('conc-editing');
   if (toggle) { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+  persistData();
 }
 function discardConc(id) { resetInitialized(id); renderPanel(id); }
 function addConcRow(id) {
@@ -1525,6 +1527,7 @@ function saveCalc(id) {
   const toggle  = document.getElementById('calc-toggle-'  + id);
   if (section) section.classList.remove('calc-editing');
   if (toggle)  { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+  persistData();
 }
 
 function discardCalc(id) { resetInitialized(id); renderPanel(id); }
@@ -1630,8 +1633,32 @@ document.getElementById('tab-bar').addEventListener('click', e => {
   if (e.target.classList.contains('tab-btn')) activateTab(e.target.dataset.tab);
 });
 
-/* ---- Render inicial ---- */
-renderPanel('hidrometros');
+/* ---- persistData — salva DATA no banco a cada Salvar ---- */
+async function persistData() {
+  try {
+    await fetch('/api/data', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(DATA),
+    });
+  } catch (e) {
+    console.warn('Erro ao persistir dados:', e);
+  }
+}
+
+/* ---- Render inicial — carrega do banco ou usa defaults ---- */
+(async () => {
+  try {
+    const res = await fetch('/api/data');
+    if (res.ok) {
+      const dbData = await res.json();
+      if (dbData) Object.assign(DATA, dbData);
+    }
+  } catch (e) {
+    console.warn('Banco indisponível, usando dados locais.');
+  }
+  renderPanel('hidrometros');
+})();
 </script>
 </body>
 </html>

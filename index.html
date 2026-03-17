@@ -2112,7 +2112,8 @@ function renderPanel(id) {
   const b  = d.brasil;
   const bm = d.benchmark;
 
-  const maxRisco = d.riscos.length ? Math.max(...d.riscos.map(r => Math.abs(r.impacto))) : 1;
+  const riscoSev = v => Math.abs(v) >= 2.2 ? 'Alta' : Math.abs(v) >= 1.6 ? 'Média' : 'Baixa';
+  const riscoCls = v => Math.abs(v) >= 2.2 ? 'red' : Math.abs(v) >= 1.6 ? 'yellow' : '';
 
   /* ---- HTML completo do painel ---- */
   panel.innerHTML = `
@@ -2404,6 +2405,7 @@ function renderPanel(id) {
     <div class="section-title">
       <span>5. Calculadora de Preço — ${bm.nome}</span>
       <span class="badge">Interativo</span>
+      <span class="badge" style="background:rgba(245,200,66,.15);color:var(--yellow);border:1px solid rgba(245,200,66,.3);font-size:.6rem">⚠ Preços estimados</span>
       <button class="calc-edit-toggle" id="calc-toggle-${id}" onclick="toggleCalcEdit('${id}')">Editar</button>
       <span id="calc-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
         <button class="calc-action-btn save"    onclick="saveCalc('${id}')">Salvar</button>
@@ -2508,28 +2510,17 @@ function renderPanel(id) {
     <div class="section-title"><span>6. Riscos e Desafios</span><span class="badge">Mercado Global</span></div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Desafio</th><th>Impacto no CAGR</th><th>Relevância Regional</th><th>Período</th></tr></thead>
+        <thead><tr><th>Desafio</th><th>Severidade</th><th>Relevância Regional</th><th>Período</th></tr></thead>
         <tbody>
           ${d.riscos.map(r => `
             <tr>
               <td>${r.desafio}</td>
-              <td class="risk-impact">${r.impacto}%</td>
+              <td><span class="badge ${riscoCls(r.impacto)}" style="font-size:.65rem">${riscoSev(r.impacto)}</span></td>
               <td>${r.regiao}</td>
               <td>${r.periodo}</td>
             </tr>`).join('')}
         </tbody>
       </table>
-    </div>
-    <br>
-    <div class="card">
-      <h3>Impacto acumulado estimado nos riscos</h3><br>
-      <div class="progress-list">
-        ${d.riscos.map(r => `
-          <div class="progress-item">
-            <label><span>${r.desafio}</span><span>${r.impacto}%</span></label>
-            <div class="progress-track"><div class="progress-fill red" style="width:${(Math.abs(r.impacto) / maxRisco) * 100}%"></div></div>
-          </div>`).join('')}
-      </div>
     </div>
   </section>
 

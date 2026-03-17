@@ -2512,7 +2512,7 @@ function renderPanel(id) {
       <table>
         <thead><tr><th>Desafio</th><th>Severidade</th><th>Relevância Regional</th><th>Período</th></tr></thead>
         <tbody>
-          ${d.riscos.map(r => `
+          ${(d.riscos||[]).map(r => `
             <tr>
               <td>${r.desafio}</td>
               <td><span class="badge ${riscoCls(r.impacto)}" style="font-size:.65rem">${riscoSev(r.impacto)}</span></td>

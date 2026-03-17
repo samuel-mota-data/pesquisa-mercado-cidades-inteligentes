@@ -2237,7 +2237,7 @@ function renderPanel(id) {
         </label>
       </div>
       <div id="s1-barras-${id}">
-        ${b.barras.map(bar => `
+        ${(b.barras||[]).map(bar => `
           <div class="sec-row-edit" data-cls="${bar.cls||''}">
             <input class="sec-edit-input" type="text" placeholder="Label" value="${bar.label.replace(/"/g,'&quot;')}" style="flex:2" oninput="markDirtySec1('${id}')">
             <input class="sec-edit-input" type="number" placeholder="Val" value="${bar.val}" style="width:65px;flex-shrink:0" oninput="markDirtySec1('${id}')">
@@ -2280,7 +2280,7 @@ function renderPanel(id) {
         <div class="card" style="border-top-color:var(--blue-mid)">
           <h3>Principais segmentos</h3><br>
           <div class="progress-list">
-            ${d.segmentos.map(s => `
+            ${(d.segmentos||[]).map(s => `
               <div class="progress-item">
                 <label>
                   <span>${s.nome}${s.url ? `<a href="${s.url}" target="_blank" class="uplink" title="Ver fonte">↗</a>` : ''}</span>
@@ -2300,7 +2300,7 @@ function renderPanel(id) {
     <div class="sec2-edit">
       <p class="sec-edit-subtitle">Segmentos</p>
       <div id="s2-segs-${id}">
-        ${d.segmentos.map(s => `
+        ${(d.segmentos||[]).map(s => `
           <div class="sec-row-edit" data-cor="${s.cor}">
             <div class="seg-color-dot" style="width:14px;height:14px;border-radius:50%;background:${s.cor};flex-shrink:0"></div>
             <input class="sec-edit-input" type="text" placeholder="Nome" value="${s.nome.replace(/"/g,'&quot;')}" style="flex:2" oninput="markDirtySec2('${id}')">
@@ -2340,7 +2340,7 @@ function renderPanel(id) {
       </span>
     </div>
     <div class="diff-list" id="diff-list-${id}">
-      ${d.diferenciais.map((df, i) => `
+      ${(d.diferenciais||[]).map((df, i) => `
         <div class="diff-item">
           <div class="diff-body">
             <div class="diff-view"><h4>${df.titulo}</h4><p>${df.desc}</p></div>
@@ -2371,7 +2371,7 @@ function renderPanel(id) {
         <table>
           <thead><tr><th>#</th><th>Empresa</th><th>Representatividade</th><th class="conc-del-col" style="width:24px"></th></tr></thead>
           <tbody id="conc-tbody-${id}">
-            ${d.concorrentes.map((c, i) => `
+            ${(d.concorrentes||[]).map((c, i) => `
               <tr>
                 <td style="font-weight:700; color:var(--text-mid)">${i + 1}</td>
                 <td>
@@ -2473,7 +2473,7 @@ function renderPanel(id) {
       <div class="opex-box">
         <h4>OPEX mensal por ponto</h4>
         <div id="opex-rows-${id}">
-          ${Object.entries(bm.opex_por_ponto).map(([k, v]) => `
+          ${Object.entries(bm.opex_por_ponto||{}).map(([k, v]) => `
             <div class="opex-line">
               <span class="op-badge op-add op-clickable" data-op="+" onclick="cycleOp(this,'${id}')">+</span>
               <input class="calc-input lbl-input" type="text" value="${k}">
@@ -2554,8 +2554,8 @@ function renderPanel(id) {
   chartReg[`donut-${id}`] = new Chart(document.getElementById(`chart-donut-${id}`), {
     type: 'doughnut',
     data: {
-      labels: d.segmentos.map(s => s.nome),
-      datasets: [{ data: d.segmentos.map(s => s.share), backgroundColor: d.segmentos.map(s => s.cor), borderWidth: 0 }]
+      labels: (d.segmentos||[]).map(s => s.nome),
+      datasets: [{ data: (d.segmentos||[]).map(s => s.share), backgroundColor: (d.segmentos||[]).map(s => s.cor), borderWidth: 0 }]
     },
     options: {
       cutout: '60%',

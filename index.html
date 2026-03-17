@@ -2252,9 +2252,6 @@ function renderArquiteturaPanel(id) {
 
   const camadasHtml = d.camadas.map((layer, li) => {
     const accent = layerAccents[li % layerAccents.length];
-    const chips = (layer.componentes||[]).map((c, ci) =>
-      `<span class="arq-chip">${c}<button class="arq-chip-del" onclick="delArqChip('${id}',${li},${ci})" title="Remover">×</button></span>`
-    ).join('');
     const isLast = li === d.camadas.length - 1;
     const con = layer.conexao || {};
     const connector = isLast ? '' : `
@@ -2277,10 +2274,6 @@ function renderArquiteturaPanel(id) {
               <button class="tl-btn" onclick="editArqLayerName('${id}',${li})" title="Renomear">✏</button>
               <button class="tl-btn tl-del" onclick="delArqLayer('${id}',${li})" title="Excluir">×</button>
             </div>
-          </div>
-          <div class="arq-chips">
-            ${chips}
-            <button class="arq-chip-add" onclick="addArqChip('${id}',${li})">+ componente</button>
           </div>
         </div>
       </div>

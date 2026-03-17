@@ -2695,6 +2695,54 @@ async function persistData(id) {
   } catch (e) {
     console.warn('Banco indisponível, usando dados locais.');
   }
+
+  /* ---- Seed inicial de Tecnologia para a aba hidrometros ---- */
+  if (DATA.hidrometros && (!DATA.hidrometros.tecnologia || !DATA.hidrometros.tecnologia.length)) {
+    DATA.hidrometros.tecnologia = [
+      {
+        titulo: 'Gateway BLE sobre Hidrômetro Existente',
+        resumo: 'Leitura via sensor BLE acoplado ao hidrômetro existente, transmitido por gateway celular ou BLE concentrador. Não exige substituição do equipamento.',
+        fluxo: ['Hidrômetro', 'Gateway BLE', 'Nuvem'],
+        pros: ['Zero intervenção no hidrômetro', 'Instalação rápida', 'Ótimo para POC\'s'],
+        contras: ['Tecnologia pouco difundida', 'Fornecedor único'],
+        quando_usar: ['Retrofit rápido', 'Ambientes onde não é possível trocar hidrômetros'],
+        quando_evitar: [],
+        imagens: [],
+      },
+      {
+        titulo: 'Hidrômetro Pulsado + Gateway LoRaWAN',
+        resumo: 'Uso de hidrômetro com saída pulsada enviando dados via rede LoRaWAN. Exige infraestrutura de gateway LoRaWAN própria ou compartilhada na área de cobertura.',
+        fluxo: ['Hidrômetro Pulsado', 'Gateway LoRaWAN', 'Nuvem'],
+        pros: ['Sem SIM card por ponto', 'Baixo consumo energético'],
+        contras: ['Requer rede LoRaWAN', 'Planejamento de cobertura necessário'],
+        quando_usar: ['Locais sem alcance NB-IoT'],
+        quando_evitar: ['Regiões sem capacidade de manter rede LoRaWAN'],
+        imagens: [],
+      },
+      {
+        titulo: 'Hidrômetro Pulsado + Gateway NB-IoT',
+        resumo: 'Uso de hidrômetro com saída pulsada enviando dados via rede NB-IoT. Permite também fallback via satélite LOR para áreas sem cobertura celular.',
+        fluxo: ['Hidrômetro Pulsado', 'Gateway NB-IoT', 'Nuvem'],
+        pros: ['Estratégico a longo prazo', 'Mais dados que LoRaWAN', 'Rede própria'],
+        contras: ['Dependência de cobertura celular', 'Gateway é ponto crítico'],
+        quando_usar: [],
+        quando_evitar: [],
+        imagens: [],
+      },
+      {
+        titulo: 'Hidrômetro Inteligente com Comunicação Embarcada',
+        resumo: 'Hidrômetro já com módulo NB-IoT ou LoRaWAN integrado de fábrica. Elimina a necessidade de gateway externo e reduz pontos de falha.',
+        fluxo: ['Hidrômetro Inteligente', 'Nuvem'],
+        pros: ['Menos pontos de falha', 'Melhor qualidade de dados', 'Arquitetura simples'],
+        contras: ['Troca completa do hidrômetro', 'Lock-in de fornecedor'],
+        quando_usar: ['Novas obras', 'Substituição completa', 'Contratos longos'],
+        quando_evitar: ['Projetos com orçamento restrito'],
+        imagens: [],
+      },
+    ];
+    persistData('hidrometros');
+  }
+
   renderTabBar();
   renderPanel('hidrometros');
 })();

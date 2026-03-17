@@ -920,19 +920,932 @@ let DATA = {
   },
 
   /* ==================================================
-     DEMAIS ABAS — preencha com a mesma estrutura acima
+     MONITORAMENTO CÂMERAS
      ================================================== */
-  cameras:        null,
-  led:            null,
-  ar:             null,
-  enchentes:      null,
-  met:            null,
-  semaforos:      null,
-  frota:          null,
-  estacionamento: null,
-  energia:        null,
-  wifi:           null,
-  solar:          null,
+  cameras: {
+    desc: 'Mercado global de videovigilância urbana com IA: câmeras IP, analytics embarcado e integração com plataformas de segurança pública.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     52.5,
+      cagr_historico: 12.3,
+      proj: [
+        { ano: 2024, bi: 52.5  },
+        { ano: 2029, bi: 92.8  },
+        { ano: 2034, bi: 163.5 },
+      ],
+      cagr_projecao: 12.0,
+    },
+
+    brasil: {
+      potencial_bi: 8,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Share Governo / Segurança Pública (2024)', val: 45, max: 100, cls: ''       },
+        { label: 'CAGR segmento smart city câmeras (2024–29)', val: 14.5, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Governo / Segurança Pública', share: 45, cor: '#00c8d4' },
+      { nome: 'Transporte / Tráfego',        share: 25, cor: '#2540c0' },
+      { nome: 'Comercial / Varejo',          share: 20, cor: '#a8e063' },
+      { nome: 'Residencial',                 share: 10, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O segmento governamental domina impulsionado por programas de segurança pública e videovigilância urbana. O crescimento de <strong>analytics por IA embarcada</strong> está elevando o valor por câmera (de ~US$ 200 para US$ 500–1.200 por unidade em soluções avançadas). No Brasil, o programa <strong>"Cidade Segura"</strong> e convênios com SENASP movimentam centenas de milhões anuais.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Backhaul LPWAN / fibra própria',   desc: 'A Unifique oferece conectividade dedicada por fibra óptica ou NB-IoT para câmeras remotas, eliminando dependência de operadoras e reduzindo o custo de backhaul em até 50%.' },
+      { icon: '🧠', titulo: 'Edge AI + Plataforma própria',     desc: 'Integração com VMS (Video Management System) e analytics de IA (reconhecimento de placas, detecção de aglomerações, comportamento suspeito) via plataforma smart city Unifique.' },
+      { icon: '🏙️', titulo: 'Infraestrutura compartilhada',    desc: 'Câmeras instaladas em postes de IP inteligente já conectados reduzem CAPEX de instalação em ~40% e aceleram a implantação municipal.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Hikvision',                nivel: 'Alto'     },
+      { nome: 'Dahua Technology',         nivel: 'Alto'     },
+      { nome: 'Axis Communications',      nivel: 'Alto'     },
+      { nome: 'Hanwha Vision',            nivel: 'Alto'     },
+      { nome: 'Bosch Security Systems',   nivel: 'Médio'    },
+      { nome: 'Motorola Solutions (Avigilon)', nivel: 'Médio' },
+      { nome: 'Genetec',                  nivel: 'Médio'    },
+      { nome: 'Milestone Systems',        nivel: 'Moderado' },
+      { nome: 'Verkada',                  nivel: 'Moderado' },
+      { nome: 'Intelbras (Brasil)',        nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'Hikvision e Dahua dominam em volume (~40% do mercado global), mas enfrentam restrições regulatórias em EUA e Europa por questões de segurança nacional. No Brasil, <strong>Intelbras</strong> é o player local dominante. Referência de benchmarking: <strong style="color:var(--yellow)">Motorola Solutions (Avigilon)</strong> — foco em analytics IA e integração com command center.',
+
+    benchmark: {
+      nome: 'Motorola Solutions (Avigilon)',
+      produtos: [
+        { titulo: 'Câmera AI H6A',        val_unit: 2800,  sufixo: '/unidade (CAPEX)', desc: 'Câmera IP 4K com analytics embarcado — detecção de comportamento, veículos e faces' },
+        { titulo: 'Avigilon Alta VMS',     val_unit: 35,    sufixo: '/câmera/mês',      desc: 'Plataforma SaaS de gerenciamento de vídeo com IA e busca semântica' },
+        { titulo: 'Conectividade dedicada',val_unit: 22,    sufixo: '/câmera/mês',      desc: 'Link gerenciado com SLA 99,9% (via parceiro de telecom)' },
+      ],
+      capex: {
+        mobilizacao:    12000,
+        hardware_unit:  2800,
+        pontos_modelo:  20,
+        meses_contrato: 48,
+      },
+      opex_por_ponto: {
+        VMS:           35,
+        Conectividade: 22,
+        Suporte:       18,
+      },
+      margem_opex: 38,
+    },
+
+    riscos: [
+      { desafio: 'Dependência de fornecedores chineses e risco regulatório',   impacto: -2.8, periodo: 'Curto prazo (2024–2027)',   regiao: 'Global / Brasil' },
+      { desafio: 'Privacidade e LGPD — uso de reconhecimento facial',          impacto: -2.5, periodo: 'Contínuo (2024–2033)',       regiao: 'Brasil / Europa' },
+      { desafio: 'Cibersegurança — câmeras IP como vetor de ataque (botnets)', impacto: -2.0, periodo: 'Médio prazo (2025–2030)',   regiao: 'Global' },
+      { desafio: 'Alto CAPEX inicial para municípios de pequeno porte',        impacto: -1.8, periodo: 'Curto/médio (2024–2028)',   regiao: 'Brasil' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] }, riscos_notas: '',
+  },
+
+  /* ==================================================
+     IP LED SIMPLES
+     ================================================== */
+  led: {
+    desc: 'Mercado de retrofit LED para iluminação pública sem telegestão: troca de luminárias convencionais por LED para redução imediata de consumo energético.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     18.2,
+      cagr_historico: 9.5,
+      proj: [
+        { ano: 2024, bi: 18.2 },
+        { ano: 2029, bi: 28.7 },
+        { ano: 2034, bi: 45.3 },
+      ],
+      cagr_projecao: 9.6,
+    },
+
+    brasil: {
+      potencial_bi: 12,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Pontos de IP ainda não convertidos para LED', val: 55, max: 100, cls: ''       },
+        { label: 'Economia energética média pós-retrofit',      val: 65, max: 100, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Municipal / Vias Públicas', share: 65, cor: '#00c8d4' },
+      { nome: 'Industrial',               share: 20, cor: '#2540c0' },
+      { nome: 'Comercial',                share: 15, cor: '#a8e063' },
+    ],
+    segmentos_nota: 'O mercado de LED simples para IP é impulsionado por obrigações de eficiência energética e redução de conta de luz municipal. No Brasil, dos ~22 milhões de pontos de IP, estimam-se <strong>~12 milhões ainda com tecnologia vapor de sódio ou mercúrio</strong>. O payback médio do retrofit LED é de 18–36 meses sem nenhuma telegestão adicionada.',
+
+    diferenciais: [
+      { icon: '⚡', titulo: 'Pacote LED + conectividade futura', desc: 'A Unifique pode oferecer retrofit LED simples com infraestrutura preparada para upgrade para telegestão, gerando receita recorrente no futuro sem nova instalação.' },
+      { icon: '💼', titulo: 'Financiamento e PPP',               desc: 'Estruturação de projetos de eficiência via PPP ou ESCo (contrato de performance) com retorno garantido pela redução da conta de energia.' },
+      { icon: '🔧', titulo: 'Instalação regional sem deslocamento', desc: 'Presença regional da Unifique reduz custo logístico e de mão de obra — diferencial em municípios do interior vs grandes integradoras nacionais.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Signify (Philips)',    nivel: 'Alto'     },
+      { nome: 'Osram / Ledvance',    nivel: 'Alto'     },
+      { nome: 'GE Current',          nivel: 'Alto'     },
+      { nome: 'Cree Lighting',       nivel: 'Médio'    },
+      { nome: 'Eaton (Ephesus)',     nivel: 'Médio'    },
+      { nome: 'Lumenpulse',          nivel: 'Médio'    },
+      { nome: 'Intral (Brasil)',     nivel: 'Moderado' },
+      { nome: 'Elgin (Brasil)',      nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'O mercado de LED simples é altamente comoditizado. A diferenciação se dá em garantia (5–10 anos), eficiência (lm/W) e suporte local. Referência: <strong style="color:var(--yellow)">Signify CityTouch</strong> — oferece LED + plataforma de gestão com possibilidade de upgrade incremental.',
+
+    benchmark: {
+      nome: 'Signify (Philips LED + CityTouch)',
+      produtos: [
+        { titulo: 'Luminária Luma LED',     val_unit: 280,  sufixo: '/unidade (CAPEX)', desc: 'Luminária pública LED 60W-150W, eficiência até 160 lm/W, IP66' },
+        { titulo: 'Garantia estendida',     val_unit: 4,    sufixo: '/unidade/mês',     desc: 'Manutenção preventiva e corretiva com SLA de reposição 48h' },
+      ],
+      capex: {
+        mobilizacao:    6000,
+        hardware_unit:  280,
+        pontos_modelo:  100,
+        meses_contrato: 60,
+      },
+      opex_por_ponto: {
+        Manutenção: 4,
+        Suporte:    2,
+      },
+      margem_opex: 30,
+    },
+
+    riscos: [
+      { desafio: 'Comoditização — guerra de preço com fabricantes asiáticos',      impacto: -2.5, periodo: 'Contínuo (2024–2033)',      regiao: 'Global / Brasil' },
+      { desafio: 'Descarte inadequado de luminárias LED — passivo ambiental',      impacto: -1.5, periodo: 'Médio prazo (2025–2030)',   regiao: 'Brasil' },
+      { desafio: 'Queda de demanda com saturação do mercado de retrofit',          impacto: -2.0, periodo: 'Longo prazo (2028–2034)',   regiao: 'Global' },
+      { desafio: 'Inadimplência municipal — risco de crédito em contratos PPP',   impacto: -1.8, periodo: 'Contínuo (2024–2033)',      regiao: 'Brasil' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     QUALIDADE DO AR
+     ================================================== */
+  ar: {
+    desc: 'Mercado global de monitoramento de qualidade do ar (AQM): sensores IoT urbanos, redes de medição e plataformas de dados ambientais para cidades inteligentes.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     5.8,
+      cagr_historico: 8.2,
+      proj: [
+        { ano: 2024, bi: 5.8 },
+        { ano: 2029, bi: 8.6 },
+        { ano: 2034, bi: 12.8 },
+      ],
+      cagr_projecao: 8.1,
+    },
+
+    brasil: {
+      potencial_bi: 1.5,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Share governo/smart city no mercado AQM (2024)', val: 30, max: 100, cls: ''       },
+        { label: 'CAGR AQM América Latina (2024–2029)',             val: 10.5, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Industrial / Manufatura',    share: 38, cor: '#00c8d4' },
+      { nome: 'Governo / Smart City',       share: 30, cor: '#2540c0' },
+      { nome: 'Saúde / Hospitalar',         share: 18, cor: '#a8e063' },
+      { nome: 'Residencial',                share: 14, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O segmento industrial lidera por obrigações regulatórias de licenciamento ambiental. O crescimento mais acelerado está em <strong>redes de sensores de baixo custo para smart city</strong> (PM2.5, NO₂, CO, O₃), impulsionado por legislações como a Lei do Ar Limpo no Brasil e diretivas europeias. O mercado residencial cresce com purificadores conectados e demanda pós-pandemia.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Rede de sensores com LPWAN próprio', desc: 'NB-IoT ou LoRaWAN da Unifique permite densificar a rede de sensores de qualidade do ar sem custo de SIM por ponto — diferencial competitivo para contratos com prefeituras e concessionárias.' },
+      { icon: '📊', titulo: 'Dados integrados à plataforma Smart City', desc: 'Sensores de AQM alimentam o mesmo dashboard de gestão urbana (tráfego, IP, hidrômetros), ampliando o valor percebido da plataforma Unifique sem custo marginal significativo.' },
+      { icon: '🌱', titulo: 'Compliance ambiental e ESG',          desc: 'Municípios e indústrias buscam monitoramento para atender exigências de ESG e reporting para fundos de investimento. A Unifique pode ser o fornecedor de dados certificados.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Siemens (BT/Building Technologies)', nivel: 'Alto'     },
+      { nome: 'Honeywell Analytics',                nivel: 'Alto'     },
+      { nome: 'Thermo Fisher Scientific',           nivel: 'Alto'     },
+      { nome: 'Vaisala',                            nivel: 'Médio'    },
+      { nome: 'AQMesh (Enviro Technology)',         nivel: 'Médio'    },
+      { nome: 'Aeroqual',                           nivel: 'Médio'    },
+      { nome: 'Clarity Movement',                   nivel: 'Moderado' },
+      { nome: 'IQAir (Airviz)',                     nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'O mercado se divide entre equipamentos laboratoriais de alta precisão (Thermo Fisher, Horiba) e sensores de baixo custo para densidade urbana (Clarity, AQMesh). A Unifique compete na camada de <strong>conectividade + plataforma de dados</strong>, não no hardware de sensor em si. Referência: <strong style="color:var(--yellow)">Clarity Movement</strong> — modelo SaaS com sensores de rede densa e API aberta.',
+
+    benchmark: {
+      nome: 'Clarity Movement',
+      produtos: [
+        { titulo: 'Sensor Node-S',            val_unit: 1200,  sufixo: '/unidade (CAPEX)', desc: 'Sensor PM2.5, NO₂, CO, temperatura e umidade; conectividade celular embutida' },
+        { titulo: 'Plataforma Clarity Cloud', val_unit: 28,    sufixo: '/sensor/mês',      desc: 'Dashboard, API, relatórios regulatórios e alertas em tempo real' },
+      ],
+      capex: {
+        mobilizacao:    5000,
+        hardware_unit:  1200,
+        pontos_modelo:  20,
+        meses_contrato: 36,
+      },
+      opex_por_ponto: {
+        Plataforma:    28,
+        Conectividade: 15,
+        Calibração:    10,
+      },
+      margem_opex: 42,
+    },
+
+    riscos: [
+      { desafio: 'Precisão de sensores de baixo custo vs regulamentação',     impacto: -2.2, periodo: 'Contínuo (2024–2033)',      regiao: 'Global' },
+      { desafio: 'Baixo orçamento municipal para monitoramento ambiental',    impacto: -1.8, periodo: 'Curto prazo (2024–2027)',   regiao: 'Brasil' },
+      { desafio: 'Fragmentação regulatória — padrões distintos por estado',   impacto: -1.5, periodo: 'Médio prazo (2025–2030)',   regiao: 'Brasil' },
+      { desafio: 'Manutenção e calibração periódica — custo operacional alto', impacto: -1.3, periodo: 'Contínuo (2024–2033)',    regiao: 'Global' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     ALERTA ENCHENTES
+     ================================================== */
+  enchentes: {
+    desc: 'Mercado de sistemas de alerta precoce a enchentes e monitoramento hidrológico: sensores de nível, pluviômetros IoT e plataformas de gestão de risco para municípios.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     3.4,
+      cagr_historico: 10.1,
+      proj: [
+        { ano: 2024, bi: 3.4 },
+        { ano: 2029, bi: 5.5 },
+        { ano: 2034, bi: 8.9 },
+      ],
+      cagr_projecao: 10.2,
+    },
+
+    brasil: {
+      potencial_bi: 2,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Municípios brasileiros em área de risco de enchentes', val: 22, max: 100, cls: ''       },
+        { label: 'CAGR monitoramento hidrológico América do Sul (2024–29)', val: 12.5, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Governo / Municipal / Defesa Civil', share: 55, cor: '#00c8d4' },
+      { nome: 'Agro / Rural / Bacias Hidrográficas', share: 25, cor: '#2540c0' },
+      { nome: 'Indústria / Infraestrutura Crítica',  share: 20, cor: '#a8e063' },
+    ],
+    segmentos_nota: 'O segmento governamental domina impulsionado por tragédias recorrentes (Rio Grande do Sul 2024, Petrópolis 2022) e obrigações do Plano Nacional de Redução de Riscos de Desastres (PNRRD). O Brasil possui <strong>~1.700 municípios em áreas de alto risco</strong> segundo o INPE/CEMADEN, com apenas ~15% cobertos por sistemas de monitoramento adequados.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'NB-IoT + Satélite para áreas sem cobertura', desc: 'Combinação de NB-IoT e fallback via satélite LOR garante conectividade em vales e áreas rurais onde enchentes são mais severas e a infraestrutura celular é precária.' },
+      { icon: '🚨', titulo: 'Alertas multicanal integrados',               desc: 'Plataforma unificada dispara alertas por SMS, WhatsApp, sirenes conectadas e painéis de LED públicos — reduzindo o tempo de evacuação e salvando vidas.' },
+      { icon: '🌐', titulo: 'Integração com CEMADEN e AlertaBR',           desc: 'APIs abertas para integração com sistemas federais (CEMADEN, ANA) ampliam a cobertura de dados sem duplicação de infraestrutura, fortalecendo a proposta municipal.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Campbell Scientific',          nivel: 'Alto'     },
+      { nome: 'OTT HydroMet (Hach)',          nivel: 'Alto'     },
+      { nome: 'YSI (Xylem)',                  nivel: 'Alto'     },
+      { nome: 'Vaisala',                      nivel: 'Médio'    },
+      { nome: 'Sutron (SL Power / Arcus)',    nivel: 'Médio'    },
+      { nome: 'Geo-Instruments',              nivel: 'Médio'    },
+      { nome: 'SEBA Hydrometrie',             nivel: 'Moderado' },
+      { nome: 'HBK (Hottinger Brüel & Kjær)', nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'O mercado é dominado por fabricantes de instrumentação hidrológica. No Brasil, o <strong>CEMADEN</strong> e concessionárias de saneamento (SABESP, COPASA) são os maiores compradores. Referência de benchmarking: <strong style="color:var(--yellow)">OTT HydroMet</strong> — suite completa de sensores hidrológicos com plataforma de dados em nuvem.',
+
+    benchmark: {
+      nome: 'OTT HydroMet (Hach)',
+      produtos: [
+        { titulo: 'Sensor de Nível OTT PLS 500', val_unit: 3200,  sufixo: '/unidade (CAPEX)', desc: 'Sensor ultrassônico de nível de água, IP68, com datalogger e conectividade celular' },
+        { titulo: 'Plataforma Hydromet Cloud',   val_unit: 45,    sufixo: '/sensor/mês',      desc: 'Dashboard, alarmes configuráveis, exportação para sistemas de defesa civil' },
+        { titulo: 'Suporte e calibração anual',  val_unit: 30,    sufixo: '/sensor/mês',      desc: 'Visita técnica anual + calibração remota contínua' },
+      ],
+      capex: {
+        mobilizacao:    8500,
+        hardware_unit:  3200,
+        pontos_modelo:  10,
+        meses_contrato: 36,
+      },
+      opex_por_ponto: {
+        Plataforma:  45,
+        Suporte:     30,
+        Conectividade: 20,
+      },
+      margem_opex: 40,
+    },
+
+    riscos: [
+      { desafio: 'Conectividade em áreas de risco — cobertura celular precária',   impacto: -2.5, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil / América do Sul' },
+      { desafio: 'Vandalismo e furto de equipamentos em campo',                    impacto: -2.0, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+      { desafio: 'Dependência de financiamento federal — orçamento municipal baixo', impacto: -1.8, periodo: 'Curto prazo (2024–2027)', regiao: 'Brasil' },
+      { desafio: 'Manutenção em condições adversas — acesso em época de cheia',    impacto: -1.5, periodo: 'Contínuo (2024–2033)',     regiao: 'Global' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     ESTAÇÃO METEOROLÓGICA
+     ================================================== */
+  met: {
+    desc: 'Mercado global de estações meteorológicas IoT para smart cities, agronegócio e defesa civil: sensores conectados, redes automáticas e plataformas de dados climáticos.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     2.9,
+      cagr_historico: 7.3,
+      proj: [
+        { ano: 2024, bi: 2.9 },
+        { ano: 2029, bi: 4.2 },
+        { ano: 2034, bi: 6.0 },
+      ],
+      cagr_projecao: 7.5,
+    },
+
+    brasil: {
+      potencial_bi: 0.8,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Share agronegócio no mercado de estações met. (2024)', val: 42, max: 100, cls: ''       },
+        { label: 'CAGR estações met. IoT no Brasil (2024–2029)',         val: 9.5, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Agronegócio / Meteorologia Rural', share: 42, cor: '#00c8d4' },
+      { nome: 'Smart City / Governo',             share: 28, cor: '#2540c0' },
+      { nome: 'Aviação / Portos / Infraestrutura', share: 20, cor: '#a8e063' },
+      { nome: 'Pesquisa Científica',              share: 10, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O agronegócio é o maior mercado por volume, mas o segmento de <strong>smart city e monitoramento urbano</strong> cresce mais rápido, impulsionado por eventos climáticos extremos e pressão regulatória ambiental. No Brasil, o <strong>INMET</strong> possui apenas ~500 estações automáticas para 5.570 municípios — déficit enorme a ser suprido por redes privadas e municipais.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Rede densa via LoRaWAN / NB-IoT',        desc: 'A Unifique pode densificar redes meteorológicas municipais com custo por ponto 60–70% menor que soluções com celular dedicado, permitindo cobertura de bairros e microclimas.' },
+      { icon: '🌦️', titulo: 'Dados integrados à gestão urbana',       desc: 'Estações meteorológicas alimentam alertas de enchente, gestão de irrigação urbana e planejamento de eventos — aumentando o valor da plataforma smart city sem custo adicional de infraestrutura.' },
+      { icon: '🤝', titulo: 'Parcerias com INMET, CEMADEN e SIMEPAR', desc: 'Integração com redes públicas de dados meteorológicos fortalece a qualidade dos dados e posiciona a Unifique como complementadora da rede oficial, não concorrente.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Vaisala',                    nivel: 'Alto'     },
+      { nome: 'Campbell Scientific',        nivel: 'Alto'     },
+      { nome: 'Davis Instruments',          nivel: 'Médio'    },
+      { nome: 'Lufft (OTT HydroMet)',       nivel: 'Médio'    },
+      { nome: 'Onset (HOBO)',               nivel: 'Médio'    },
+      { nome: 'Meter Group (Decagon)',       nivel: 'Moderado' },
+      { nome: 'Pessl Instruments (iMETOS)', nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'Vaisala e Campbell dominam o segmento profissional/governamental. Davis Instruments lidera em soluções acessíveis para agro e smart city de médio porte. No Brasil, <strong>Kipp & Zonen</strong> e distribuidores locais têm forte presença no agronegócio. Referência: <strong style="color:var(--yellow)">Vaisala</strong> — padrão de qualidade para redes meteorológicas nacionais.',
+
+    benchmark: {
+      nome: 'Vaisala',
+      produtos: [
+        { titulo: 'Estação AWS310',           val_unit: 8500,  sufixo: '/unidade (CAPEX)', desc: 'Estação automática completa: temperatura, umidade, pressão, vento, chuva; datalogger com 4G' },
+        { titulo: 'Plataforma de dados Vaisala', val_unit: 60, sufixo: '/estação/mês',    desc: 'API REST, dashboard e integração com serviços meteorológicos nacionais' },
+      ],
+      capex: {
+        mobilizacao:    5000,
+        hardware_unit:  8500,
+        pontos_modelo:  5,
+        meses_contrato: 36,
+      },
+      opex_por_ponto: {
+        Plataforma:    60,
+        Conectividade: 25,
+        Manutenção:    40,
+      },
+      margem_opex: 38,
+    },
+
+    riscos: [
+      { desafio: 'Alto custo de estações profissionais vs soluções DIY/IoT de baixo custo', impacto: -2.0, periodo: 'Médio prazo (2025–2030)', regiao: 'Global' },
+      { desafio: 'Qualidade e precisão de sensores de baixo custo — risco de dados incorretos', impacto: -1.8, periodo: 'Contínuo (2024–2033)', regiao: 'Global' },
+      { desafio: 'Dependência de orçamento público — ciclos de compra longos',              impacto: -1.5, periodo: 'Contínuo (2024–2033)', regiao: 'Brasil' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     SEMÁFOROS IA
+     ================================================== */
+  semaforos: {
+    desc: 'Mercado global de gerenciamento inteligente de tráfego com IA: semáforos adaptativos, detecção por câmera e plataformas de otimização de fluxo urbano.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     7.8,
+      cagr_historico: 14.2,
+      proj: [
+        { ano: 2024, bi: 7.8  },
+        { ano: 2029, bi: 15.1 },
+        { ano: 2034, bi: 29.2 },
+      ],
+      cagr_projecao: 14.3,
+    },
+
+    brasil: {
+      potencial_bi: 4,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Share governo/municipal no mercado (2024)',          val: 70, max: 100, cls: ''       },
+        { label: 'Redução média de congestionamento com IA adaptativa', val: 25, max: 100, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Governo / Municipal',           share: 70, cor: '#00c8d4' },
+      { nome: 'Rodovias / Concessões',         share: 20, cor: '#2540c0' },
+      { nome: 'Privado / Pólos Geradores',     share: 10, cor: '#a8e063' },
+    ],
+    segmentos_nota: 'O segmento municipal domina amplamente, pois prefeituras são as responsáveis pela sinalização viária urbana. A adoção de <strong>IA adaptativa</strong> (ajuste em tempo real do ciclo semafórico por sensores de fluxo e câmeras) pode reduzir congestionamentos em 20–30% e emissões de CO₂ em 15%. No Brasil, cidades como São Paulo, Curitiba e Fortaleza são referências em modernização semafórica.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Backhaul dedicado por fibra / NB-IoT', desc: 'Semáforos inteligentes exigem latência baixa e alta disponibilidade. A Unifique oferece backhaul por fibra óptica própria ou NB-IoT com SLA garantido, diferencial crítico para sistemas de segurança viária.' },
+      { icon: '🧠', titulo: 'Integração IA + câmeras + plataforma', desc: 'Os semáforos podem se beneficiar das câmeras já instaladas na rede Unifique, reduzindo CAPEX ao reutilizar infraestrutura e alimentando algoritmos de otimização de tráfego em tempo real.' },
+      { icon: '🚑', titulo: 'Corredor verde para emergências',      desc: 'Módulo de priorização de veículos de emergência (ambulâncias, bombeiros) via GPS + comunicação V2I — diferencial de alto valor para defesa civil e prefeituras.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Siemens Mobility',          nivel: 'Alto'     },
+      { nome: 'Cubic Transportation Systems', nivel: 'Alto'  },
+      { nome: 'SWARCO AG',                 nivel: 'Alto'     },
+      { nome: 'TransCore',                 nivel: 'Médio'    },
+      { nome: 'Kapsch TrafficCom',         nivel: 'Médio'    },
+      { nome: 'Yunex Traffic (Siemens spinoff)', nivel: 'Médio' },
+      { nome: 'Hikvision Traffic',         nivel: 'Moderado' },
+      { nome: 'Indra Sistemas',            nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'Siemens e SWARCO dominam globalmente, com forte presença em licitações públicas brasileiras. No Brasil, <strong>CET-SP</strong> opera um dos maiores centros de controle de tráfego da América Latina. Referência: <strong style="color:var(--yellow)">SWARCO</strong> — suite completa de ITS (Intelligent Transportation Systems) com semáforos adaptativos e centro de controle.',
+
+    benchmark: {
+      nome: 'SWARCO AG',
+      produtos: [
+        { titulo: 'Controlador M·WAVE',       val_unit: 4500,  sufixo: '/intersecção (CAPEX)', desc: 'Controlador semafórico com IA adaptativa, comunicação 4G/5G e suporte UTMC' },
+        { titulo: 'Plataforma OMNIA Traffic', val_unit: 55,    sufixo: '/intersecção/mês',     desc: 'Centro de controle cloud-native com otimização em tempo real e relatórios de mobilidade' },
+        { titulo: 'Conectividade dedicada',   val_unit: 30,    sufixo: '/intersecção/mês',     desc: 'Link gerenciado com failover automático para garantia de operação 24/7' },
+      ],
+      capex: {
+        mobilizacao:    25000,
+        hardware_unit:  4500,
+        pontos_modelo:  10,
+        meses_contrato: 60,
+      },
+      opex_por_ponto: {
+        Plataforma:    55,
+        Conectividade: 30,
+        Suporte:       25,
+      },
+      margem_opex: 40,
+    },
+
+    riscos: [
+      { desafio: 'Ciclos longos de licitação pública — 18 a 36 meses para fechamento',     impacto: -2.5, periodo: 'Contínuo (2024–2033)',      regiao: 'Brasil' },
+      { desafio: 'Cibersegurança — semáforos como alvo de ataque crítico',                 impacto: -2.2, periodo: 'Médio prazo (2025–2030)',    regiao: 'Global' },
+      { desafio: 'Integração com sistemas legados de controle de tráfego',                 impacto: -1.8, periodo: 'Curto/médio (2024–2028)',    regiao: 'Brasil' },
+      { desafio: 'Alto CAPEX por intersecção — barreira para municípios pequenos',         impacto: -1.5, periodo: 'Curto prazo (2024–2027)',    regiao: 'Brasil' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     FROTA GPS
+     ================================================== */
+  frota: {
+    desc: 'Mercado global de gestão de frotas com GPS e telemática IoT: rastreamento em tempo real, telemetria veicular, roteirização inteligente e controle de motoristas.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     28.5,
+      cagr_historico: 13.8,
+      proj: [
+        { ano: 2024, bi: 28.5  },
+        { ano: 2029, bi: 54.2  },
+        { ano: 2034, bi: 103.0 },
+      ],
+      cagr_projecao: 13.6,
+    },
+
+    brasil: {
+      potencial_bi: 6,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Veículos rastreados no Brasil (share da frota total)', val: 38, max: 100, cls: ''       },
+        { label: 'CAGR frota GPS Brasil (2024–2029)',                     val: 16.0, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Logística / Transporte de Carga', share: 42, cor: '#00c8d4' },
+      { nome: 'Transporte Público',              share: 28, cor: '#2540c0' },
+      { nome: 'Frotas Corporativas',             share: 20, cor: '#a8e063' },
+      { nome: 'Serviços Urbanos (coleta, limpeza)', share: 10, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O mercado de frota GPS é o mais maduro dentre os de smart city, com alta penetração no segmento de cargas. No Brasil, o crescimento é impulsionado pela <strong>exigência da ANTT para rastreamento de cargas perigosas</strong> e pela expansão do e-commerce que demanda visibilidade em tempo real. O segmento de <strong>frotas municipais</strong> (ônibus, coleta de lixo, fiscalização) é o mais relevante para a Unifique.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Conectividade multi-rede própria',          desc: 'A Unifique oferece SIM multi-operadora com gestão centralizada, eliminando roaming e garantindo cobertura em regiões de serviço da Unifique a custo de conectividade 30–40% menor.' },
+      { icon: '🏙️', titulo: 'Frota municipal como porta de entrada',    desc: 'Contratos de rastreamento de frotas municipais (ônibus, caminhões, fiscalização) criam relacionamento com prefeituras que viabiliza upsell de outros serviços smart city.' },
+      { icon: '⚡', titulo: 'Frota elétrica e gestão de energia',        desc: 'Com crescimento de ônibus elétricos no transporte público, a Unifique pode oferecer telemetria de bateria, gestão de recarga e integração com smart grid — mercado nascente de alto valor.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Samsara',                 nivel: 'Alto'     },
+      { nome: 'Trimble Transportation',  nivel: 'Alto'     },
+      { nome: 'Verizon Connect',         nivel: 'Alto'     },
+      { nome: 'Geotab',                  nivel: 'Médio'    },
+      { nome: 'Omnicomm',                nivel: 'Médio'    },
+      { nome: 'Teltonika Telematics',    nivel: 'Médio'    },
+      { nome: 'Positron (Brasil)',        nivel: 'Moderado' },
+      { nome: 'OnixSat (Brasil)',         nivel: 'Moderado' },
+      { nome: 'Cobli (Brasil)',           nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'No Brasil, <strong>Positron</strong>, <strong>OnixSat</strong> e <strong>Cobli</strong> dominam o segmento SMB de frotas. Samsara e Geotab têm forte presença em grandes frotas e frotas internacionais. Referência de benchmarking: <strong style="color:var(--yellow)">Cobli</strong> — startup brasileira com modelo SaaS, app mobile e foco em UX para gestores de frota SMB.',
+
+    benchmark: {
+      nome: 'Cobli',
+      produtos: [
+        { titulo: 'Rastreador Cobli One',  val_unit: 380,  sufixo: '/veículo (CAPEX)', desc: 'Dispositivo plug-and-play OBD-II + GPS, 4G, acelerômetro e giroscópio' },
+        { titulo: 'Plataforma Cobli Pro',  val_unit: 89,   sufixo: '/veículo/mês',     desc: 'Dashboard web + app mobile, alertas, relatórios de comportamento e roteirização' },
+        { titulo: 'Câmera Cobli Dash',     val_unit: 45,   sufixo: '/veículo/mês',     desc: 'Câmera frontal AI com detecção de fadiga, distração e eventos de segurança' },
+      ],
+      capex: {
+        mobilizacao:    2000,
+        hardware_unit:  380,
+        pontos_modelo:  50,
+        meses_contrato: 24,
+      },
+      opex_por_ponto: {
+        Plataforma: 89,
+        Câmera:     45,
+        Suporte:    10,
+      },
+      margem_opex: 55,
+    },
+
+    riscos: [
+      { desafio: 'Alta concorrência e pressão de preço — mercado comoditizando',    impacto: -2.2, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+      { desafio: 'Privacidade de dados do motorista — regulação em evolução (LGPD)', impacto: -1.8, periodo: 'Médio prazo (2025–2030)', regiao: 'Brasil' },
+      { desafio: 'Resistência de motoristas e sindicatos ao monitoramento',          impacto: -1.5, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+      { desafio: 'Cobertura celular em rotas rurais e longas distâncias',            impacto: -1.2, periodo: 'Curto prazo (2024–2027)', regiao: 'Brasil (Norte/Centro-Oeste)' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     ESTACIONAMENTO
+     ================================================== */
+  estacionamento: {
+    desc: 'Mercado global de estacionamento inteligente: sensores de vaga, guiamento por app, pagamento digital e plataformas de gestão para shopping centers e municípios.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     6.4,
+      cagr_historico: 15.3,
+      proj: [
+        { ano: 2024, bi: 6.4  },
+        { ano: 2029, bi: 13.0 },
+        { ano: 2034, bi: 26.3 },
+      ],
+      cagr_projecao: 15.1,
+    },
+
+    brasil: {
+      potencial_bi: 2,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Share shopping / comercial no mercado (2024)',  val: 42, max: 100, cls: ''       },
+        { label: 'Redução de busca por vaga com sistema guiado',  val: 30, max: 100, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Shopping / Comercial',          share: 42, cor: '#00c8d4' },
+      { nome: 'Municipal / Zona Azul',         share: 32, cor: '#2540c0' },
+      { nome: 'Aeroportos / Terminais',        share: 16, cor: '#a8e063' },
+      { nome: 'Residencial / Condomínios',     share: 10, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O segmento de shoppings lidera por ROI imediato (redução de filas, aumento de rotatividade de vagas e melhora na experiência do cliente). O mercado municipal (<strong>Zona Azul digital</strong>) cresce com substituição de parquímetros físicos por aplicativos. No Brasil, a <strong>digitalização do Zona Azul</strong> está em evolução em capitais como São Paulo (EasyPark/Mobipark) e Curitiba.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Sensores IoT via LoRaWAN / NB-IoT',        desc: 'Sensores de vaga magnéticos ou ultrassônicos com LPWAN da Unifique eliminam a necessidade de cabeamento por vaga — instalação 70% mais rápida e CAPEX reduzido.' },
+      { icon: '🏙️', titulo: 'Guiamento integrado ao app municipal',    desc: 'A Unifique pode oferecer dados de disponibilidade de vagas para apps de mobilidade municipal, integrando estacionamento com semáforos e transporte público na mesma plataforma.' },
+      { icon: '💳', titulo: 'Pagamento digital e reserva antecipada',   desc: 'Módulo de pagamento via PIX e reserva por app gera receita de transação e dados de mobilidade valiosos para prefeituras e operadores privados.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Parkmobile (BMW Group)',      nivel: 'Alto'     },
+      { nome: 'EasyPark Group',              nivel: 'Alto'     },
+      { nome: 'ParkHelp (Skidata)',          nivel: 'Alto'     },
+      { nome: 'Passport',                   nivel: 'Médio'    },
+      { nome: 'IPS Group',                  nivel: 'Médio'    },
+      { nome: 'Urbiotica',                  nivel: 'Médio'    },
+      { nome: 'Kiunsys',                    nivel: 'Moderado' },
+      { nome: 'Mobipark (Brasil)',           nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'EasyPark domina o mercado europeu e expande no Brasil com aquisições de operadoras locais. No Brasil, <strong>Mobipark</strong> opera o Zona Azul em SP e outras cidades. Referência: <strong style="color:var(--yellow)">EasyPark</strong> — maior operadora global de estacionamento digital com presença crescente no Brasil.',
+
+    benchmark: {
+      nome: 'EasyPark',
+      produtos: [
+        { titulo: 'Sensor de vaga EV-LW',   val_unit: 180,  sufixo: '/vaga (CAPEX)', desc: 'Sensor magnético wireless, autonomia 5 anos, precisão 99,5%, LoRaWAN/NB-IoT' },
+        { titulo: 'Plataforma de gestão',   val_unit: 12,   sufixo: '/vaga/mês',     desc: 'Dashboard de ocupação, API para apps, relatórios de receita e análise de padrões' },
+        { titulo: 'App + Pagamento PIX',    val_unit: 8,    sufixo: '/vaga/mês',     desc: 'App branco para o cliente, processamento de pagamentos, reserva antecipada' },
+      ],
+      capex: {
+        mobilizacao:    4500,
+        hardware_unit:  180,
+        pontos_modelo:  100,
+        meses_contrato: 36,
+      },
+      opex_por_ponto: {
+        Plataforma: 12,
+        App:         8,
+        Suporte:     5,
+      },
+      margem_opex: 50,
+    },
+
+    riscos: [
+      { desafio: 'Vandalismo e furto de sensores de vaga em via pública',          impacto: -2.0, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+      { desafio: 'Resistência de operadoras de estacionamento a digitalização',    impacto: -1.8, periodo: 'Curto prazo (2024–2027)', regiao: 'Brasil' },
+      { desafio: 'Concorrência de apps de mobilidade sem sensor (dados GPS apenas)', impacto: -1.5, periodo: 'Médio prazo (2025–2030)', regiao: 'Global' },
+      { desafio: 'Integração com sistemas legados de controle de acesso (cancelas)', impacto: -1.2, periodo: 'Curto prazo (2024–2027)', regiao: 'Brasil' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     SMART METER ENERGIA (AMI)
+     ================================================== */
+  energia: {
+    desc: 'Mercado global de medição inteligente de energia elétrica (AMI — Advanced Metering Infrastructure): smart meters, redes de comunicação e plataformas analíticas para distribuidoras.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     22.4,
+      cagr_historico: 11.2,
+      proj: [
+        { ano: 2024, bi: 22.4 },
+        { ano: 2029, bi: 37.8 },
+        { ano: 2034, bi: 63.8 },
+      ],
+      cagr_projecao: 11.0,
+    },
+
+    brasil: {
+      potencial_bi: 18,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Medidores inteligentes implantados no Brasil (meta 2030: 70M)', val: 18, max: 100, cls: ''       },
+        { label: 'CAGR smart meter energia no Brasil (2024–2030)',               val: 28.0, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Residencial',                   share: 55, cor: '#00c8d4' },
+      { nome: 'Comercial / Industrial Pequeno', share: 30, cor: '#2540c0' },
+      { nome: 'Industrial / Grande Carga',     share: 15, cor: '#a8e063' },
+    ],
+    segmentos_nota: 'O Brasil está em processo mandatório de substituição de medidores. A <strong>ANEEL (Resolução Normativa 1.000/2021)</strong> obriga distribuidoras a implantar medidores inteligentes em 100% dos consumidores até 2030. Isso representa <strong>~70 milhões de pontos</strong> a modernizar — o maior programa de AMI das Américas fora dos EUA. A Unifique pode atuar como operadora de rede de comunicação (LPWAN/PLC) para distribuidoras regionais.',
+
+    diferenciais: [
+      { icon: '📡', titulo: 'Rede LPWAN de comunicação para AMI',         desc: 'Distribuidoras precisam de redes de comunicação para os medidores. A Unifique pode operar a rede NB-IoT ou LoRaWAN como infraestrutura compartilhada, cobrando por ponto/mensagem — modelo de network-as-a-service altamente escalável.' },
+      { icon: '⚡', titulo: 'Smart Grid e resposta à demanda',             desc: 'Além da leitura, medidores inteligentes habilitam corte remoto, detecção de fraude (furto de energia) e programas de resposta à demanda — serviços de alto valor para distribuidoras.' },
+      { icon: '🔋', titulo: 'Integração com microgeração solar distribuída', desc: 'Com crescimento de geração solar residencial (>3 GWp instalados no Brasil em 2024), medidores bidirecionais com comunicação são mandatórios — mercado de expansão natural.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Landis+Gyr',              nivel: 'Alto'     },
+      { nome: 'Itron Inc.',              nivel: 'Alto'     },
+      { nome: 'Honeywell (Elster)',      nivel: 'Alto'     },
+      { nome: 'Siemens (eMeter)',        nivel: 'Alto'     },
+      { nome: 'ABB (ABB Ability)',       nivel: 'Médio'    },
+      { nome: 'Kaifa Technology',        nivel: 'Médio'    },
+      { nome: 'ZIV (Ormazabal Group)',   nivel: 'Moderado' },
+      { nome: 'Celesc / Equatorial',     nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'Landis+Gyr e Itron dominam o mercado global com contratos de longo prazo com grandes distribuidoras. No Brasil, as próprias distribuidoras (ENEL, Equatorial, CPFL) são os principais compradores. Referência: <strong style="color:var(--yellow)">Landis+Gyr</strong> — maior fornecedor global de AMI, com projetos no Brasil (CPFL, ENEL SP).',
+
+    benchmark: {
+      nome: 'Landis+Gyr',
+      produtos: [
+        { titulo: 'Medidor E360 NB-IoT',   val_unit: 380,  sufixo: '/ponto (CAPEX)', desc: 'Smart meter bidirecional com NB-IoT embutido, IHD, registro de grandezas e corte remoto' },
+        { titulo: 'Plataforma AIM',        val_unit: 18,   sufixo: '/ponto/mês',     desc: 'Advanced Infrastructure Management: coleta, gestão de dados, detecção de perdas e relatórios ANEEL' },
+        { titulo: 'Comunicação NB-IoT',    val_unit: 8,    sufixo: '/ponto/mês',     desc: 'SIM gerenciado com cobertura nacional multi-operadora; SLA 99,5%' },
+      ],
+      capex: {
+        mobilizacao:    35000,
+        hardware_unit:  380,
+        pontos_modelo:  1000,
+        meses_contrato: 96,
+      },
+      opex_por_ponto: {
+        Plataforma:    18,
+        Conectividade:  8,
+        Suporte:        5,
+      },
+      margem_opex: 42,
+    },
+
+    riscos: [
+      { desafio: 'Atraso no cronograma ANEEL — distribuidoras postergando investimentos',  impacto: -2.5, periodo: 'Curto/médio (2024–2028)',  regiao: 'Brasil' },
+      { desafio: 'Cibersegurança — smart meters como vetor de ataque à rede elétrica',     impacto: -2.2, periodo: 'Médio prazo (2025–2030)',  regiao: 'Global / Brasil' },
+      { desafio: 'Interoperabilidade — falta de padrão unificado no Brasil (ABNT vs IEC)', impacto: -1.8, periodo: 'Curto prazo (2024–2027)',  regiao: 'Brasil' },
+      { desafio: 'Dependência de importação de semicondutores — risco de supply chain',    impacto: -1.5, periodo: 'Curto prazo (2024–2027)',  regiao: 'Global' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     WI-FI PÚBLICO
+     ================================================== */
+  wifi: {
+    desc: 'Mercado global de Wi-Fi público municipal e smart city: hotspots em praças, terminais de transporte, eventos e infraestrutura de backhaul urbano para cidades inteligentes.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     6.9,
+      cagr_historico: 17.8,
+      proj: [
+        { ano: 2024, bi: 6.9  },
+        { ano: 2029, bi: 15.8 },
+        { ano: 2034, bi: 36.1 },
+      ],
+      cagr_projecao: 17.9,
+    },
+
+    brasil: {
+      potencial_bi: 3,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Share municipal / praças no mercado de Wi-Fi público (2024)', val: 45, max: 100, cls: ''       },
+        { label: 'CAGR Wi-Fi público no Brasil (2024–2029)',                    val: 20.0, max: 30, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Municipal / Praças e Espaços Públicos', share: 45, cor: '#00c8d4' },
+      { nome: 'Transporte Público',                   share: 28, cor: '#2540c0' },
+      { nome: 'Eventos / Turismo',                    share: 17, cor: '#a8e063' },
+      { nome: 'Saúde / Educação',                     share: 10, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O Wi-Fi público municipal é frequentemente o primeiro passo de uma prefeitura em direção à smart city, servindo como infraestrutura de backhaul compartilhado para outros sensores. No Brasil, o programa federal <strong>GIGA Brasil</strong> expandiu conectividade em escolas e UBSs, mas praças e vias públicas ainda dependem de iniciativas municipais. A Unifique tem diferencial natural de operadora regional com rede de backhaul própria.',
+
+    diferenciais: [
+      { icon: '🌐', titulo: 'Backhaul próprio — sem custo de meio',          desc: 'Como ISP com fibra óptica regional, a Unifique oferece Wi-Fi público com custo de backhaul próximo de zero, tornando o modelo de negócio viável onde outros provedores não conseguem rentabilizar.' },
+      { icon: '📡', titulo: 'Wi-Fi como backhaul para smart city',           desc: 'Os access points municipais da Unifique podem servir também como concentradores LoRaWAN, pontos de câmera e repetidores NB-IoT — transformando cada hotspot em hub de infraestrutura urbana.' },
+      { icon: '📊', titulo: 'Dados de mobilidade e presença urbana',         desc: 'Wi-Fi público com analytics de presença (sem identificação pessoal) gera dados valiosos de fluxo urbano, tempos de permanência e origens — serviço de alto valor para gestores municipais e lojistas.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Cisco (Meraki)',           nivel: 'Alto'     },
+      { nome: 'Ruckus Networks (CommScope)', nivel: 'Alto'  },
+      { nome: 'Ubiquiti (UniFi)',         nivel: 'Alto'     },
+      { nome: 'Ericsson',                 nivel: 'Médio'    },
+      { nome: 'Nokia (WLAN)',             nivel: 'Médio'    },
+      { nome: 'Huawei Wi-Fi',             nivel: 'Médio'    },
+      { nome: 'Claro / TIM (Wi-Fi Hotspot)', nivel: 'Moderado' },
+      { nome: 'Algar Telecom',            nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'No mercado municipal, grandes operadoras (Claro, TIM) tentam oferecer Wi-Fi público como parte de contratos de telegestão, mas sem capilaridade regional. Ubiquiti domina o segmento de baixo custo. Referência: <strong style="color:var(--yellow)">Cisco Meraki + parceiro local</strong> — modelo de gestão cloud-native com analytics de presença e SLA empresarial.',
+
+    benchmark: {
+      nome: 'Cisco Meraki MR (via parceiro)',
+      produtos: [
+        { titulo: 'AP Meraki MR46E (outdoor)', val_unit: 1800,  sufixo: '/ponto (CAPEX)', desc: 'Access point Wi-Fi 6 outdoor, cobertura até 800m², PoE, IP67' },
+        { titulo: 'Licença Meraki Cloud',      val_unit: 25,    sufixo: '/AP/mês',        desc: 'Gerenciamento cloud-native, analytics de presença, políticas de acesso e relatórios' },
+        { titulo: 'Backhaul dedicado',         val_unit: 180,   sufixo: '/ponto/mês',     desc: 'Link gerenciado por operadora com SLA 99,9% (via Claro/Vivo em municípios sem ISP)' },
+      ],
+      capex: {
+        mobilizacao:    8000,
+        hardware_unit:  1800,
+        pontos_modelo:  20,
+        meses_contrato: 36,
+      },
+      opex_por_ponto: {
+        Licença:   25,
+        Backhaul:  180,
+        Suporte:   20,
+      },
+      margem_opex: 35,
+    },
+
+    riscos: [
+      { desafio: 'ROI difícil de justificar para municípios sem modelo de monetização',   impacto: -2.5, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+      { desafio: 'Segurança em redes abertas — risco de interceptação de dados',          impacto: -2.0, periodo: 'Médio prazo (2025–2030)',   regiao: 'Global' },
+      { desafio: 'Manutenção de equipamentos outdoor — vandalismo e intempéries',        impacto: -1.5, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+      { desafio: 'Saturação de espectro em ambientes densos (eventos, mercados)',        impacto: -1.2, periodo: 'Médio prazo (2025–2030)',   regiao: 'Global' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
+
+  /* ==================================================
+     SOLAR MUNICIPAL
+     ================================================== */
+  solar: {
+    desc: 'Mercado de energia solar para o setor público municipal: geração distribuída em prédios públicos, usinas municipais, iluminação pública solar e integração com smart grid.',
+
+    mercado: {
+      moeda:          'US$',
+      tamanho_ano:    2024,
+      tamanho_bi:     12.8,
+      cagr_historico: 22.4,
+      proj: [
+        { ano: 2024, bi: 12.8 },
+        { ano: 2029, bi: 35.2 },
+        { ano: 2034, bi: 96.5 },
+      ],
+      cagr_projecao: 22.3,
+    },
+
+    brasil: {
+      potencial_bi: 8,
+      titulo: 'Contexto Brasil',
+      barras: [
+        { label: 'Crescimento de geração solar distribuída no Brasil (2024 vs 2022)', val: 85, max: 100, cls: ''       },
+        { label: 'Share de energia solar na matriz elétrica brasileira (2024)',       val: 16, max: 100, cls: 'yellow' },
+      ],
+    },
+
+    segmentos: [
+      { nome: 'Geração Distribuída Municipal (GD)',  share: 52, cor: '#00c8d4' },
+      { nome: 'Solar em Prédios Públicos (telhados)', share: 28, cor: '#2540c0' },
+      { nome: 'Solar em IP (luminária híbrida)',     share: 12, cor: '#a8e063' },
+      { nome: 'Usinas Fotovoltaicas Municipais',     share:  8, cor: '#f5c842' },
+    ],
+    segmentos_nota: 'O Brasil se tornou o <strong>4º maior mercado de energia solar do mundo em 2024</strong>, com mais de 3,8 GWp de nova capacidade instalada só em geração distribuída. A <strong>Lei 14.300/2022</strong> (Marco Legal da Micro e Minigeração Distribuída) criou regras estáveis para geração em prédios públicos. Municípios podem abater até 90% da conta de energia com geração própria, com payback típico de 3–5 anos.',
+
+    diferenciais: [
+      { icon: '⚡', titulo: 'Solar + Smart Meter + Smart Grid integrados',  desc: 'A Unifique conecta o monitoramento de geração solar com medição inteligente de energia e gestão de demanda, entregando ao município uma visão unificada de geração, consumo e eficiência energética.' },
+      { icon: '📊', titulo: 'Monitoramento IoT da geração solar',           desc: 'Sensores de string, inversores e painéis conectados via LoRaWAN/NB-IoT permitem manutenção preditiva, detecção de falhas e maximização do yield — aumentando o ROI do investimento solar municipal.' },
+      { icon: '💼', titulo: 'Modelo ESCo + financiamento garantido',        desc: 'A Unifique pode estruturar projetos no modelo ESCo (Energy Service Company), onde o cliente não paga CAPEX — o retorno vem da economia de energia ao longo do contrato. Modelo ideal para municípios com restrição fiscal.' },
+    ],
+
+    concorrentes: [
+      { nome: 'Canadian Solar',          nivel: 'Alto'     },
+      { nome: 'JA Solar',                nivel: 'Alto'     },
+      { nome: 'LONGi Green Energy',      nivel: 'Alto'     },
+      { nome: 'Enel Green Power Brasil', nivel: 'Alto'     },
+      { nome: 'BYD Energy (Brasil)',     nivel: 'Médio'    },
+      { nome: 'Sungrow',                 nivel: 'Médio'    },
+      { nome: 'Neosolar (Brasil)',       nivel: 'Moderado' },
+      { nome: 'Blue Sol Energia Solar',  nivel: 'Moderado' },
+    ],
+    concorrentes_nota: 'Fabricantes chineses (LONGi, JA Solar, Canadian Solar) dominam o hardware de painéis com preços 30–40% abaixo da concorrência. No Brasil, integradores como <strong>Neosolar</strong> e <strong>Blue Sol</strong> dominam o canal de distribuição PME. Referência: <strong style="color:var(--yellow)">Enel Green Power Brasil</strong> — maior desenvolvedora de projetos solar C&I e municipal no Brasil.',
+
+    benchmark: {
+      nome: 'Enel Green Power Brasil (C&I)',
+      produtos: [
+        { titulo: 'Sistema Solar C&I (turnkey)',    val_unit: 4200,  sufixo: '/kWp instalado (CAPEX)', desc: 'Projeto completo: painéis, inversor, estrutura, instalação e comissionamento' },
+        { titulo: 'Monitoramento solar IoT',        val_unit: 12,    sufixo: '/kWp/mês',               desc: 'Plataforma de monitoramento de inversores e geração com alertas e relatórios de performance' },
+        { titulo: 'Manutenção preventiva O&M',      val_unit: 8,     sufixo: '/kWp/mês',               desc: 'Inspeção termográfica anual, limpeza de painéis e suporte corretivo com SLA 48h' },
+      ],
+      capex: {
+        mobilizacao:    15000,
+        hardware_unit:  4200,
+        pontos_modelo:  50,   // kWp
+        meses_contrato: 60,
+      },
+      opex_por_ponto: {
+        Monitoramento: 12,
+        'O&M':          8,
+        Seguro:         5,
+      },
+      margem_opex: 32,
+    },
+
+    riscos: [
+      { desafio: 'Redução de tarifas de compensação (net metering) pela ANEEL',            impacto: -2.8, periodo: 'Curto/médio (2024–2028)',  regiao: 'Brasil' },
+      { desafio: 'Supply chain de painéis — dependência de China (>80% de importação)',    impacto: -2.0, periodo: 'Médio prazo (2025–2030)',  regiao: 'Global / Brasil' },
+      { desafio: 'Gestão de resíduos — descarte de painéis ao fim da vida útil (25 anos)', impacto: -1.5, periodo: 'Longo prazo (2028–2034)', regiao: 'Global' },
+      { desafio: 'Intermitência — dependência de rede para compensação noturna',           impacto: -1.2, periodo: 'Contínuo (2024–2033)',     regiao: 'Brasil' },
+    ],
+
+    gestao: [], tecnologia: [], arquitetura: { camadas: [], apis: [] },
+  },
 };
 </script>
 

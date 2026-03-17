@@ -617,7 +617,7 @@
     .arq-section-title::after { content:''; flex:1; height:1px; background:#dde3f0; }
 
     /* Camadas */
-    .arq-camadas { display:flex; flex-direction:column; gap:8px; }
+    .arq-camadas { display:flex; flex-direction:column; }
     .arq-layer { display:flex; align-items:flex-start; gap:0; border-radius:8px; overflow:hidden; background:var(--white); box-shadow:var(--card-shadow); }
     .arq-layer-accent { width:5px; flex-shrink:0; }
     .arq-layer-body { flex:1; padding:12px 14px; }
@@ -632,6 +632,16 @@
     .arq-layer-actions { display:flex; gap:2px; opacity:0; transition:opacity .15s; }
     .arq-layer:hover .arq-layer-actions { opacity:1; }
 
+    /* Conector entre camadas */
+    .arq-connector { display:flex; flex-direction:column; align-items:center; padding:2px 0; gap:2px; }
+    .arq-connector-line { width:2px; height:10px; background:#dde3f0; }
+    .arq-connector-body { display:flex; align-items:center; gap:6px; }
+    .arq-connector-arrow { color:var(--teal); font-size:1.1rem; font-weight:700; line-height:1; }
+    .arq-connector-proto { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; background:var(--gray-light); color:var(--text-mid); padding:2px 9px; border-radius:99px; }
+    .arq-connector-edit { background:none; border:1px dashed #c0c8dc; color:var(--text-mid); font-size:.6rem; padding:2px 8px; border-radius:99px; cursor:pointer; font-family:inherit; }
+    .arq-connector-edit:hover { border-color:var(--teal); color:var(--blue-dark); }
+    .arq-connector-form { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+
     /* APIs table */
     .arq-table { width:100%; border-collapse:collapse; font-size:.72rem; }
     .arq-table th { text-align:left; padding:7px 10px; font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--blue-dark); border-bottom:2px solid #dde3f0; }
@@ -644,17 +654,6 @@
     .arq-badge.ativo        { background:#e0faf0; color:#0a8055; }
     .arq-badge.descontinuado{ background:#fdeaea; color:var(--red-risk); }
     .arq-row-actions { display:flex; gap:2px; }
-
-    /* Fluxos */
-    .arq-fluxos { display:flex; flex-direction:column; gap:8px; }
-    .arq-fluxo { background:var(--white); border-radius:8px; box-shadow:var(--card-shadow); padding:12px 16px; display:flex; align-items:center; gap:12px; }
-    .arq-fluxo-main { flex:1; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .arq-fluxo-node { font-size:.8rem; font-weight:700; color:var(--blue-dark); }
-    .arq-fluxo-arrow { color:var(--teal); font-size:1rem; font-weight:700; }
-    .arq-fluxo-proto { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; background:var(--gray-light); color:var(--text-mid); padding:2px 8px; border-radius:99px; }
-    .arq-fluxo-desc { font-size:.7rem; color:var(--text-mid); flex-basis:100%; margin-top:2px; }
-    .arq-fluxo-actions { display:flex; gap:2px; opacity:0; transition:opacity .15s; }
-    .arq-fluxo:hover .arq-fluxo-actions { opacity:1; }
 
     /* --- Coverflow --- */
     .cflow-wrap  { position:relative; width:100%; height:270px; background:#0d1535; border-radius:12px; overflow:hidden; margin-bottom:22px; }
@@ -1037,7 +1036,6 @@ function defaultData(id, tab) {
     arquitetura: {
       camadas: [],
       apis: [],
-      fluxos: [],
     },
     benchmark: {
       nome: '—',
@@ -2231,38 +2229,53 @@ function addTecItem(id) {
 function renderArquiteturaPanel(id) {
   const container = document.getElementById('arquitetura-panel-' + id);
   if (!container) return;
-  const d = DATA[id].arquitetura || (DATA[id].arquitetura = { camadas:[], apis:[], fluxos:[] });
+  const d = DATA[id].arquitetura || (DATA[id].arquitetura = { camadas:[], apis:[] });
+  if (!d.camadas) d.camadas = [];
+  if (!d.apis)    d.apis    = [];
 
-  /* --- Camadas --- */
   const layerAccents = ['#00c8d4','#2540c0','#a8e063','#f5c842','#e03c3c','#9b5de5'];
+
   const camadasHtml = d.camadas.map((layer, li) => {
     const accent = layerAccents[li % layerAccents.length];
     const chips = (layer.componentes||[]).map((c, ci) =>
       `<span class="arq-chip">${c}<button class="arq-chip-del" onclick="delArqChip('${id}',${li},${ci})" title="Remover">×</button></span>`
     ).join('');
-    return `<div class="arq-layer" id="arq-layer-${id}-${li}">
-      <div class="arq-layer-accent" style="background:${accent}"></div>
-      <div class="arq-layer-body">
-        <div class="arq-layer-head">
-          <div class="arq-layer-name" id="arq-lname-${id}-${li}">${layer.nome || 'Camada'}</div>
-          <div class="arq-layer-actions">
-            <button class="tl-btn" onclick="editArqLayerName('${id}',${li})" title="Renomear">✏</button>
-            <button class="tl-btn tl-del" onclick="delArqLayer('${id}',${li})" title="Excluir">×</button>
+    const isLast = li === d.camadas.length - 1;
+    const con = layer.conexao || {};
+    const connector = isLast ? '' : `
+      <div class="arq-connector" id="arq-con-${id}-${li}">
+        <div class="arq-connector-line"></div>
+        <div class="arq-connector-body">
+          <span class="arq-connector-arrow">↓</span>
+          ${con.protocolo ? `<span class="arq-connector-proto">${con.protocolo}</span>` : ''}
+          <button class="arq-connector-edit" onclick="editArqConexao('${id}',${li})">${con.protocolo ? '✏' : '+ protocolo'}</button>
+        </div>
+        <div class="arq-connector-line"></div>
+      </div>`;
+    return `
+      <div class="arq-layer" id="arq-layer-${id}-${li}">
+        <div class="arq-layer-accent" style="background:${accent}"></div>
+        <div class="arq-layer-body">
+          <div class="arq-layer-head">
+            <div class="arq-layer-name" id="arq-lname-${id}-${li}">${layer.nome || 'Camada'}</div>
+            <div class="arq-layer-actions">
+              <button class="tl-btn" onclick="editArqLayerName('${id}',${li})" title="Renomear">✏</button>
+              <button class="tl-btn tl-del" onclick="delArqLayer('${id}',${li})" title="Excluir">×</button>
+            </div>
+          </div>
+          <div class="arq-chips">
+            ${chips}
+            <button class="arq-chip-add" onclick="addArqChip('${id}',${li})">+ componente</button>
           </div>
         </div>
-        <div class="arq-chips">
-          ${chips}
-          <button class="arq-chip-add" onclick="addArqChip('${id}',${li})">+ componente</button>
-        </div>
       </div>
-    </div>`;
+      ${connector}`;
   }).join('');
 
-  /* --- APIs --- */
   const apisRows = d.apis.map((api, ai) =>
     `<tr>
       <td>${api.nome||'—'}</td>
-      <td><span class="arq-fluxo-proto">${api.tipo||'—'}</span></td>
+      <td><span class="arq-badge planejado" style="background:none;color:var(--text-mid);font-family:monospace">${api.tipo||'—'}</span></td>
       <td style="font-family:monospace;font-size:.67rem;color:var(--text-mid)">${api.endpoint||'—'}</td>
       <td>${api.desc||'—'}</td>
       <td><span class="arq-badge ${api.status||'planejado'}">${api.status||'planejado'}</span></td>
@@ -2275,27 +2288,10 @@ function renderArquiteturaPanel(id) {
     </tr>`
   ).join('');
 
-  /* --- Fluxos --- */
-  const fluxosHtml = d.fluxos.map((f, fi) =>
-    `<div class="arq-fluxo">
-      <div class="arq-fluxo-main">
-        <span class="arq-fluxo-node">${f.origem||'—'}</span>
-        <span class="arq-fluxo-arrow">→</span>
-        <span class="arq-fluxo-node">${f.destino||'—'}</span>
-        ${f.protocolo ? `<span class="arq-fluxo-proto">${f.protocolo}</span>` : ''}
-        ${f.desc ? `<span class="arq-fluxo-desc">${f.desc}</span>` : ''}
-      </div>
-      <div class="arq-fluxo-actions">
-        <button class="tl-btn" onclick="editArqFluxo('${id}',${fi})" title="Editar">✏</button>
-        <button class="tl-btn tl-del" onclick="delArqFluxo('${id}',${fi})" title="Excluir">×</button>
-      </div>
-    </div>`
-  ).join('');
-
   container.innerHTML = `<div class="arq-wrap">
 
     <div>
-      <div class="arq-section-title">Stack de Camadas</div>
+      <div class="arq-section-title">Stack de Camadas & Fluxo</div>
       <div class="arq-camadas">${camadasHtml || '<div style="color:var(--text-mid);font-size:.74rem">Nenhuma camada.</div>'}</div>
       <div style="margin-top:10px">
         <button class="gestao-add-btn" onclick="addArqLayer('${id}')">+ Adicionar camada</button>
@@ -2315,20 +2311,12 @@ function renderArquiteturaPanel(id) {
       </div>
     </div>
 
-    <div>
-      <div class="arq-section-title">Fluxos de Dados</div>
-      <div class="arq-fluxos">${fluxosHtml || '<div style="color:var(--text-mid);font-size:.74rem">Nenhum fluxo.</div>'}</div>
-      <div style="margin-top:10px">
-        <button class="gestao-add-btn" onclick="addArqFluxo('${id}')">+ Adicionar fluxo</button>
-      </div>
-    </div>
-
   </div>`;
 }
 
 /* --- Camadas --- */
 function addArqLayer(id) {
-  DATA[id].arquitetura.camadas.push({ nome: 'Nova Camada', componentes: [] });
+  DATA[id].arquitetura.camadas.push({ nome: 'Nova Camada', componentes: [], conexao: { protocolo:'', desc:'' } });
   persistData(id); renderArquiteturaPanel(id);
   editArqLayerName(id, DATA[id].arquitetura.camadas.length - 1);
 }
@@ -2364,6 +2352,33 @@ function addArqChip(id, li) {
 
 function delArqChip(id, li, ci) {
   DATA[id].arquitetura.camadas[li].componentes.splice(ci, 1);
+  persistData(id); renderArquiteturaPanel(id);
+}
+
+function editArqConexao(id, li) {
+  const con = document.getElementById(`arq-con-${id}-${li}`);
+  if (!con) return;
+  const cur = DATA[id].arquitetura.camadas[li].conexao || {};
+  const body = con.querySelector('.arq-connector-body');
+  body.innerHTML = `
+    <span class="arq-connector-arrow">↓</span>
+    <div class="arq-connector-form">
+      <input class="sec-edit-input" id="arq-con-proto-${id}-${li}" value="${(cur.protocolo||'').replace(/"/g,'&quot;')}" placeholder="Protocolo (ex: MQTT)" style="width:140px;padding:3px 7px"
+        onkeydown="if(event.key==='Enter')saveArqConexao('${id}',${li})">
+      <input class="sec-edit-input" id="arq-con-desc-${id}-${li}"  value="${(cur.desc||'').replace(/"/g,'&quot;')}"      placeholder="Descrição (opcional)"    style="width:160px;padding:3px 7px"
+        onkeydown="if(event.key==='Enter')saveArqConexao('${id}',${li})">
+      <button class="calc-action-btn save"    onclick="saveArqConexao('${id}',${li})">✓</button>
+      <button class="calc-action-btn discard" onclick="renderArquiteturaPanel('${id}')">✕</button>
+    </div>`;
+  document.getElementById(`arq-con-proto-${id}-${li}`)?.focus();
+}
+
+function saveArqConexao(id, li) {
+  const g = s => document.getElementById(s);
+  DATA[id].arquitetura.camadas[li].conexao = {
+    protocolo: g(`arq-con-proto-${id}-${li}`)?.value.trim() || '',
+    desc:      g(`arq-con-desc-${id}-${li}`)?.value.trim()  || '',
+  };
   persistData(id); renderArquiteturaPanel(id);
 }
 
@@ -2422,64 +2437,6 @@ function saveArqApi(id, ai) {
 function delArqApi(id, ai) {
   showConfirm('Excluir API?', 'Esta entrada será removida do catálogo.', () => {
     DATA[id].arquitetura.apis.splice(ai, 1);
-    persistData(id); renderArquiteturaPanel(id);
-  });
-}
-
-/* --- Fluxos --- */
-function _arqFluxoForm(id, fi, fluxo) {
-  const container = document.getElementById('arquitetura-panel-' + id);
-  if (!container) return;
-  const formId = `arq-fluxo-form-${id}`;
-  const existing = document.getElementById(formId);
-  if (existing) existing.remove();
-  const wrap = container.querySelector('.arq-fluxos');
-  if (!wrap) return;
-  const div = document.createElement('div');
-  div.id = formId;
-  div.className = 'arq-fluxo';
-  div.style.flexWrap = 'wrap';
-  div.innerHTML = `
-    <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;align-items:center">
-      <input class="sec-edit-input" id="arq-fl-orig-${id}"  value="${(fluxo.origem||'').replace(/"/g,'&quot;')}"    placeholder="Origem"    style="width:120px">
-      <span class="arq-fluxo-arrow">→</span>
-      <input class="sec-edit-input" id="arq-fl-dest-${id}"  value="${(fluxo.destino||'').replace(/"/g,'&quot;')}"   placeholder="Destino"   style="width:120px">
-      <input class="sec-edit-input" id="arq-fl-proto-${id}" value="${(fluxo.protocolo||'').replace(/"/g,'&quot;')}" placeholder="Protocolo" style="width:100px">
-      <input class="sec-edit-input" id="arq-fl-desc-${id}"  value="${(fluxo.desc||'').replace(/"/g,'&quot;')}"      placeholder="Descrição" style="flex:1;min-width:160px">
-    </div>
-    <div style="display:flex;gap:5px;margin-top:4px">
-      <button class="calc-action-btn discard" onclick="renderArquiteturaPanel('${id}')">Cancelar</button>
-      <button class="calc-action-btn save"    onclick="saveArqFluxo('${id}',${fi})">Salvar</button>
-    </div>`;
-  wrap.appendChild(div);
-  document.getElementById(`arq-fl-orig-${id}`)?.focus();
-}
-
-function addArqFluxo(id) {
-  const fi = DATA[id].arquitetura.fluxos.length;
-  DATA[id].arquitetura.fluxos.push({ origem:'', destino:'', protocolo:'', desc:'' });
-  renderArquiteturaPanel(id);
-  _arqFluxoForm(id, fi, DATA[id].arquitetura.fluxos[fi]);
-}
-
-function editArqFluxo(id, fi) {
-  _arqFluxoForm(id, fi, DATA[id].arquitetura.fluxos[fi]);
-}
-
-function saveArqFluxo(id, fi) {
-  const g = s => document.getElementById(s);
-  DATA[id].arquitetura.fluxos[fi] = {
-    origem:    g(`arq-fl-orig-${id}`)?.value.trim()  || '',
-    destino:   g(`arq-fl-dest-${id}`)?.value.trim()  || '',
-    protocolo: g(`arq-fl-proto-${id}`)?.value.trim() || '',
-    desc:      g(`arq-fl-desc-${id}`)?.value.trim()  || '',
-  };
-  persistData(id); renderArquiteturaPanel(id);
-}
-
-function delArqFluxo(id, fi) {
-  showConfirm('Excluir fluxo?', 'Este fluxo de dados será removido.', () => {
-    DATA[id].arquitetura.fluxos.splice(fi, 1);
     persistData(id); renderArquiteturaPanel(id);
   });
 }

@@ -2217,7 +2217,7 @@ let DATA = {
 <!-- =============================================
      SCRIPT DE RENDERIZAÇÃO
      ============================================= -->
-<script>n
+<script>
 document.getElementById('ano').textContent = new Date().getFullYear();
 
 /* ---- Formatadores ---- */
@@ -3837,6 +3837,31 @@ const activeSubTab = {};
 /* ====================================================
    PARCEIROS
    ==================================================== */
+const PARC_TAB_KEYWORDS = {
+  hidrometros:    ['hidrômetr','hidrometr','medidor de água','saneamento','water meter','sagatech','livet','telemetra','bluetech','squair','hydroforce','simemap','nexus'],
+  ilum:           ['iluminaç','luminár','led','lâmpada','poste','street light','juganu','reluz','retrofit'],
+  cameras:        ['câmera','camera','cftv','videomonitoramento','lpr','ocr','detecção de movimento','reconhecimento facial','videovigilância','click190','gryfo'],
+  led:            ['iluminaç','luminár','led','lâmpada','poste','juganu','reluz'],
+  ar:             ['qualidade do ar','poluição','monitoramento ambiental','particulado','aqm','co2','gases','emissões','greenbug'],
+  enchentes:      ['enchente','alagamento','inundação','nível de água','bocas de lobo','defesa civil','riscos climátic','precipitação','cemaden','multi cast','saltica'],
+  met:            ['meteorolog','estação climática','clima','weather','inmet','temperatura','umidade','pressão atmosférica'],
+  semaforos:      ['semáfor','controlador de tráfego','trânsito','tráfego','onda verde','prioridade','brascontrol','dataprom','atman','serttel','sdm','perkons','pumatronix','contransin'],
+  frota:          ['frota','rastreamento','transporte','mobilidade','ônibus','veicular','gps','bus2','rodobot'],
+  estacionamento: ['estacionamento','vaga','parking','zona azul','cloudpark','parquímetro','serttel'],
+  energia:        ['energia elétr','smart meter','medidor de energia','eficiência energética','rede elétr','microgeração','volt','netzero','sismetro','bem inteligência','eletrify','ativa sustentável'],
+  wifi:           ['wi-fi','wifi','rede sem fio','conectividade','hotspot','anlix','stage db','trivale','telecomunicaç'],
+  solar:          ['solar','fotovoltaic','painel solar','geração solar','absolar','solarterra','inelso'],
+};
+
+function _parcFilterByTab(tabId) {
+  const kws = PARC_TAB_KEYWORDS[tabId];
+  if (!kws) return [];
+  return PARCEIROS_DB.filter(p => {
+    const haystack = [p.nome, p.desc, p.tecnologia, p.vertical, p.subvertical].join(' ').toLowerCase();
+    return kws.some(k => haystack.includes(k));
+  });
+}
+
 function _parcRows(list, id) {
   return list.map((p, i) => {
     const loc   = [p.cidade, p.estado].filter(Boolean).join(', ');
@@ -3871,23 +3896,28 @@ function renderParceirosPanel(id) {
   const container = document.getElementById('parceiros-panel-' + id);
   if (!container) return;
 
-  const verticals = [...new Set(PARCEIROS_DB.map(p => p.vertical).filter(Boolean).flatMap(v => v.split(',')).map(v => v.trim()))].sort();
+  const base    = _parcFilterByTab(id);
+  const noMatch = base.length === 0;
+  const pool    = noMatch ? [] : base;
+
+  const verticals = [...new Set(pool.flatMap(p => (p.vertical||'').split(',').map(v => v.trim())).filter(Boolean))].sort();
   const vOpts = verticals.map(v => `<option value="${v}">${v}</option>`).join('');
 
   container.innerHTML = `
     <main><section class="section">
-      <div class="section-title"><span>Ecossistema de Parceiros</span><span class="badge">${PARCEIROS_DB.length} empresas</span></div>
+      <div class="section-title"><span>Ecossistema de Parceiros</span><span class="badge">${pool.length} empresa${pool.length !== 1 ? 's' : ''}</span></div>
+      ${noMatch ? `<p style="color:var(--text-mid);font-size:.8rem;margin-top:8px">Nenhuma empresa do banco de dados identificada como relevante para esta aba.</p>` : `
       <div class="parc-filters">
         <input class="parc-search" id="parc-search-${id}" type="text" placeholder="Buscar empresa ou tecnologia..." oninput="filterParc('${id}')">
-        <select class="parc-vfilter" id="parc-vfilter-${id}" onchange="filterParc('${id}')">
-          <option value="">Todas as verticais</option>${vOpts}
-        </select>
-        <span class="parc-count" id="parc-count-${id}">${PARCEIROS_DB.length} resultados</span>
+        ${verticals.length > 1 ? `<select class="parc-vfilter" id="parc-vfilter-${id}" onchange="filterParc('${id}')"><option value="">Todas as verticais</option>${vOpts}</select>` : ''}
+        <span class="parc-count" id="parc-count-${id}">${pool.length} resultado${pool.length !== 1 ? 's' : ''}</span>
       </div>
       <div class="parc-list" id="parc-list-${id}">
-        ${_parcRows(PARCEIROS_DB, id)}
-      </div>
+        ${_parcRows(pool, id)}
+      </div>`}
     </section></main>`;
+
+  container._parcBase = pool;
 }
 
 function toggleParcDetail(row) {
@@ -3895,9 +3925,11 @@ function toggleParcDetail(row) {
 }
 
 function filterParc(id) {
-  const q  = (document.getElementById('parc-search-' + id)?.value || '').toLowerCase();
-  const vf = (document.getElementById('parc-vfilter-' + id)?.value || '');
-  const filtered = PARCEIROS_DB.filter(p => {
+  const container = document.getElementById('parceiros-panel-' + id);
+  const base = container?._parcBase || _parcFilterByTab(id);
+  const q    = (document.getElementById('parc-search-' + id)?.value || '').toLowerCase();
+  const vf   = (document.getElementById('parc-vfilter-' + id)?.value || '');
+  const filtered = base.filter(p => {
     const matchV = !vf || (p.vertical || '').includes(vf);
     const matchQ = !q  || [p.nome, p.vertical, p.subvertical, p.tecnologia, p.desc].join(' ').toLowerCase().includes(q);
     return matchV && matchQ;

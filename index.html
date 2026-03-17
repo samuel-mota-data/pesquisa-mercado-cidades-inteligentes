@@ -135,6 +135,29 @@
     .progress-fill.red  { background: linear-gradient(90deg, #e03c3c, #ff7070); }
     .progress-fill.yellow { background: linear-gradient(90deg, var(--yellow), #ffe08a); }
 
+    /* ---- BRASIL KPI GRID ---- */
+    .brasil-kpis {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .brasil-kpi {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .brasil-kpi-icon { font-size: 1.1rem; line-height: 1; margin-bottom: 2px; }
+    .brasil-kpi-val  { font-size: 1.15rem; font-weight: 700; color: var(--teal); line-height: 1.1; }
+    .brasil-kpi-label { font-size: .62rem; color: var(--text-mid); line-height: 1.3; }
+    .brasil-kpi-src { font-size: .58rem; color: rgba(255,255,255,.3); margin-top: 3px; }
+    .brasil-kpi-src a { color: var(--teal); opacity: .7; text-decoration: none; }
+    .brasil-kpi-src a:hover { opacity: 1; }
+
     /* ---- OPEX TABLE ---- */
     .opex-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
@@ -769,10 +792,13 @@ let DATA = {
     },
 
     brasil: {
-      potencial_bi:      10,     // R$ bilhões (estimativa total)
-      barras: [
-        { label: 'Residencial (share 2023)', val: 52,    max: 100, cls: ''       },
-        { label: 'CAGR residencial 2023-28', val: 14.15, max: 30,  cls: 'yellow' },
+      potencial_bi: 10,
+      titulo: 'Contexto Brasil',
+      kpis: [
+        { icon: '💧', val: '~50M',    label: 'Hidrômetros sem leitura inteligente no Brasil' },
+        { icon: '📈', val: '14,2%',   label: 'CAGR residencial Brasil (2023–2028)' },
+        { icon: '🏚️', val: '5.570',   label: 'Municípios — maioria sem smart metering' },
+        { icon: '💰', val: 'R$ 10bi', label: 'Potencial de mercado estimado (Brasil)' },
       ],
     },
 
@@ -853,10 +879,13 @@ let DATA = {
     },
 
     brasil: {
-      potencial_bi:  32,      // R$ bilhões em contratos PPP ativos (ABCIP 2024)
-      barras: [
-        { label: 'Municipal / Vias Públicas (share)',    val: 56,   max: 100, cls: ''       },
-        { label: 'CAGR segmento comercial (2024–2029)', val: 18.0, max: 30,  cls: 'yellow' },
+      potencial_bi: 32,
+      titulo: 'Contexto Brasil',
+      kpis: [
+        { icon: '💡', val: '~22M',    label: 'Pontos de IP no Brasil (IBGE/ABCIP)' },
+        { icon: '🔧', val: '~12M',    label: 'Pontos ainda sem LED — a modernizar' },
+        { icon: '📋', val: 'R$ 32bi', label: 'PPPs de IP ativas no Brasil (ABCIP 2024)' },
+        { icon: '⚡', val: '~65%',    label: 'Economia energética média pós-retrofit LED' },
       ],
     },
 
@@ -2117,8 +2146,18 @@ function renderPanel(id) {
         <div class="chart-wrap"><canvas id="chart-bar-${id}"></canvas></div>
         <div class="card">
           <h3>${b.titulo||'Contexto Brasil'}</h3>
+          ${(b.kpis||[]).length ? `
+          <div class="brasil-kpis">
+            ${b.kpis.map(k => `
+              <div class="brasil-kpi">
+                <span class="brasil-kpi-icon">${k.icon||'📊'}</span>
+                <div class="brasil-kpi-val">${k.val}</div>
+                <div class="brasil-kpi-label">${k.label}</div>
+                ${k.src ? `<div class="brasil-kpi-src"><a href="${k.src}" target="_blank">↗ fonte</a></div>` : ''}
+              </div>`).join('')}
+          </div>` : `
           <div class="progress-list">
-            ${b.barras.map(bar => `
+            ${(b.barras||[]).map(bar => `
               <div class="progress-item">
                 <label>
                   <span>${bar.label}${bar.url ? `<a href="${bar.url}" target="_blank" class="uplink" title="Ver fonte">↗</a>` : ''}</span>
@@ -2126,7 +2165,7 @@ function renderPanel(id) {
                 </label>
                 <div class="progress-track"><div class="progress-fill ${bar.cls||''}" style="width:${(bar.val/bar.max)*100}%"></div></div>
               </div>`).join('')}
-          </div>
+          </div>`}
         </div>
       </div>
       ${(m.fontes||[]).length ? `<div class="fontes-row"><span class="fonte-label">Fontes:</span>${(m.fontes||[]).map(f=>`<a href="${f.url}" target="_blank" class="fonte-pill">${f.label} ↗</a>`).join('')}</div>` : ''}

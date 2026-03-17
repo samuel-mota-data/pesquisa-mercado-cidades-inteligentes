@@ -611,6 +611,51 @@
     .tec-li-empty { color:#bbb; font-style:italic; font-size:.65rem; padding-left:0; }
     .tec-li-empty::before { display:none; }
 
+    /* --- Arquitetura --- */
+    .arq-wrap { max-width:1100px; margin:0 auto; padding:24px 16px 32px; display:flex; flex-direction:column; gap:32px; }
+    .arq-section-title { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--blue-dark); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+    .arq-section-title::after { content:''; flex:1; height:1px; background:#dde3f0; }
+
+    /* Camadas */
+    .arq-camadas { display:flex; flex-direction:column; gap:8px; }
+    .arq-layer { display:flex; align-items:flex-start; gap:0; border-radius:8px; overflow:hidden; background:var(--white); box-shadow:var(--card-shadow); }
+    .arq-layer-accent { width:5px; flex-shrink:0; }
+    .arq-layer-body { flex:1; padding:12px 14px; }
+    .arq-layer-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+    .arq-layer-name { font-size:.78rem; font-weight:700; color:var(--blue-dark); flex:1; }
+    .arq-chips { display:flex; flex-wrap:wrap; gap:6px; }
+    .arq-chip { background:var(--gray-light); color:var(--text-dark); font-size:.68rem; font-weight:600; padding:3px 10px; border-radius:99px; display:flex; align-items:center; gap:5px; }
+    .arq-chip-del { background:none; border:none; color:#aab; cursor:pointer; font-size:.75rem; line-height:1; padding:0; }
+    .arq-chip-del:hover { color:var(--red-risk); }
+    .arq-chip-add { background:none; border:1px dashed #c0c8dc; color:var(--text-mid); font-size:.65rem; padding:3px 9px; border-radius:99px; cursor:pointer; }
+    .arq-chip-add:hover { border-color:var(--teal); color:var(--blue-dark); }
+    .arq-layer-actions { display:flex; gap:2px; opacity:0; transition:opacity .15s; }
+    .arq-layer:hover .arq-layer-actions { opacity:1; }
+
+    /* APIs table */
+    .arq-table { width:100%; border-collapse:collapse; font-size:.72rem; }
+    .arq-table th { text-align:left; padding:7px 10px; font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--blue-dark); border-bottom:2px solid #dde3f0; }
+    .arq-table td { padding:8px 10px; border-bottom:1px solid #eef0f7; color:var(--text-dark); vertical-align:middle; }
+    .arq-table tr:last-child td { border-bottom:none; }
+    .arq-table tbody tr:hover td { background:var(--gray-light); }
+    .arq-table input, .arq-table select { font-family:inherit; font-size:.72rem; border:1px solid #c8d0e0; border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); width:100%; }
+    .arq-badge { display:inline-block; font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:2px 8px; border-radius:99px; }
+    .arq-badge.planejado    { background:#eef0f7; color:#6677aa; }
+    .arq-badge.ativo        { background:#e0faf0; color:#0a8055; }
+    .arq-badge.descontinuado{ background:#fdeaea; color:var(--red-risk); }
+    .arq-row-actions { display:flex; gap:2px; }
+
+    /* Fluxos */
+    .arq-fluxos { display:flex; flex-direction:column; gap:8px; }
+    .arq-fluxo { background:var(--white); border-radius:8px; box-shadow:var(--card-shadow); padding:12px 16px; display:flex; align-items:center; gap:12px; }
+    .arq-fluxo-main { flex:1; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .arq-fluxo-node { font-size:.8rem; font-weight:700; color:var(--blue-dark); }
+    .arq-fluxo-arrow { color:var(--teal); font-size:1rem; font-weight:700; }
+    .arq-fluxo-proto { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.5px; background:var(--gray-light); color:var(--text-mid); padding:2px 8px; border-radius:99px; }
+    .arq-fluxo-desc { font-size:.7rem; color:var(--text-mid); flex-basis:100%; margin-top:2px; }
+    .arq-fluxo-actions { display:flex; gap:2px; opacity:0; transition:opacity .15s; }
+    .arq-fluxo:hover .arq-fluxo-actions { opacity:1; }
+
     /* --- Coverflow --- */
     .cflow-wrap  { position:relative; width:100%; height:270px; background:#0d1535; border-radius:12px; overflow:hidden; margin-bottom:22px; }
     .cflow-stage { position:absolute; inset:0; perspective:900px; }
@@ -989,6 +1034,11 @@ function defaultData(id, tab) {
     concorrentes_nota: '',
     gestao: [],
     tecnologia: [],
+    arquitetura: {
+      camadas: [],
+      apis: [],
+      fluxos: [],
+    },
     benchmark: {
       nome: '—',
       produtos: [],
@@ -1432,7 +1482,7 @@ function renderPanel(id) {
 
 </main></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div id="tecnologia-panel-${id}"></div></div>
-  <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div class="subtab-empty">Em desenvolvimento.</div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div id="arquitetura-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
 `;
 
@@ -1481,6 +1531,7 @@ function renderPanel(id) {
   setCalcReadonly(id, true);
   renderGestaoPanel(id);
   renderTecnologiaPanel(id);
+  renderArquiteturaPanel(id);
   // restaura sub-aba ativa se diferente de mercado
   const _sub = activeSubTab[id];
   if (_sub && _sub !== 'mercado') activateSubTab(id, _sub);
@@ -2174,6 +2225,263 @@ function addTecItem(id) {
   DATA[id].tecnologia.push({ titulo:'', resumo:'', fluxo:[], pros:[], contras:[], quando_usar:[], quando_evitar:[], imagens:[] });
   renderTecnologiaPanel(id);
   _tecEditForm(id, i);
+}
+
+/* ---- Arquitetura ---- */
+function renderArquiteturaPanel(id) {
+  const container = document.getElementById('arquitetura-panel-' + id);
+  if (!container) return;
+  const d = DATA[id].arquitetura || (DATA[id].arquitetura = { camadas:[], apis:[], fluxos:[] });
+
+  /* --- Camadas --- */
+  const layerAccents = ['#00c8d4','#2540c0','#a8e063','#f5c842','#e03c3c','#9b5de5'];
+  const camadasHtml = d.camadas.map((layer, li) => {
+    const accent = layerAccents[li % layerAccents.length];
+    const chips = (layer.componentes||[]).map((c, ci) =>
+      `<span class="arq-chip">${c}<button class="arq-chip-del" onclick="delArqChip('${id}',${li},${ci})" title="Remover">×</button></span>`
+    ).join('');
+    return `<div class="arq-layer" id="arq-layer-${id}-${li}">
+      <div class="arq-layer-accent" style="background:${accent}"></div>
+      <div class="arq-layer-body">
+        <div class="arq-layer-head">
+          <div class="arq-layer-name" id="arq-lname-${id}-${li}">${layer.nome || 'Camada'}</div>
+          <div class="arq-layer-actions">
+            <button class="tl-btn" onclick="editArqLayerName('${id}',${li})" title="Renomear">✏</button>
+            <button class="tl-btn tl-del" onclick="delArqLayer('${id}',${li})" title="Excluir">×</button>
+          </div>
+        </div>
+        <div class="arq-chips">
+          ${chips}
+          <button class="arq-chip-add" onclick="addArqChip('${id}',${li})">+ componente</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  /* --- APIs --- */
+  const apisRows = d.apis.map((api, ai) =>
+    `<tr>
+      <td>${api.nome||'—'}</td>
+      <td><span class="arq-fluxo-proto">${api.tipo||'—'}</span></td>
+      <td style="font-family:monospace;font-size:.67rem;color:var(--text-mid)">${api.endpoint||'—'}</td>
+      <td>${api.desc||'—'}</td>
+      <td><span class="arq-badge ${api.status||'planejado'}">${api.status||'planejado'}</span></td>
+      <td>
+        <div class="arq-row-actions">
+          <button class="tl-btn" onclick="editArqApi('${id}',${ai})" title="Editar">✏</button>
+          <button class="tl-btn tl-del" onclick="delArqApi('${id}',${ai})" title="Excluir">×</button>
+        </div>
+      </td>
+    </tr>`
+  ).join('');
+
+  /* --- Fluxos --- */
+  const fluxosHtml = d.fluxos.map((f, fi) =>
+    `<div class="arq-fluxo">
+      <div class="arq-fluxo-main">
+        <span class="arq-fluxo-node">${f.origem||'—'}</span>
+        <span class="arq-fluxo-arrow">→</span>
+        <span class="arq-fluxo-node">${f.destino||'—'}</span>
+        ${f.protocolo ? `<span class="arq-fluxo-proto">${f.protocolo}</span>` : ''}
+        ${f.desc ? `<span class="arq-fluxo-desc">${f.desc}</span>` : ''}
+      </div>
+      <div class="arq-fluxo-actions">
+        <button class="tl-btn" onclick="editArqFluxo('${id}',${fi})" title="Editar">✏</button>
+        <button class="tl-btn tl-del" onclick="delArqFluxo('${id}',${fi})" title="Excluir">×</button>
+      </div>
+    </div>`
+  ).join('');
+
+  container.innerHTML = `<div class="arq-wrap">
+
+    <div>
+      <div class="arq-section-title">Stack de Camadas</div>
+      <div class="arq-camadas">${camadasHtml || '<div style="color:var(--text-mid);font-size:.74rem">Nenhuma camada.</div>'}</div>
+      <div style="margin-top:10px">
+        <button class="gestao-add-btn" onclick="addArqLayer('${id}')">+ Adicionar camada</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="arq-section-title">Catálogo de APIs & Integrações</div>
+      <div style="overflow-x:auto">
+        <table class="arq-table">
+          <thead><tr><th>Nome</th><th>Tipo</th><th>Endpoint</th><th>Descrição</th><th>Status</th><th></th></tr></thead>
+          <tbody id="arq-apis-${id}">${apisRows || '<tr><td colspan="6" style="color:var(--text-mid);text-align:center;padding:16px">Nenhuma API cadastrada.</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:10px">
+        <button class="gestao-add-btn" onclick="addArqApi('${id}')">+ Adicionar API</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="arq-section-title">Fluxos de Dados</div>
+      <div class="arq-fluxos">${fluxosHtml || '<div style="color:var(--text-mid);font-size:.74rem">Nenhum fluxo.</div>'}</div>
+      <div style="margin-top:10px">
+        <button class="gestao-add-btn" onclick="addArqFluxo('${id}')">+ Adicionar fluxo</button>
+      </div>
+    </div>
+
+  </div>`;
+}
+
+/* --- Camadas --- */
+function addArqLayer(id) {
+  DATA[id].arquitetura.camadas.push({ nome: 'Nova Camada', componentes: [] });
+  persistData(id); renderArquiteturaPanel(id);
+  editArqLayerName(id, DATA[id].arquitetura.camadas.length - 1);
+}
+
+function delArqLayer(id, li) {
+  showConfirm('Excluir camada?', 'Todos os componentes desta camada serão removidos.', () => {
+    DATA[id].arquitetura.camadas.splice(li, 1);
+    persistData(id); renderArquiteturaPanel(id);
+  });
+}
+
+function editArqLayerName(id, li) {
+  const el = document.getElementById(`arq-lname-${id}-${li}`);
+  if (!el) return;
+  const cur = DATA[id].arquitetura.camadas[li].nome;
+  el.innerHTML = `<input class="sec-edit-input" id="arq-lname-input-${id}-${li}" value="${cur.replace(/"/g,'&quot;')}" style="width:180px;padding:3px 7px"
+    onblur="saveArqLayerName('${id}',${li})" onkeydown="if(event.key==='Enter')saveArqLayerName('${id}',${li})">`;
+  document.getElementById(`arq-lname-input-${id}-${li}`)?.focus();
+}
+
+function saveArqLayerName(id, li) {
+  const val = document.getElementById(`arq-lname-input-${id}-${li}`)?.value.trim();
+  if (val !== undefined) DATA[id].arquitetura.camadas[li].nome = val || 'Camada';
+  persistData(id); renderArquiteturaPanel(id);
+}
+
+function addArqChip(id, li) {
+  const val = prompt('Nome do componente:');
+  if (!val?.trim()) return;
+  DATA[id].arquitetura.camadas[li].componentes.push(val.trim());
+  persistData(id); renderArquiteturaPanel(id);
+}
+
+function delArqChip(id, li, ci) {
+  DATA[id].arquitetura.camadas[li].componentes.splice(ci, 1);
+  persistData(id); renderArquiteturaPanel(id);
+}
+
+/* --- APIs --- */
+function _arqApiForm(id, ai, api) {
+  const tbody = document.getElementById(`arq-apis-${id}`);
+  if (!tbody) return;
+  const rowId = `arq-api-form-${id}`;
+  const existing = document.getElementById(rowId);
+  if (existing) existing.remove();
+  const row = document.createElement('tr');
+  row.id = rowId;
+  row.innerHTML = `
+    <td><input id="arq-api-nome-${id}" value="${(api.nome||'').replace(/"/g,'&quot;')}" placeholder="Nome"></td>
+    <td><input id="arq-api-tipo-${id}" value="${(api.tipo||'').replace(/"/g,'&quot;')}" placeholder="REST / MQTT..."></td>
+    <td><input id="arq-api-ep-${id}"   value="${(api.endpoint||'').replace(/"/g,'&quot;')}" placeholder="/endpoint"></td>
+    <td><input id="arq-api-desc-${id}" value="${(api.desc||'').replace(/"/g,'&quot;')}" placeholder="Descrição"></td>
+    <td><select id="arq-api-stat-${id}">
+      <option value="planejado"${api.status==='planejado'?' selected':''}>Planejado</option>
+      <option value="ativo"${api.status==='ativo'?' selected':''}>Ativo</option>
+      <option value="descontinuado"${api.status==='descontinuado'?' selected':''}>Descontinuado</option>
+    </select></td>
+    <td>
+      <div class="arq-row-actions">
+        <button class="calc-action-btn discard" onclick="renderArquiteturaPanel('${id}')">✕</button>
+        <button class="calc-action-btn save" onclick="saveArqApi('${id}',${ai})">✓</button>
+      </div>
+    </td>`;
+  tbody.appendChild(row);
+  document.getElementById(`arq-api-nome-${id}`)?.focus();
+}
+
+function addArqApi(id) {
+  const ai = DATA[id].arquitetura.apis.length;
+  DATA[id].arquitetura.apis.push({ nome:'', tipo:'', endpoint:'', desc:'', status:'planejado' });
+  renderArquiteturaPanel(id);
+  _arqApiForm(id, ai, DATA[id].arquitetura.apis[ai]);
+}
+
+function editArqApi(id, ai) {
+  _arqApiForm(id, ai, DATA[id].arquitetura.apis[ai]);
+}
+
+function saveArqApi(id, ai) {
+  const g = s => document.getElementById(s);
+  DATA[id].arquitetura.apis[ai] = {
+    nome:     g(`arq-api-nome-${id}`)?.value.trim() || '',
+    tipo:     g(`arq-api-tipo-${id}`)?.value.trim() || '',
+    endpoint: g(`arq-api-ep-${id}`)?.value.trim()   || '',
+    desc:     g(`arq-api-desc-${id}`)?.value.trim()  || '',
+    status:   g(`arq-api-stat-${id}`)?.value         || 'planejado',
+  };
+  persistData(id); renderArquiteturaPanel(id);
+}
+
+function delArqApi(id, ai) {
+  showConfirm('Excluir API?', 'Esta entrada será removida do catálogo.', () => {
+    DATA[id].arquitetura.apis.splice(ai, 1);
+    persistData(id); renderArquiteturaPanel(id);
+  });
+}
+
+/* --- Fluxos --- */
+function _arqFluxoForm(id, fi, fluxo) {
+  const container = document.getElementById('arquitetura-panel-' + id);
+  if (!container) return;
+  const formId = `arq-fluxo-form-${id}`;
+  const existing = document.getElementById(formId);
+  if (existing) existing.remove();
+  const wrap = container.querySelector('.arq-fluxos');
+  if (!wrap) return;
+  const div = document.createElement('div');
+  div.id = formId;
+  div.className = 'arq-fluxo';
+  div.style.flexWrap = 'wrap';
+  div.innerHTML = `
+    <div style="display:flex;gap:6px;flex:1;flex-wrap:wrap;align-items:center">
+      <input class="sec-edit-input" id="arq-fl-orig-${id}"  value="${(fluxo.origem||'').replace(/"/g,'&quot;')}"    placeholder="Origem"    style="width:120px">
+      <span class="arq-fluxo-arrow">→</span>
+      <input class="sec-edit-input" id="arq-fl-dest-${id}"  value="${(fluxo.destino||'').replace(/"/g,'&quot;')}"   placeholder="Destino"   style="width:120px">
+      <input class="sec-edit-input" id="arq-fl-proto-${id}" value="${(fluxo.protocolo||'').replace(/"/g,'&quot;')}" placeholder="Protocolo" style="width:100px">
+      <input class="sec-edit-input" id="arq-fl-desc-${id}"  value="${(fluxo.desc||'').replace(/"/g,'&quot;')}"      placeholder="Descrição" style="flex:1;min-width:160px">
+    </div>
+    <div style="display:flex;gap:5px;margin-top:4px">
+      <button class="calc-action-btn discard" onclick="renderArquiteturaPanel('${id}')">Cancelar</button>
+      <button class="calc-action-btn save"    onclick="saveArqFluxo('${id}',${fi})">Salvar</button>
+    </div>`;
+  wrap.appendChild(div);
+  document.getElementById(`arq-fl-orig-${id}`)?.focus();
+}
+
+function addArqFluxo(id) {
+  const fi = DATA[id].arquitetura.fluxos.length;
+  DATA[id].arquitetura.fluxos.push({ origem:'', destino:'', protocolo:'', desc:'' });
+  renderArquiteturaPanel(id);
+  _arqFluxoForm(id, fi, DATA[id].arquitetura.fluxos[fi]);
+}
+
+function editArqFluxo(id, fi) {
+  _arqFluxoForm(id, fi, DATA[id].arquitetura.fluxos[fi]);
+}
+
+function saveArqFluxo(id, fi) {
+  const g = s => document.getElementById(s);
+  DATA[id].arquitetura.fluxos[fi] = {
+    origem:    g(`arq-fl-orig-${id}`)?.value.trim()  || '',
+    destino:   g(`arq-fl-dest-${id}`)?.value.trim()  || '',
+    protocolo: g(`arq-fl-proto-${id}`)?.value.trim() || '',
+    desc:      g(`arq-fl-desc-${id}`)?.value.trim()  || '',
+  };
+  persistData(id); renderArquiteturaPanel(id);
+}
+
+function delArqFluxo(id, fi) {
+  showConfirm('Excluir fluxo?', 'Este fluxo de dados será removido.', () => {
+    DATA[id].arquitetura.fluxos.splice(fi, 1);
+    persistData(id); renderArquiteturaPanel(id);
+  });
 }
 
 /* ---- Coverflow de imagens ---- */

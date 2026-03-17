@@ -795,10 +795,10 @@ let DATA = {
       potencial_bi: 10,
       titulo: 'Contexto Brasil',
       kpis: [
-        { icon: '💧', val: '~50M',    label: 'Hidrômetros sem leitura inteligente no Brasil' },
-        { icon: '📈', val: '14,2%',   label: 'CAGR residencial Brasil (2023–2028)' },
-        { icon: '🏚️', val: '5.570',   label: 'Municípios — maioria sem smart metering' },
-        { icon: '💰', val: 'R$ 10bi', label: 'Potencial de mercado estimado (Brasil)' },
+        { icon: '💧', val: '4,4M',    label: 'Hidrômetros a substituir — contrato Sabesp+Vivo (SP)', src: 'https://www.poder360.com.br/poder-brasil/sabesp-troca-44-milhoes-de-hidrometros-por-modelos-inteligentes-em-sp/' },
+        { icon: '💰', val: 'R$ 3,8bi', label: 'Contrato Sabesp-Vivo — maior projeto IoT de água do mundo', src: 'https://teletime.com.br/06/08/2025/sabesp-e-vivo-fecham-contrato-de-r-38-bilhoes-para-iot-em-medidores/' },
+        { icon: '📊', val: 'US$ 274M', label: 'Mercado smart water meters Brasil 2024', src: 'https://www.grandviewresearch.com/horizon/outlook/smart-water-meters-market/brazil' },
+        { icon: '📈', val: '8,3%',    label: 'CAGR Brasil smart water meters 2025–2030 (GVR)', src: 'https://www.grandviewresearch.com/horizon/outlook/smart-water-meters-market/brazil' },
       ],
     },
 
@@ -882,10 +882,10 @@ let DATA = {
       potencial_bi: 32,
       titulo: 'Contexto Brasil',
       kpis: [
-        { icon: '💡', val: '~22M',    label: 'Pontos de IP no Brasil (IBGE/ABCIP)' },
-        { icon: '🔧', val: '~12M',    label: 'Pontos ainda sem LED — a modernizar' },
-        { icon: '📋', val: 'R$ 32bi', label: 'PPPs de IP ativas no Brasil (ABCIP 2024)' },
-        { icon: '⚡', val: '~65%',    label: 'Economia energética média pós-retrofit LED' },
+        { icon: '💡', val: '22M',     label: 'Pontos de IP no parque nacional (Censo ABCIP 2023)', src: 'https://static.poder360.com.br/2024/09/Censo-Iluminacao-Publica-Brasil.pdf' },
+        { icon: '📋', val: '116 PPPs', label: 'Contratos PPP assinados — R$ 27bi / 4,2M pontos LED', src: 'https://www.lacazmartins.com.br/wp-content/uploads/2024/05/ABCIP-PANORAMA.pdf' },
+        { icon: '🔧', val: '821',     label: 'Projetos PPP em pipeline — 5,8M pontos / 62M hab.', src: 'https://prefeitosegestoes.com.br/portal/abcip-novo-panorama-da-participacao-privada-na-iluminacao-publica/' },
+        { icon: '⚡', val: '19,6%',   label: 'LED no parque atual — 80% ainda a modernizar (Censo 2023)', src: 'https://static.poder360.com.br/2024/09/Censo-Iluminacao-Publica-Brasil.pdf' },
       ],
     },
 
@@ -974,11 +974,13 @@ let DATA = {
     },
 
     brasil: {
-      potencial_bi: 8,
+      potencial_bi: 14,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Share Governo / Segurança Pública (2024)', val: 45, max: 100, cls: ''       },
-        { label: 'CAGR segmento smart city câmeras (2024–29)', val: 14.5, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '💰', val: 'R$ 14bi',  label: 'Faturamento segurança eletrônica no Brasil 2024 (ABESE)', src: 'https://monitormercantil.com.br/seguranca-eletronica-faturou-r-14-bilhoes-em-2024-no-brasil/' },
+        { icon: '📷', val: '40.000',   label: 'Câmeras integradas ao Smart Sampa SP (maior sistema da América Latina)', src: 'https://prefeitura.sp.gov.br/w/programa-smart-sampa-atinge-meta-para-2025-e-j%C3%A1-soma-40-mil-c%C3%A2meras-integradas-ao-maior-sistema-de-monitoramento-da-am%C3%A9rica-latina' },
+        { icon: '🎯', val: '20.000',   label: 'Meta CIVITAS Rio: câmeras integradas até 2028', src: 'https://prefeitura.rio/cidade/prefeitura-do-rio-expande-civitas-que-tera-20-mil-cameras-ate-2028/' },
+        { icon: '📈', val: '~12%',     label: 'CAGR projetado segurança eletrônica Brasil 2024–2026', src: 'https://revistasegurancaeletronica.com.br/tendencias-para-o-mercado-de-seguranca-eletronica-no-brasil-em-2026/' },
       ],
     },
 
@@ -1069,9 +1071,11 @@ let DATA = {
     brasil: {
       potencial_bi: 12,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Pontos de IP ainda não convertidos para LED', val: 55, max: 100, cls: ''       },
-        { label: 'Economia energética média pós-retrofit',      val: 65, max: 100, cls: 'yellow' },
+      kpis: [
+        { icon: '💡', val: '19,6%',    label: 'LED no parque nacional — 80% ainda sem LED (Censo ABCIP 2023)', src: 'https://static.poder360.com.br/2024/09/Censo-Iluminacao-Publica-Brasil.pdf' },
+        { icon: '💰', val: 'R$ 151M',  label: 'PROCEL Reluz 2025: recursos federais para retrofit LED', src: 'https://www.gov.br/mme/pt-br/assuntos/noticias/mme-anuncia-mais-de-r-150-milhoes-para-modernizacao-da-iluminacao-publica-em-municipios' },
+        { icon: '🏙️', val: '119',     label: 'Municípios contemplados PROCEL Reluz Chamada 01/2025', src: 'https://enbpar.gov.br/procel-divulga-resultado-da-chamada-publica-para-projetos-de-iluminacao-publica-com-tecnologia-led/' },
+        { icon: '⚡', val: 'até 55%',  label: 'Potencial de economia energética com substituição total por LED', src: 'https://www.canalenergia.com.br/noticias/53289489/potencial-de-eficiencia-da-iluminacao-publica-pode-chegar-a-55' },
       ],
     },
 
@@ -1157,9 +1161,11 @@ let DATA = {
     brasil: {
       potencial_bi: 1.5,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Share governo/smart city no mercado AQM (2024)', val: 30, max: 100, cls: ''       },
-        { label: 'CAGR AQM América Latina (2024–2029)',             val: 10.5, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '📋', val: 'CONAMA 506', label: 'Nova regulação qualidade do ar — alinhada aos padrões OMS (jul/2024)', src: 'https://www.gov.br/mma/pt-br/assuntos/noticias/conama-aprova-prazos-para-novos-padroes-de-qualidade-do-ar' },
+        { icon: '🔬', val: '22',         label: 'Estações automáticas CETESB ativas na RMSP', src: 'https://cetesb.sp.gov.br/ar/redes-de-monitoramento/' },
+        { icon: '⏰', val: 'Jan/2026',   label: 'Prazo: IQAr em tempo real obrigatório (CONAMA 506)', src: 'https://agenciabrasil.ebc.com.br/geral/noticia/2024-06/qualidade-do-ar-no-pais-sera-adequada-aos-padroes-da-oms' },
+        { icon: '📈', val: '10,5%',      label: 'CAGR estimado AQM América Latina (2024–2029)' },
       ],
     },
 
@@ -1247,9 +1253,11 @@ let DATA = {
     brasil: {
       potencial_bi: 2,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Municípios brasileiros em área de risco de enchentes', val: 22, max: 100, cls: ''       },
-        { label: 'CAGR monitoramento hidrológico América do Sul (2024–29)', val: 12.5, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '🏙️', val: '1.133',    label: 'Municípios monitorados pelo CEMADEN em 2024 (~20% das cidades)', src: 'https://agenciagov.ebc.com.br/noticias/202501/cemaden-registra-recorde-de-alertas-e-mais-de-1-6-mil-ocorrencias-de-desastre-no-brasil-em-2024' },
+        { icon: '🎯', val: '2.100',     label: 'Meta CEMADEN: municípios cobertos até 2026 (+70% expansão)', src: 'https://agenciabrasil.ebc.com.br/meio-ambiente/noticia/2024-12/cemaden-quer-ampliar-em-70-locais-monitorados-contra-desastres' },
+        { icon: '💰', val: 'R$ 110M',   label: 'Novo PAC: aporte federal para expansão CEMADEN (R$ 50M + R$ 60M)', src: 'https://www.gov.br/cemaden/pt-br/assuntos/noticias-cemaden/desde-2023-novo-pac-amplia-recursos-para-a-expansao-e-modernizacao-da-rede-de-monitoramento-do-cemaden' },
+        { icon: '🔧', val: '847',       label: 'Novos equipamentos instalados em 2025 em 353 municípios', src: 'https://consecti.org.br/envio-de-alertas-de-risco-de-desastres-naturais-e-acoes-de-prevencao-ajudaram-a-salvar-vidas-em-2025/' },
       ],
     },
 
@@ -1337,9 +1345,11 @@ let DATA = {
     brasil: {
       potencial_bi: 0.8,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Share agronegócio no mercado de estações met. (2024)', val: 42, max: 100, cls: ''       },
-        { label: 'CAGR estações met. IoT no Brasil (2024–2029)',         val: 9.5, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '🌡️', val: '566',     label: 'Estações automáticas INMET ativas nos 27 estados', src: 'https://opresenterural.com.br/inmet-e-eletrobras-investirao-r-49-milhoes-em-novas-estacoes-meteorologicas/' },
+        { icon: '💰', val: 'R$ 49M',   label: 'Investimento INMET + Eletrobras em +220 novas estações', src: 'https://cenarioenergia.com.br/2025/09/04/inmet-e-eletrobras-investirao-r-49-milhoes-em-expansao-da-rede-meteorologica-nacional/' },
+        { icon: '🌊', val: '98',       label: 'Novas estações no RS pós-enchentes (até fim 2025)', src: 'https://www.brasildefato.com.br/2025/04/14/rs-tera-rede-moderna-de-monitoramento-climatico-com-quase-100-novas-estacoes-ate-o-final-de-2025/' },
+        { icon: '🏙️', val: '5.570',   label: 'Municípios brasileiros — apenas 566 estações INMET (déficit enorme)' },
       ],
     },
 
@@ -1425,9 +1435,11 @@ let DATA = {
     brasil: {
       potencial_bi: 4,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Share governo/municipal no mercado (2024)',          val: 70, max: 100, cls: ''       },
-        { label: 'Redução média de congestionamento com IA adaptativa', val: 25, max: 100, cls: 'yellow' },
+      kpis: [
+        { icon: '💰', val: 'R$ 1,12bi', label: 'Investimento SP em semáforos inteligentes (programa completo)', src: 'https://proximonivel.claro.com.br/semaforos-inteligentes-sao-paulo/' },
+        { icon: '🚦', val: '2.586',     label: 'Meta SP: semáforos inteligentes até fim de 2026', src: 'https://proximonivel.claro.com.br/semaforos-inteligentes-sao-paulo/' },
+        { icon: '📊', val: '51%',       label: 'Fortaleza: percentual de semáforos já inteligentes', src: 'https://crusoe.com.br/variedades/novos-semaforos-inteligentes-podem-transformar-o-transito-nas-cidades-brasileiras/' },
+        { icon: '💰', val: 'R$ 12M',    label: 'Curitiba: investimento Setran em semáforos 2025', src: 'https://www.bandab.com.br/curitiba/semaforos-inteligentes-sitio-cercado-curitiba/' },
       ],
     },
 
@@ -1515,9 +1527,11 @@ let DATA = {
     brasil: {
       potencial_bi: 6,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Veículos rastreados no Brasil (share da frota total)', val: 38, max: 100, cls: ''       },
-        { label: 'CAGR frota GPS Brasil (2024–2029)',                     val: 16.0, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '🚛', val: '1,5M+',  label: 'Veículos rastreados no Brasil (2025)', src: 'https://www.luminitracker.com.br/post/perspectivas-para-o-rastreamento-veicular-no-brasil-em-2025' },
+        { icon: '📈', val: '~11%',   label: 'CAGR global rastreamento veicular 2021–2026', src: 'https://hinova.com.br/previsoes-para-o-rastreamento-veicular-em-2025-tudo-o-que-voce-precisa-saber/' },
+        { icon: '🏢', val: '>20%',   label: 'Crescimento terceirização de frotas Brasil 2024', src: 'https://transportemoderno.com.br/2025/03/19/unidas-alcanca-r-932-milhoes-em-receita-com-terceirizacao-de-frotas-pesadas-em-2024/' },
+        { icon: '📋', val: 'ANTT',   label: 'Obrigatoriedade rastreamento de cargas perigosas — regulação federal' },
       ],
     },
 
@@ -1607,9 +1621,11 @@ let DATA = {
     brasil: {
       potencial_bi: 2,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Share shopping / comercial no mercado (2024)',  val: 42, max: 100, cls: ''       },
-        { label: 'Redução de busca por vaga com sistema guiado',  val: 30, max: 100, cls: 'yellow' },
+      kpis: [
+        { icon: '🌎', val: 'USD 6,3bi', label: 'Mercado global smart parking 2023 — CAGR 18,35% até 2031', src: 'https://360news.com.br/tamanho-do-mercado-solucao-de-estacionamento-inteligente-da-cidade-participacao-esperada-ate-2024-2031/' },
+        { icon: '🅿️', val: 'EasyPark',  label: 'EasyPark opera Zona Azul Digital em dezenas de cidades brasileiras', src: 'https://www.easypark.app.br/' },
+        { icon: '📱', val: 'Zul+ / Digipare', label: 'Apps de Zona Azul digital consolidados em capitais brasileiras' },
+        { icon: '📊', val: '~30%',      label: 'Redução estimada no tempo de busca por vaga com guiamento inteligente' },
       ],
     },
 
@@ -1698,9 +1714,11 @@ let DATA = {
     brasil: {
       potencial_bi: 18,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Medidores inteligentes implantados no Brasil (meta 2030: 70M)', val: 18, max: 100, cls: ''       },
-        { label: 'CAGR smart meter energia no Brasil (2024–2030)',               val: 28.0, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '⚡', val: '~90M',    label: 'Unidades consumidoras Grupo B — escala do mercado brasileiro', src: 'https://www.osetoreletrico.com.br/brasil-avanca-na-modernizacao-do-setor-eletrico-com-a-implementacao-de-medidores-inteligentes/' },
+        { icon: '📊', val: '~4M',     label: 'Smart meters já instalados no Brasil (de 90M possíveis)', src: 'https://static.poder360.com.br/2025/09/NOTA-TECNICA-No-282025CGDEDPSESNEE-medidores-inteligentes.pdf' },
+        { icon: '🎯', val: '3,6M',    label: 'Meta: novos smart meters nos próximos 12 meses (Portaria MME 111/2025)', src: 'https://exame.com/esg/o-futuro-dos-medidores-inteligentes-no-brasil-movimentos-regulatorios-sinalizam-uma-nova-era/' },
+        { icon: '📋', val: 'ANEEL 2026', label: 'Consulta pública ANEEL para obrigatoriedade massiva de smart meters', src: 'https://www.gov.br/aneel/pt-br/assuntos/noticias/2026/aneel-consulta-sociedade-sobre-modernizacao-dos-sistemas-de-medicao' },
       ],
     },
 
@@ -1788,9 +1806,11 @@ let DATA = {
     brasil: {
       potencial_bi: 3,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Share municipal / praças no mercado de Wi-Fi público (2024)', val: 45, max: 100, cls: ''       },
-        { label: 'CAGR Wi-Fi público no Brasil (2024–2029)',                    val: 20.0, max: 30, cls: 'yellow' },
+      kpis: [
+        { icon: '🌐', val: '2.600+',   label: 'Municípios atendidos pelo Programa Wi-Fi Brasil (Min. Comunicações)', src: 'https://www.gov.br/mcom/pt-br/noticias/2025/fevereiro/programa-do-ministerio-das-comunicacoes-leva-internet-gratuita-para-mais-de-2-6-mil-municipios-brasileiros' },
+        { icon: '📡', val: '21.300+',  label: 'Pontos Wi-Fi Brasil instalados (NIC.br)', src: 'https://www.nic.br/noticia/na-midia/mais-de-21-3-mil-pontos-de-internet-do-wi-fi-brasil-sao-instalados/' },
+        { icon: '👥', val: '11M+',     label: 'Brasileiros beneficiados pelo programa', src: 'https://agenciagov.ebc.com.br/noticias/202502/programa-do-ministerio-das-comunicacoes-leva-internet-gratuita-para-mais-de-2-6-mil-municipios-brasileiros' },
+        { icon: '🎯', val: '28.000',   label: 'Meta total do Programa Wi-Fi Brasil (pontos de conexão)', src: 'https://www.gov.br/mcom/pt-br/acesso-a-informacao/acoes-e-programas/programas-projetos-acoes-obras-e-atividades/wi-fi-brasil' },
       ],
     },
 
@@ -1877,11 +1897,13 @@ let DATA = {
     },
 
     brasil: {
-      potencial_bi: 8,
+      potencial_bi: 39,
       titulo: 'Contexto Brasil',
-      barras: [
-        { label: 'Crescimento de geração solar distribuída no Brasil (2024 vs 2022)', val: 85, max: 100, cls: ''       },
-        { label: 'Share de energia solar na matriz elétrica brasileira (2024)',       val: 16, max: 100, cls: 'yellow' },
+      kpis: [
+        { icon: '☀️', val: '63,7 GW',  label: 'Capacidade solar instalada no Brasil (jan/2026) — 4º maior do mundo', src: 'https://www.absolar.org.br/noticias-externas/energia-solar-atinge-60-gw-de-capacidade-instalada-no-brasil/' },
+        { icon: '🏠', val: '3,76M',    label: 'Sistemas de micro/minigeração distribuída conectados (ABSOLAR)', src: 'https://canalsolar.com.br/gd-solar-40-gw-capacidade-instalada-brasil/' },
+        { icon: '💰', val: 'R$ 39,4bi', label: 'Investimentos projetados no setor solar Brasil 2025 (ABSOLAR)', src: 'https://nuvenergia.com.br/energias-renovaveis/projecoes-para-2025-o-futuro-da-energia-solar-no-brasil/' },
+        { icon: '📋', val: 'Lei 14.300', label: 'Marco Legal da Geração Distribuída — sancionado em 6/1/2022', src: 'https://www.gov.br/mme/pt-br/acesso-a-informacao/legislacao/leis/lei-n-14-300-2022.pdf/view' },
       ],
     },
 

@@ -2173,7 +2173,6 @@ function renderPanel(id) {
           <div class="brasil-kpis">
             ${b.kpis.map(k => `
               <div class="brasil-kpi">
-                <span class="brasil-kpi-icon">${k.icon||'📊'}</span>
                 <div class="brasil-kpi-val">${k.val}</div>
                 <div class="brasil-kpi-label">${k.label}</div>
                 ${k.src ? `<div class="brasil-kpi-src"><a href="${k.src}" target="_blank">↗ fonte</a></div>` : ''}

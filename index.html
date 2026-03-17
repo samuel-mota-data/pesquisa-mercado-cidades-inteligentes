@@ -420,6 +420,19 @@
     }
     .tab-sort-btn::after { content: '▾'; font-size: .85rem; }
     .tab-sort-btn:hover { color: var(--teal); }
+    .tab-nav-btn {
+      flex-shrink: 0;
+      background: none; border: none; cursor: pointer;
+      color: rgba(255,255,255,.45);
+      font-size: 1rem; line-height: 1;
+      width: 28px;
+      display: flex; align-items: center; justify-content: center;
+      transition: color .15s;
+      font-family: inherit;
+    }
+    .tab-nav-btn:hover { color: var(--teal); }
+    .tab-nav-btn:first-child { border-right: 1px solid rgba(255,255,255,.1); }
+    .tab-nav-btn:last-child  { border-left:  1px solid rgba(255,255,255,.1); }
     .tab-bar-scroll {
       flex: 1; overflow-x: auto;
       scrollbar-width: none; white-space: nowrap;
@@ -938,9 +951,11 @@ let DATA = {
 <nav class="tab-bar">
   <div class="tab-bar-center">
     <button class="tab-sort-btn" onclick="openTabSort()" title="Reordenar abas"></button>
-    <div class="tab-bar-scroll">
+    <button class="tab-nav-btn" onclick="scrollTabBar(-1)" title="← Anterior">‹</button>
+    <div class="tab-bar-scroll" id="tab-bar-scroll">
       <div class="tab-bar-inner" id="tab-bar"></div>
     </div>
+    <button class="tab-nav-btn" onclick="scrollTabBar(1)" title="Próxima →">›</button>
   </div>
 </nav>
 
@@ -2608,6 +2623,11 @@ function activateSubTab(tabId, subId) {
 
 /* ---- Ordenação de abas ---- */
 let _tabSortOrder = null;
+
+function scrollTabBar(dir) {
+  const el = document.getElementById('tab-bar-scroll');
+  if (el) el.scrollBy({ left: dir * 160, behavior: 'smooth' });
+}
 
 function openTabSort() {
   _tabSortOrder = [...TABS];

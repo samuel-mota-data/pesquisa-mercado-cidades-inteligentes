@@ -158,6 +158,13 @@
     .brasil-kpi-src a { color: var(--teal); opacity: .7; text-decoration: none; }
     .brasil-kpi-src a:hover { opacity: 1; }
 
+    /* ---- PARCEIROS ---- */
+    .parc-status-potencial   { background: rgba(100,120,180,.15); color: #8899cc; border: 1px solid rgba(100,120,180,.25); }
+    .parc-status-negociacao  { background: rgba(245,200,66,.15);  color: var(--yellow); border: 1px solid rgba(245,200,66,.3); }
+    .parc-status-ativo       { background: rgba(0,200,212,.12);   color: var(--teal);   border: 1px solid rgba(0,200,212,.25); }
+    .parc-status-estrategico { background: rgba(168,224,99,.12);  color: var(--green-light); border: 1px solid rgba(168,224,99,.3); }
+    .parc-add-btn { margin-top: 10px; }
+
     /* ---- OPEX TABLE ---- */
     .opex-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
@@ -2090,6 +2097,7 @@ function defaultData(id, tab) {
       margem_opex: 0,
     },
     riscos: [],
+    parceiros: [],
   };
 }
 
@@ -2123,6 +2131,7 @@ function renderPanel(id) {
       <button class="subtab-btn"        data-subtab="tecnologia" onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
       <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
       <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
+      <button class="subtab-btn"        data-subtab="parceiros"   onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
     </div>
   </div>
   <div class="subtab-panel active" data-tab="${id}" data-subtab="mercado"><main>
@@ -2527,6 +2536,7 @@ function renderPanel(id) {
   <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div id="tecnologia-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div id="arquitetura-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="parceiros"><div id="parceiros-panel-${id}"></div></div>
 `;
 
   /* ---- Charts (criados após innerHTML estar no DOM) ---- */
@@ -2575,6 +2585,7 @@ function renderPanel(id) {
   renderGestaoPanel(id);
   renderTecnologiaPanel(id);
   renderArquiteturaPanel(id);
+  renderParceirosPanel(id);
   // restaura sub-aba ativa se diferente de mercado
   const _sub = activeSubTab[id];
   if (_sub && _sub !== 'mercado') activateSubTab(id, _sub);
@@ -3635,6 +3646,99 @@ function openLightbox(tabId, tecIdx, imgIdx) {
 
 /* ---- Sub-abas ---- */
 const activeSubTab = {};
+
+/* ====================================================
+   PARCEIROS
+   ==================================================== */
+const PARC_STATUS = {
+  potencial:   'Potencial',
+  negociacao:  'Em negociação',
+  ativo:       'Ativo',
+  estrategico: 'Estratégico',
+};
+
+function renderParceirosPanel(id) {
+  const container = document.getElementById('parceiros-panel-' + id);
+  if (!container) return;
+  if (!DATA[id].parceiros) DATA[id].parceiros = [];
+  const items = DATA[id].parceiros;
+
+  const rows = items.length ? items.map((p, i) => `
+    <tr>
+      <td><span class="parc-view">${p.nome||'—'}</span><input class="parc-edit conc-edit-input" type="text" value="${(p.nome||'').replace(/"/g,'&quot;')}" oninput="markDirtyParc('${id}')"></td>
+      <td><span class="parc-view">${p.tipo||'—'}</span><input class="parc-edit conc-edit-input" type="text" value="${(p.tipo||'').replace(/"/g,'&quot;')}" oninput="markDirtyParc('${id}')"></td>
+      <td><span class="parc-view">${p.papel||'—'}</span><input class="parc-edit conc-edit-input" type="text" value="${(p.papel||'').replace(/"/g,'&quot;')}" oninput="markDirtyParc('${id}')"></td>
+      <td>
+        <span class="parc-view badge parc-status-${p.status||'potencial'}" style="font-size:.62rem">${PARC_STATUS[p.status||'potencial']||p.status}</span>
+        <select class="parc-edit conc-select-nivel" onchange="markDirtyParc('${id}')">
+          ${Object.entries(PARC_STATUS).map(([v,l]) => `<option value="${v}" ${(p.status||'potencial')===v?'selected':''}>${l}</option>`).join('')}
+        </select>
+      </td>
+      <td><span class="parc-view">${p.url ? `<a href="${p.url}" target="_blank" style="color:var(--teal);font-size:.72rem">↗ site</a>` : '—'}</span><input class="parc-edit conc-edit-input" type="url" placeholder="https://..." value="${(p.url||'').replace(/"/g,'&quot;')}" oninput="markDirtyParc('${id}')"></td>
+      <td class="conc-del-col"><button class="conc-del-btn" onclick="delParcRow('${id}',${i})">×</button></td>
+    </tr>`).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--text-mid);font-size:.75rem;padding:18px">Nenhum parceiro cadastrado</td></tr>`;
+
+  container.innerHTML = `
+    <main>
+    <section class="section">
+      <div class="section-title">
+        <span>Parceiros e Integrações</span>
+        <span class="badge">Ecossistema</span>
+        <button class="calc-edit-toggle" id="parc-toggle-${id}" onclick="toggleParcEdit('${id}')">Editar</button>
+        <span id="parc-dirty-${id}" style="display:none;gap:5px;margin-left:6px;align-items:center">
+          <button class="calc-action-btn save"    onclick="saveParc('${id}')">Salvar</button>
+          <button class="calc-action-btn discard" onclick="discardParc('${id}')">Descartar</button>
+        </span>
+      </div>
+      <div class="table-wrap">
+        <table id="parc-table-${id}">
+          <thead><tr><th>Empresa</th><th>Tipo</th><th>Papel</th><th>Status</th><th>Site</th><th style="width:24px"></th></tr></thead>
+          <tbody id="parc-tbody-${id}">${rows}</tbody>
+        </table>
+      </div>
+      <button class="conc-add-btn parc-add-btn" onclick="addParcRow('${id}')">+ Adicionar parceiro</button>
+    </section>
+    </main>`;
+}
+
+function toggleParcEdit(id) {
+  const btn = document.getElementById('parc-toggle-' + id);
+  const isEdit = btn.textContent === 'Concluir';
+  btn.textContent = isEdit ? 'Editar' : 'Concluir';
+  document.getElementById('parc-dirty-' + id).style.display = isEdit ? 'none' : 'flex';
+  document.querySelectorAll(`#parc-tbody-${id} .parc-view`).forEach(el => el.style.display = isEdit ? '' : 'none');
+  document.querySelectorAll(`#parc-tbody-${id} .parc-edit`).forEach(el => el.style.display = isEdit ? 'none' : '');
+}
+
+function markDirtyParc(id) {
+  document.getElementById('parc-dirty-' + id).style.display = 'flex';
+}
+
+function addParcRow(id) {
+  DATA[id].parceiros.push({ nome: '', tipo: '', papel: '', status: 'potencial', url: '' });
+  renderParceirosPanel(id);
+  toggleParcEdit(id);
+  markDirtyParc(id);
+}
+
+function delParcRow(id, i) {
+  DATA[id].parceiros.splice(i, 1);
+  persistData(id); renderParceirosPanel(id);
+}
+
+function saveParc(id) {
+  const rows = document.querySelectorAll(`#parc-tbody-${id} tr`);
+  DATA[id].parceiros = [];
+  rows.forEach(tr => {
+    const inputs = tr.querySelectorAll('input, select');
+    if (!inputs.length) return;
+    const [nome, tipo, papel, status, url] = [...inputs].map(el => el.value.trim ? el.value.trim() : el.value);
+    if (nome || tipo || papel) DATA[id].parceiros.push({ nome, tipo, papel, status, url });
+  });
+  persistData(id); renderParceirosPanel(id);
+}
+
+function discardParc(id) { renderParceirosPanel(id); }
 
 function activateSubTab(tabId, subId) {
   activeSubTab[tabId] = subId;

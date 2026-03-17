@@ -3733,7 +3733,18 @@ async function persistData(id) {
       if (dbData) {
         if (dbData.__tabs__) TABS = dbData.__tabs__;
         const { __tabs__: _, ...rest } = dbData;
-        Object.assign(DATA, rest);
+        for (const [k, v] of Object.entries(rest)) {
+          const def = defaultData(k, TABS.find(t => t.id === k) || {});
+          const merged = { ...def, ...v };
+          merged.mercado   = { ...def.mercado,   ...(v.mercado   || {}) };
+          merged.brasil    = { ...def.brasil,    ...(v.brasil    || {}) };
+          merged.benchmark = {
+            ...def.benchmark, ...(v.benchmark || {}),
+            capex:          { ...def.benchmark.capex, ...((v.benchmark||{}).capex || {}) },
+            opex_por_ponto: (v.benchmark||{}).opex_por_ponto ?? def.benchmark.opex_por_ponto,
+          };
+          DATA[k] = merged;
+        }
       }
     }
   } catch (e) {

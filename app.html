@@ -786,9 +786,31 @@
       font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s;
     }
     .nb-upload-btn:hover { border-color: var(--teal); color: var(--teal); }
-    .nb-img-preview { margin-top: 8px; max-width: 100%; border-radius: 8px; display: block; }
-    .nb-video-preview { margin-top: 8px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
-    .nb-video-file { margin-top: 8px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
+    .nb-save-media-btn {
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+      background: var(--teal); color: var(--white);
+      border: none; padding: 8px 16px;
+      border-radius: 6px; font-family: inherit; font-size: .82rem;
+      font-weight: 700; cursor: pointer; margin-top: 10px;
+      transition: opacity .15s;
+    }
+    .nb-save-media-btn:hover { opacity: .85; }
+    .nb-img-preview { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
+    .nb-video-preview { margin-top: 10px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
+    .nb-video-file { margin-top: 10px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
+    /* Embedded state */
+    .nb-media-embedded { position: relative; cursor: default; }
+    .nb-media-embedded .nb-media-edit-overlay {
+      position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; opacity: 0;
+      transition: opacity .15s; pointer-events: none;
+    }
+    .nb-media-embedded:hover .nb-media-edit-overlay { opacity: 1; pointer-events: auto; }
+    .nb-media-edit-overlay button {
+      background: rgba(0,0,0,.55); color: #fff; border: none;
+      padding: 5px 10px; border-radius: 5px; font-size: .72rem;
+      font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .nb-media-edit-overlay button:hover { background: rgba(0,0,0,.8); }
     /* Add block button */
     .nb-add-btn {
       display: flex; align-items: center; gap: 6px; margin-top: 12px;
@@ -3471,6 +3493,8 @@ function _daysBetween(a, b) {
 /* ====================================================
    NOTEBOOK — Editor de blocos (estilo Notion)
    ==================================================== */
+const _nbEditingMedia = new Set(); // IDs de blocos em modo edição de mídia
+
 const NB_TYPES = [
   { type: 'p',       icon: '¶',  label: 'Parágrafo'  },
   { type: 'h1',      icon: 'H1', label: 'Título 1'   },
@@ -3519,42 +3543,77 @@ function _nbBlockHtml(block, tabId) {
   }
   if (t === 'image') {
     const src = block.content || '';
+    const editing = !src || _nbEditingMedia.has(block.id);
+    if (!editing) {
+      return `<div class="nb-media-block nb-media-embedded">
+        <img class="nb-img-preview" style="margin-top:0" src="${src}" alt="">
+        <div class="nb-media-edit-overlay">
+          <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
+          <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>
+        </div>
+      </div>`;
+    }
     const isData = src.startsWith('data:');
+    const hasContent = !!src;
     return `<div class="nb-media-block">
       <div class="nb-media-url-row">
         <input type="url" placeholder="Cole a URL da imagem…" value="${isData ? '' : src.replace(/"/g,'&quot;')}"
           ${isData ? 'disabled style="opacity:.45;background:var(--gray-light)"' : ''}
-          oninput="_nbMediaInput('${tabId}','${block.id}',this.value)"
-          onblur="_nbMediaInput('${tabId}','${block.id}',this.value)">
+          oninput="_nbMediaStage('${tabId}','${block.id}',this.value)"
+          onblur="_nbMediaStage('${tabId}','${block.id}',this.value)">
         <label class="nb-upload-btn" title="Fazer upload de imagem">
           ↑ Upload
           <input type="file" accept="image/*" style="display:none"
             onchange="_nbFileUpload('${tabId}','${block.id}',this,'image')">
         </label>
-        ${isData ? `<button class="nb-upload-btn" style="color:var(--red,#c0392b);border-color:var(--red,#c0392b)" onclick="_nbMediaInput('${tabId}','${block.id}','')">Remover</button>` : ''}
       </div>
-      ${src ? `<img class="nb-img-preview" src="${src}" alt="" onerror="this.style.display='none'" onload="this.style.display='block'">` : ''}
+      ${src ? `<img class="nb-img-preview" src="${src}" alt="" onerror="this.style.display='none'">` : ''}
+      ${hasContent
+        ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <button class="nb-save-media-btn" onclick="_nbSaveMedia('${tabId}','${block.id}')">Salvar</button>
+            <button class="nb-upload-btn" style="color:#c0392b;border-color:#c0392b" onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
+           </div>`
+        : ''}
     </div>`;
   }
   if (t === 'video') {
     const url = block.content || '';
     const ytId = _nbYtId(url);
     const isData = url.startsWith('data:');
+    const editing = !url || _nbEditingMedia.has(block.id);
+    if (!editing) {
+      const preview = ytId
+        ? `<iframe class="nb-video-preview" style="margin-top:0" src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe>`
+        : `<video class="nb-video-file" style="margin-top:0" src="${url}" controls></video>`;
+      return `<div class="nb-media-block nb-media-embedded">
+        ${preview}
+        <div class="nb-media-edit-overlay">
+          <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
+          <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>
+        </div>
+      </div>`;
+    }
+    const hasContent = !!url;
     return `<div class="nb-media-block">
       <div class="nb-media-url-row">
         <input type="url" placeholder="Cole a URL do YouTube ou Vimeo…" value="${isData ? '' : url.replace(/"/g,'&quot;')}"
           ${isData ? 'disabled style="opacity:.45;background:var(--gray-light)"' : ''}
-          oninput="_nbMediaInput('${tabId}','${block.id}',this.value)"
-          onblur="_nbMediaInput('${tabId}','${block.id}',this.value)">
+          oninput="_nbMediaStage('${tabId}','${block.id}',this.value)"
+          onblur="_nbMediaStage('${tabId}','${block.id}',this.value)">
         <label class="nb-upload-btn" title="Fazer upload de vídeo">
           ↑ Upload
           <input type="file" accept="video/*" style="display:none"
             onchange="_nbFileUpload('${tabId}','${block.id}',this,'video')">
         </label>
-        ${isData ? `<button class="nb-upload-btn" style="color:var(--red,#c0392b);border-color:var(--red,#c0392b)" onclick="_nbMediaInput('${tabId}','${block.id}','')">Remover</button>` : ''}
       </div>
       ${ytId ? `<iframe class="nb-video-preview" src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe>` : ''}
       ${isData ? `<video class="nb-video-file" src="${url}" controls></video>` : ''}
+      ${hasContent
+        ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+            <button class="nb-save-media-btn" onclick="_nbSaveMedia('${tabId}','${block.id}')">Salvar</button>
+            <button class="nb-upload-btn" style="color:#c0392b;border-color:#c0392b" onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
+           </div>`
+        : ''}
     </div>`;
   }
   const cls = 'nb-' + t;
@@ -3601,12 +3660,12 @@ function _nbSetType(tabId, bid, newType) {
   const b = blocks.find(x => x.id === bid);
   if (!b) return;
   if (NB_TEXT_TYPES.has(b.type) && NB_TEXT_TYPES.has(newType)) {
-    // preserva conteúdo
     b.type = newType;
   } else {
     b.type = newType;
     if (!NB_TEXT_TYPES.has(newType)) b.content = '';
   }
+  if (newType === 'image' || newType === 'video') _nbEditingMedia.add(b.id);
   _nbRenderBlocks(tabId);
   _nbScheduleSave(tabId);
   // foca no bloco se for texto
@@ -3622,19 +3681,38 @@ function _nbContentBlur(tabId, bid, el) {
   if (b) { b.content = el.innerText || ''; _nbScheduleSave(tabId); }
 }
 
-function _nbMediaInput(tabId, bid, val) {
+// Atualiza conteúdo em memória e re-renderiza (sem salvar no DB ainda)
+function _nbMediaStage(tabId, bid, val) {
   const blocks = _nbBlocks(tabId);
   const b = blocks.find(x => x.id === bid);
   if (!b) return;
   b.content = val;
+  _nbEditingMedia.add(bid);
+  _nbRenderBlocks(tabId);
+}
+
+// Confirma e salva no DB, sai do modo edição
+function _nbSaveMedia(tabId, bid) {
+  _nbEditingMedia.delete(bid);
   _nbScheduleSave(tabId);
-  // re-render só o preview
-  const blockEl = document.querySelector(`.nb-block[data-bid="${bid}"]`);
-  if (blockEl) {
-    const wrap = blockEl.querySelector('.nb-media-block');
-    if (wrap) wrap.outerHTML; // trigger noop; full re-render below
-    _nbRenderBlocks(tabId);
-  }
+  _nbRenderBlocks(tabId);
+}
+
+// Entra em modo edição para bloco já incorporado
+function _nbEditMedia(tabId, bid) {
+  _nbEditingMedia.add(bid);
+  _nbRenderBlocks(tabId);
+}
+
+// Limpa conteúdo e volta para modo edição
+function _nbMediaClear(tabId, bid) {
+  const blocks = _nbBlocks(tabId);
+  const b = blocks.find(x => x.id === bid);
+  if (!b) return;
+  b.content = '';
+  _nbEditingMedia.add(bid);
+  _nbScheduleSave(tabId);
+  _nbRenderBlocks(tabId);
 }
 
 function _nbFileUpload(tabId, bid, input, kind) {
@@ -3642,7 +3720,7 @@ function _nbFileUpload(tabId, bid, input, kind) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(ev) {
-    _nbMediaInput(tabId, bid, ev.target.result);
+    _nbMediaStage(tabId, bid, ev.target.result);
   };
   reader.readAsDataURL(file);
 }

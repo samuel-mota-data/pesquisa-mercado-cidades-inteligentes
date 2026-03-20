@@ -786,15 +786,19 @@
       font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s;
     }
     .nb-upload-btn:hover { border-color: var(--teal); color: var(--teal); }
-    .nb-save-media-btn {
-      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
-      background: var(--teal); color: var(--white);
-      border: none; padding: 8px 16px;
-      border-radius: 6px; font-family: inherit; font-size: .82rem;
-      font-weight: 700; cursor: pointer; margin-top: 10px;
-      transition: opacity .15s;
+    .nb-media-actions {
+      display: flex; gap: 8px; align-items: center; margin-top: 10px;
     }
+    .nb-save-media-btn, .nb-del-media-btn {
+      display: inline-flex; align-items: center; white-space: nowrap;
+      border-radius: 6px; font-family: inherit; font-size: .82rem;
+      font-weight: 700; cursor: pointer; padding: 8px 16px;
+      border: none; transition: opacity .15s;
+    }
+    .nb-save-media-btn { background: var(--teal); color: var(--white); }
     .nb-save-media-btn:hover { opacity: .85; }
+    .nb-del-media-btn { background: #fdecea; color: #c0392b; border: 1.5px solid #e8b4b0; }
+    .nb-del-media-btn:hover { background: #fad4d0; }
     .nb-img-preview { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
     .nb-video-preview { margin-top: 10px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
     .nb-video-file { margin-top: 10px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
@@ -3569,9 +3573,9 @@ function _nbBlockHtml(block, tabId) {
       </div>
       ${src ? `<img class="nb-img-preview" src="${src}" alt="" onerror="this.style.display='none'">` : ''}
       ${hasContent
-        ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        ? `<div class="nb-media-actions">
             <button class="nb-save-media-btn" onclick="_nbSaveMedia('${tabId}','${block.id}')">Salvar</button>
-            <button class="nb-upload-btn" style="color:#c0392b;border-color:#c0392b" onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
+            <button class="nb-del-media-btn"  onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
            </div>`
         : ''}
     </div>`;
@@ -3609,9 +3613,9 @@ function _nbBlockHtml(block, tabId) {
       ${ytId ? `<iframe class="nb-video-preview" src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe>` : ''}
       ${isData ? `<video class="nb-video-file" src="${url}" controls></video>` : ''}
       ${hasContent
-        ? `<div style="display:flex;gap:8px;align-items:center;margin-top:6px">
+        ? `<div class="nb-media-actions">
             <button class="nb-save-media-btn" onclick="_nbSaveMedia('${tabId}','${block.id}')">Salvar</button>
-            <button class="nb-upload-btn" style="color:#c0392b;border-color:#c0392b" onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
+            <button class="nb-del-media-btn"  onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
            </div>`
         : ''}
     </div>`;

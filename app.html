@@ -4412,21 +4412,6 @@ function renderArquiteturaPanel(id) {
       </div>`;
   }
 
-  // Tabela de APIs
-  const apisRows = d.apis.map((api, ai) =>
-    `<tr>
-      <td>${api.nome||'—'}</td>
-      <td style="font-family:monospace;font-size:.67rem;color:var(--text-mid)">${api.tipo||'—'}</td>
-      <td style="font-family:monospace;font-size:.67rem;color:var(--text-mid)">${api.endpoint||'—'}</td>
-      <td>${api.desc||'—'}</td>
-      <td><span class="arq-badge ${api.status||'planejado'}">${api.status||'planejado'}</span></td>
-      <td><div class="arq-row-actions">
-        <button class="tl-btn" onclick="editArqApi('${id}',${ai})">✏</button>
-        <button class="tl-btn tl-del" onclick="delArqApi('${id}',${ai})">×</button>
-      </div></td>
-    </tr>`
-  ).join('');
-
   container.innerHTML = `<div class="arq-wrap">
     <div>
       <div class="arq-section-title">Fluxo de Camadas</div>
@@ -4435,18 +4420,6 @@ function renderArquiteturaPanel(id) {
         <button class="arq-flow-add" onclick="addArqLayer('${id}')" title="Adicionar camada">+</button>
       </div>
       ${detailHtml}
-    </div>
-    <div>
-      <div class="arq-section-title">Catálogo de APIs & Integrações</div>
-      <div style="overflow-x:auto">
-        <table class="arq-table">
-          <thead><tr><th>Nome</th><th>Tipo</th><th>Endpoint</th><th>Descrição</th><th>Status</th><th></th></tr></thead>
-          <tbody id="arq-apis-${id}">${apisRows || '<tr><td colspan="6" style="color:var(--text-mid);text-align:center;padding:16px">Nenhuma API cadastrada.</td></tr>'}</tbody>
-        </table>
-      </div>
-      <div style="margin-top:10px">
-        <button class="gestao-add-btn" onclick="addArqApi('${id}')">+ Adicionar API</button>
-      </div>
     </div>
   </div>`;
 
@@ -4492,65 +4465,6 @@ function delArqLayer(id, li) {
     arqActiveLayer[id] = null;
     persistData(id);
     renderArquiteturaPanel(id);
-  });
-}
-
-/* --- APIs --- */
-function _arqApiForm(id, ai, api) {
-  const tbody = document.getElementById(`arq-apis-${id}`);
-  if (!tbody) return;
-  const rowId = `arq-api-form-${id}`;
-  const existing = document.getElementById(rowId);
-  if (existing) existing.remove();
-  const row = document.createElement('tr');
-  row.id = rowId;
-  row.innerHTML = `
-    <td><input id="arq-api-nome-${id}" value="${(api.nome||'').replace(/"/g,'&quot;')}" placeholder="Nome"></td>
-    <td><input id="arq-api-tipo-${id}" value="${(api.tipo||'').replace(/"/g,'&quot;')}" placeholder="REST / MQTT..."></td>
-    <td><input id="arq-api-ep-${id}"   value="${(api.endpoint||'').replace(/"/g,'&quot;')}" placeholder="/endpoint"></td>
-    <td><input id="arq-api-desc-${id}" value="${(api.desc||'').replace(/"/g,'&quot;')}" placeholder="Descrição"></td>
-    <td><select id="arq-api-stat-${id}">
-      <option value="planejado"${api.status==='planejado'?' selected':''}>Planejado</option>
-      <option value="ativo"${api.status==='ativo'?' selected':''}>Ativo</option>
-      <option value="descontinuado"${api.status==='descontinuado'?' selected':''}>Descontinuado</option>
-    </select></td>
-    <td>
-      <div class="arq-row-actions">
-        <button class="calc-action-btn discard" onclick="renderArquiteturaPanel('${id}')">✕</button>
-        <button class="calc-action-btn save" onclick="saveArqApi('${id}',${ai})">✓</button>
-      </div>
-    </td>`;
-  tbody.appendChild(row);
-  document.getElementById(`arq-api-nome-${id}`)?.focus();
-}
-
-function addArqApi(id) {
-  const ai = DATA[id].arquitetura.apis.length;
-  DATA[id].arquitetura.apis.push({ nome:'', tipo:'', endpoint:'', desc:'', status:'planejado' });
-  renderArquiteturaPanel(id);
-  _arqApiForm(id, ai, DATA[id].arquitetura.apis[ai]);
-}
-
-function editArqApi(id, ai) {
-  _arqApiForm(id, ai, DATA[id].arquitetura.apis[ai]);
-}
-
-function saveArqApi(id, ai) {
-  const g = s => document.getElementById(s);
-  DATA[id].arquitetura.apis[ai] = {
-    nome:     g(`arq-api-nome-${id}`)?.value.trim() || '',
-    tipo:     g(`arq-api-tipo-${id}`)?.value.trim() || '',
-    endpoint: g(`arq-api-ep-${id}`)?.value.trim()   || '',
-    desc:     g(`arq-api-desc-${id}`)?.value.trim()  || '',
-    status:   g(`arq-api-stat-${id}`)?.value         || 'planejado',
-  };
-  persistData(id); renderArquiteturaPanel(id);
-}
-
-function delArqApi(id, ai) {
-  showConfirm('Excluir API?', 'Esta entrada será removida do catálogo.', () => {
-    DATA[id].arquitetura.apis.splice(ai, 1);
-    persistData(id); renderArquiteturaPanel(id);
   });
 }
 

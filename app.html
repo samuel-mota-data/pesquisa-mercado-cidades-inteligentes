@@ -778,8 +778,17 @@
       padding: 8px 14px; border-radius: 6px; font-family: inherit;
       font-size: .78rem; font-weight: 700; cursor: pointer;
     }
+    .nb-upload-btn {
+      display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+      background: var(--gray-light); color: var(--text-mid);
+      border: 1.5px solid var(--gray-mid); padding: 7px 12px;
+      border-radius: 6px; font-family: inherit; font-size: .78rem;
+      font-weight: 600; cursor: pointer; transition: border-color .15s, color .15s;
+    }
+    .nb-upload-btn:hover { border-color: var(--teal); color: var(--teal); }
     .nb-img-preview { margin-top: 8px; max-width: 100%; border-radius: 8px; display: block; }
     .nb-video-preview { margin-top: 8px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
+    .nb-video-file { margin-top: 8px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
     /* Add block button */
     .nb-add-btn {
       display: flex; align-items: center; gap: 6px; margin-top: 12px;
@@ -3510,11 +3519,19 @@ function _nbBlockHtml(block, tabId) {
   }
   if (t === 'image') {
     const src = block.content || '';
+    const isData = src.startsWith('data:');
     return `<div class="nb-media-block">
       <div class="nb-media-url-row">
-        <input type="url" placeholder="Cole a URL da imagem…" value="${src.replace(/"/g,'&quot;')}"
+        <input type="url" placeholder="Cole a URL da imagem…" value="${isData ? '' : src.replace(/"/g,'&quot;')}"
+          ${isData ? 'disabled style="opacity:.45;background:var(--gray-light)"' : ''}
           oninput="_nbMediaInput('${tabId}','${block.id}',this.value)"
           onblur="_nbMediaInput('${tabId}','${block.id}',this.value)">
+        <label class="nb-upload-btn" title="Fazer upload de imagem">
+          ↑ Upload
+          <input type="file" accept="image/*" style="display:none"
+            onchange="_nbFileUpload('${tabId}','${block.id}',this,'image')">
+        </label>
+        ${isData ? `<button class="nb-upload-btn" style="color:var(--red,#c0392b);border-color:var(--red,#c0392b)" onclick="_nbMediaInput('${tabId}','${block.id}','')">Remover</button>` : ''}
       </div>
       ${src ? `<img class="nb-img-preview" src="${src}" alt="" onerror="this.style.display='none'" onload="this.style.display='block'">` : ''}
     </div>`;
@@ -3522,13 +3539,22 @@ function _nbBlockHtml(block, tabId) {
   if (t === 'video') {
     const url = block.content || '';
     const ytId = _nbYtId(url);
+    const isData = url.startsWith('data:');
     return `<div class="nb-media-block">
       <div class="nb-media-url-row">
-        <input type="url" placeholder="Cole a URL do YouTube ou Vimeo…" value="${url.replace(/"/g,'&quot;')}"
+        <input type="url" placeholder="Cole a URL do YouTube ou Vimeo…" value="${isData ? '' : url.replace(/"/g,'&quot;')}"
+          ${isData ? 'disabled style="opacity:.45;background:var(--gray-light)"' : ''}
           oninput="_nbMediaInput('${tabId}','${block.id}',this.value)"
           onblur="_nbMediaInput('${tabId}','${block.id}',this.value)">
+        <label class="nb-upload-btn" title="Fazer upload de vídeo">
+          ↑ Upload
+          <input type="file" accept="video/*" style="display:none"
+            onchange="_nbFileUpload('${tabId}','${block.id}',this,'video')">
+        </label>
+        ${isData ? `<button class="nb-upload-btn" style="color:var(--red,#c0392b);border-color:var(--red,#c0392b)" onclick="_nbMediaInput('${tabId}','${block.id}','')">Remover</button>` : ''}
       </div>
       ${ytId ? `<iframe class="nb-video-preview" src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe>` : ''}
+      ${isData ? `<video class="nb-video-file" src="${url}" controls></video>` : ''}
     </div>`;
   }
   const cls = 'nb-' + t;
@@ -3609,6 +3635,16 @@ function _nbMediaInput(tabId, bid, val) {
     if (wrap) wrap.outerHTML; // trigger noop; full re-render below
     _nbRenderBlocks(tabId);
   }
+}
+
+function _nbFileUpload(tabId, bid, input, kind) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    _nbMediaInput(tabId, bid, ev.target.result);
+  };
+  reader.readAsDataURL(file);
 }
 
 function _nbKeyDown(e, tabId, bid) {

@@ -3672,28 +3672,6 @@ function renderInfoPanel(id) {
 
   el.innerHTML = `
   <div class="info-page">
-    <div class="info-page-title">${tab.label || 'Visão Geral'}</div>
-    <div class="info-page-sub">Smart Cities &amp; IoT</div>
-
-    <div class="info-props">
-      <div class="info-prop">
-        <span class="info-prop-key">Mercado atual</span>
-        <span class="info-prop-val"><strong>${m.moeda||'US$'} ${proj0.bi!=null?proj0.bi+'B':'—'}</strong>&ensp;(${proj0.ano||'—'})</span>
-      </div>
-      <div class="info-prop">
-        <span class="info-prop-key">Projeção</span>
-        <span class="info-prop-val"><strong>${m.moeda||'US$'} ${projN.bi!=null?projN.bi+'B':'—'}</strong>&ensp;(${projN.ano||'—'})</span>
-      </div>
-      <div class="info-prop">
-        <span class="info-prop-key">CAGR projetado</span>
-        <span class="info-prop-val"><strong>${m.cagr_projecao?m.cagr_projecao+'%':'—'}</strong></span>
-      </div>
-      <div class="info-prop">
-        <span class="info-prop-key">Potencial Brasil</span>
-        <span class="info-prop-val"><strong>${b.potencial_bi?'R$ '+b.potencial_bi+'B':'—'}</strong></span>
-      </div>
-    </div>
-
     <div class="nb-editor" id="nb-editor-${id}"></div>
     <button class="nb-add-btn" onclick="_nbAdd('${id}', null)">+ Adicionar bloco</button>
   </div>`;

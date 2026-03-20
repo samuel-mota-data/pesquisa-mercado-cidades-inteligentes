@@ -991,31 +991,40 @@
     .arq-section-title { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--blue-dark); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
     .arq-section-title::after { content:''; flex:1; height:1px; background:#dde3f0; }
 
-    /* Camadas */
-    .arq-camadas { display:flex; flex-direction:column; }
-    .arq-layer { display:flex; align-items:flex-start; gap:0; border-radius:8px; overflow:hidden; background:var(--white); box-shadow:var(--card-shadow); }
-    .arq-layer-accent { width:5px; flex-shrink:0; }
-    .arq-layer-body { flex:1; padding:12px 14px; }
-    .arq-layer-head { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-    .arq-layer-name { font-size:.78rem; font-weight:700; color:var(--blue-dark); flex:1; }
-    .arq-chips { display:flex; flex-wrap:wrap; gap:6px; }
-    .arq-chip { background:var(--gray-light); color:var(--text-dark); font-size:.68rem; font-weight:600; padding:3px 10px; border-radius:99px; display:flex; align-items:center; gap:5px; }
-    .arq-chip-del { background:none; border:none; color:#aab; cursor:pointer; font-size:.75rem; line-height:1; padding:0; }
-    .arq-chip-del:hover { color:var(--red-risk); }
-    .arq-chip-add { background:none; border:1px dashed #c0c8dc; color:var(--text-mid); font-size:.65rem; padding:3px 9px; border-radius:99px; cursor:pointer; }
-    .arq-chip-add:hover { border-color:var(--teal); color:var(--blue-dark); }
-    .arq-layer-actions { display:flex; gap:2px; opacity:0; transition:opacity .15s; }
-    .arq-layer:hover .arq-layer-actions { opacity:1; }
-
-    /* Conector entre camadas */
-    .arq-connector { display:flex; flex-direction:column; align-items:center; padding:2px 0; gap:2px; }
-    .arq-connector-line { width:2px; height:10px; background:#dde3f0; }
-    .arq-connector-body { display:flex; align-items:center; gap:6px; }
-    .arq-connector-arrow { color:var(--teal); font-size:1.1rem; font-weight:700; line-height:1; }
-    .arq-connector-proto { font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; background:var(--gray-light); color:var(--text-mid); padding:2px 9px; border-radius:99px; }
-    .arq-connector-edit { background:none; border:1px dashed #c0c8dc; color:var(--text-mid); font-size:.6rem; padding:2px 8px; border-radius:99px; cursor:pointer; font-family:inherit; }
-    .arq-connector-edit:hover { border-color:var(--teal); color:var(--blue-dark); }
-    .arq-connector-form { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    /* Fluxo horizontal de blocos */
+    .arq-flow-row { display:flex; align-items:center; gap:0; overflow-x:auto; padding-bottom:6px; }
+    .arq-flow-block {
+      flex-shrink:0; width:130px; min-height:94px;
+      border-radius:10px; border:2px solid var(--gray-mid);
+      background:var(--white); cursor:pointer;
+      display:flex; flex-direction:column; overflow:hidden;
+      transition:border-color .15s, box-shadow .15s;
+    }
+    .arq-flow-block:hover { border-color:var(--blue-mid); }
+    .arq-flow-block.active { border-color:var(--teal); box-shadow:0 4px 18px rgba(0,200,212,.18); }
+    .arq-flow-accent { height:5px; flex-shrink:0; }
+    .arq-flow-label { flex:1; display:flex; align-items:center; justify-content:center; padding:10px 8px; font-size:.78rem; font-weight:700; color:var(--blue-dark); text-align:center; line-height:1.35; }
+    .arq-flow-sub { font-size:.58rem; color:var(--text-mid); text-align:center; padding:0 8px 8px; }
+    /* Seta entre blocos */
+    .arq-flow-arrow { flex-shrink:0; display:flex; flex-direction:column; align-items:center; padding:0 6px; gap:2px; }
+    .arq-flow-arrow-sym { color:var(--teal); font-size:1.2rem; line-height:1; }
+    .arq-flow-arrow-proto { font-size:.55rem; font-weight:700; text-transform:uppercase; letter-spacing:.3px; color:var(--text-mid); white-space:nowrap; max-width:56px; text-align:center; overflow:hidden; text-overflow:ellipsis; }
+    /* Botão adicionar bloco */
+    .arq-flow-add { flex-shrink:0; margin-left:10px; width:46px; height:46px; border-radius:10px; border:2px dashed var(--gray-mid); background:none; color:var(--text-mid); font-size:1.4rem; font-weight:300; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s, color .15s; }
+    .arq-flow-add:hover { border-color:var(--teal); color:var(--teal); }
+    /* Painel expansível */
+    .arq-detail-panel { margin-top:12px; border-radius:12px; border:1.5px solid var(--teal); background:var(--white); overflow:hidden; animation:arqDetailIn .18s ease; }
+    @keyframes arqDetailIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+    .arq-detail-header { display:flex; align-items:center; gap:10px; padding:13px 18px 11px; border-bottom:1px solid var(--gray-mid); }
+    .arq-detail-name { flex:1; font-size:.92rem; font-weight:800; color:var(--blue-dark); outline:none; border-bottom:2px solid transparent; transition:border-color .15s; min-width:40px; }
+    .arq-detail-name:focus { border-color:var(--teal); }
+    .arq-detail-hint { font-size:.6rem; color:var(--text-mid); }
+    .arq-detail-del { background:none; border:1.5px solid #e8b4b0; color:#c0392b; font-family:inherit; font-size:.7rem; font-weight:700; padding:5px 12px; border-radius:6px; cursor:pointer; }
+    .arq-detail-del:hover { background:#fdecea; }
+    .arq-detail-proto-row { display:flex; align-items:center; gap:8px; padding:7px 18px; border-bottom:1px solid var(--gray-light); font-size:.7rem; color:var(--text-mid); background:var(--gray-light); }
+    .arq-detail-proto-row input { font-family:inherit; font-size:.7rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:3px 8px; background:var(--white); color:var(--text-dark); outline:none; width:160px; }
+    .arq-detail-proto-row input:focus { border-color:var(--teal); }
+    .arq-detail-body { padding:16px 18px 8px; }
 
     /* APIs table */
     .arq-table { width:100%; border-collapse:collapse; font-size:.72rem; }
@@ -3772,14 +3781,23 @@ const NB_TEXT_TYPES = new Set(['p','h1','h2','h3','quote','bullet']);
 const NB_PH = { p:'Escreva algo…', h1:'Título', h2:'Subtítulo', h3:'Cabeçalho', quote:'Citação…', bullet:'Item de lista' };
 
 let _nbSaveTimer = {};
+const _arqLayerMap = {}; // maps virtual ID → { realTabId, li }
+const arqActiveLayer = {}; // active layer index per tabId
 
 function _nbId() { return Math.random().toString(36).slice(2,9); }
 
 function _nbBlocks(id) {
+  // Camada de arquitetura (ID virtual)
+  if (_arqLayerMap[id]) {
+    const { realTabId, li } = _arqLayerMap[id];
+    const layer = DATA[realTabId]?.arquitetura?.camadas?.[li];
+    if (!layer) return [];
+    if (!layer.blocks) layer.blocks = [{ id: _nbId(), type: 'p', content: '' }];
+    return layer.blocks;
+  }
   if (!DATA[id]) DATA[id] = {};
   if (!DATA[id].informativo) DATA[id].informativo = {};
   if (!DATA[id].informativo.blocks) {
-    // migra do campo pitch legado
     const pitch = DATA[id].informativo.pitch || '';
     DATA[id].informativo.blocks = pitch
       ? [{ id: _nbId(), type: 'p', content: pitch }]
@@ -3790,7 +3808,8 @@ function _nbBlocks(id) {
 
 function _nbScheduleSave(tabId) {
   clearTimeout(_nbSaveTimer[tabId]);
-  _nbSaveTimer[tabId] = setTimeout(() => persistData(tabId), 900);
+  const realTabId = _arqLayerMap[tabId]?.realTabId || tabId;
+  _nbSaveTimer[tabId] = setTimeout(() => persistData(realTabId), 900);
 }
 
 function _nbYtId(url) {
@@ -4318,72 +4337,105 @@ function addTecItem(id) {
   _tecEditForm(id, i);
 }
 
-/* ---- Arquitetura ---- */
+/* --- Camadas --- */
+const ARQ_ACCENTS = ['#00c8d4','#2540c0','#a8e063','#f5c842','#e03c3c','#9b5de5'];
+
+function _arqVid(tabId, li) {
+  return 'arqlyr_' + tabId + '_' + li;
+}
+
+function _arqRegisterVids(id) {
+  const camadas = DATA[id]?.arquitetura?.camadas || [];
+  camadas.forEach((_, li) => {
+    const vid = _arqVid(id, li);
+    _arqLayerMap[vid] = { realTabId: id, li };
+  });
+}
+
 function renderArquiteturaPanel(id) {
   const container = document.getElementById('arquitetura-panel-' + id);
   if (!container) return;
   const d = DATA[id].arquitetura || (DATA[id].arquitetura = { camadas:[], apis:[] });
   if (!d.camadas) d.camadas = [];
   if (!d.apis)    d.apis    = [];
+  _arqRegisterVids(id);
 
-  const layerAccents = ['#00c8d4','#2540c0','#a8e063','#f5c842','#e03c3c','#9b5de5'];
+  const activeIdx = arqActiveLayer[id] ?? null;
 
-  const camadasHtml = d.camadas.map((layer, li) => {
-    const accent = layerAccents[li % layerAccents.length];
-    const isLast = li === d.camadas.length - 1;
-    const con = layer.conexao || {};
-    const connector = isLast ? '' : `
-      <div class="arq-connector" id="arq-con-${id}-${li}">
-        <div class="arq-connector-line"></div>
-        <div class="arq-connector-body">
-          <span class="arq-connector-arrow">↓</span>
-          ${con.protocolo ? `<span class="arq-connector-proto">${con.protocolo}</span>` : ''}
-          <button class="arq-connector-edit" onclick="editArqConexao('${id}',${li})">${con.protocolo ? '✏' : '+ protocolo'}</button>
-        </div>
-        <div class="arq-connector-line"></div>
-      </div>`;
+  // Blocos do fluxo horizontal
+  const blocksHtml = d.camadas.map((layer, li) => {
+    const accent = ARQ_ACCENTS[li % ARQ_ACCENTS.length];
+    const isActive = li === activeIdx;
+    const nBlocks  = (layer.blocks || []).length;
+    const arrow = li < d.camadas.length - 1 ? `
+      <div class="arq-flow-arrow">
+        <span class="arq-flow-arrow-sym">→</span>
+        ${(layer.conexao?.protocolo) ? `<span class="arq-flow-arrow-proto">${layer.conexao.protocolo}</span>` : ''}
+      </div>` : '';
     return `
-      <div class="arq-layer" id="arq-layer-${id}-${li}">
-        <div class="arq-layer-accent" style="background:${accent}"></div>
-        <div class="arq-layer-body">
-          <div class="arq-layer-head">
-            <div class="arq-layer-name" id="arq-lname-${id}-${li}">${layer.nome || 'Camada'}</div>
-            <div class="arq-layer-actions">
-              <button class="tl-btn" onclick="editArqLayerName('${id}',${li})" title="Renomear">✏</button>
-              <button class="tl-btn tl-del" onclick="delArqLayer('${id}',${li})" title="Excluir">×</button>
-            </div>
-          </div>
-        </div>
+      <div class="arq-flow-block${isActive ? ' active' : ''}" onclick="selectArqLayer('${id}',${li})">
+        <div class="arq-flow-accent" style="background:${accent}"></div>
+        <div class="arq-flow-label">${layer.nome || 'Camada'}</div>
+        ${nBlocks ? `<div class="arq-flow-sub">${nBlocks} bloco${nBlocks !== 1 ? 's' : ''}</div>` : ''}
       </div>
-      ${connector}`;
+      ${arrow}`;
   }).join('');
 
+  // Painel expandido da camada ativa
+  let detailHtml = '';
+  if (activeIdx !== null && d.camadas[activeIdx]) {
+    const layer  = d.camadas[activeIdx];
+    const vid    = _arqVid(id, activeIdx);
+    const isLast = activeIdx === d.camadas.length - 1;
+    const proto  = layer.conexao?.protocolo || '';
+    detailHtml = `
+      <div class="arq-detail-panel" id="arq-detail-${id}">
+        <div class="arq-detail-header">
+          <div class="arq-detail-name" contenteditable="true"
+            onblur="renameArqLayer('${id}',${activeIdx},this.innerText)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+          >${layer.nome || 'Camada'}</div>
+          <span class="arq-detail-hint">clique no nome para editar</span>
+          <button class="arq-detail-del" onclick="delArqLayer('${id}',${activeIdx})">× Remover</button>
+        </div>
+        ${!isLast ? `
+        <div class="arq-detail-proto-row">
+          <span>→ Protocolo para próxima camada:</span>
+          <input type="text" placeholder="ex: MQTT, HTTP, LoRa…" value="${proto.replace(/"/g,'&quot;')}"
+            onblur="saveArqProto('${id}',${activeIdx},this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()">
+        </div>` : ''}
+        <div class="arq-detail-body">
+          <div id="nb-editor-${vid}"></div>
+          <button class="nb-add-btn" onclick="_nbAdd('${vid}',null)">+ Adicionar bloco</button>
+        </div>
+      </div>`;
+  }
+
+  // Tabela de APIs
   const apisRows = d.apis.map((api, ai) =>
     `<tr>
       <td>${api.nome||'—'}</td>
-      <td><span class="arq-badge planejado" style="background:none;color:var(--text-mid);font-family:monospace">${api.tipo||'—'}</span></td>
+      <td style="font-family:monospace;font-size:.67rem;color:var(--text-mid)">${api.tipo||'—'}</td>
       <td style="font-family:monospace;font-size:.67rem;color:var(--text-mid)">${api.endpoint||'—'}</td>
       <td>${api.desc||'—'}</td>
       <td><span class="arq-badge ${api.status||'planejado'}">${api.status||'planejado'}</span></td>
-      <td>
-        <div class="arq-row-actions">
-          <button class="tl-btn" onclick="editArqApi('${id}',${ai})" title="Editar">✏</button>
-          <button class="tl-btn tl-del" onclick="delArqApi('${id}',${ai})" title="Excluir">×</button>
-        </div>
-      </td>
+      <td><div class="arq-row-actions">
+        <button class="tl-btn" onclick="editArqApi('${id}',${ai})">✏</button>
+        <button class="tl-btn tl-del" onclick="delArqApi('${id}',${ai})">×</button>
+      </div></td>
     </tr>`
   ).join('');
 
   container.innerHTML = `<div class="arq-wrap">
-
     <div>
-      <div class="arq-section-title">Stack de Camadas & Fluxo</div>
-      <div class="arq-camadas">${camadasHtml || '<div style="color:var(--text-mid);font-size:.74rem">Nenhuma camada.</div>'}</div>
-      <div style="margin-top:10px">
-        <button class="gestao-add-btn" onclick="addArqLayer('${id}')">+ Adicionar camada</button>
+      <div class="arq-section-title">Fluxo de Camadas</div>
+      <div class="arq-flow-row">
+        ${blocksHtml || '<span style="color:var(--text-mid);font-size:.74rem">Nenhuma camada.</span>'}
+        <button class="arq-flow-add" onclick="addArqLayer('${id}')" title="Adicionar camada">+</button>
       </div>
+      ${detailHtml}
     </div>
-
     <div>
       <div class="arq-section-title">Catálogo de APIs & Integrações</div>
       <div style="overflow-x:auto">
@@ -4396,76 +4448,51 @@ function renderArquiteturaPanel(id) {
         <button class="gestao-add-btn" onclick="addArqApi('${id}')">+ Adicionar API</button>
       </div>
     </div>
-
   </div>`;
+
+  // Renderiza o editor de blocos da camada ativa
+  if (activeIdx !== null && d.camadas[activeIdx]) {
+    _nbRenderBlocks(_arqVid(id, activeIdx));
+  }
 }
 
-/* --- Camadas --- */
+function selectArqLayer(id, li) {
+  // Toggle: clicar na camada ativa fecha o painel
+  arqActiveLayer[id] = arqActiveLayer[id] === li ? null : li;
+  renderArquiteturaPanel(id);
+}
+
+function renameArqLayer(id, li, nome) {
+  DATA[id].arquitetura.camadas[li].nome = nome.trim() || 'Camada';
+  persistData(id);
+  // Atualiza só o bloco no flow row sem fechar o painel
+  const blocks = document.querySelectorAll('.arq-flow-block');
+  if (blocks[li]) blocks[li].querySelector('.arq-flow-label').textContent = DATA[id].arquitetura.camadas[li].nome;
+}
+
+function saveArqProto(id, li, val) {
+  if (!DATA[id].arquitetura.camadas[li].conexao) DATA[id].arquitetura.camadas[li].conexao = {};
+  DATA[id].arquitetura.camadas[li].conexao.protocolo = val.trim();
+  persistData(id);
+  renderArquiteturaPanel(id);
+}
+
 function addArqLayer(id) {
-  DATA[id].arquitetura.camadas.push({ nome: 'Nova Camada', componentes: [], conexao: { protocolo:'', desc:'' } });
-  persistData(id); renderArquiteturaPanel(id);
-  editArqLayerName(id, DATA[id].arquitetura.camadas.length - 1);
+  DATA[id].arquitetura.camadas.push({ nome: 'Nova Camada', blocks: [], conexao: { protocolo:'', desc:'' } });
+  arqActiveLayer[id] = DATA[id].arquitetura.camadas.length - 1;
+  persistData(id);
+  renderArquiteturaPanel(id);
+  // Foca no nome para edição imediata
+  setTimeout(() => document.querySelector('.arq-detail-name')?.focus(), 50);
 }
 
 function delArqLayer(id, li) {
-  showConfirm('Excluir camada?', 'Todos os componentes desta camada serão removidos.', () => {
+  showConfirm('Excluir camada?', 'O conteúdo desta camada será removido permanentemente.', () => {
     DATA[id].arquitetura.camadas.splice(li, 1);
-    persistData(id); renderArquiteturaPanel(id);
+    arqActiveLayer[id] = null;
+    persistData(id);
+    renderArquiteturaPanel(id);
   });
-}
-
-function editArqLayerName(id, li) {
-  const el = document.getElementById(`arq-lname-${id}-${li}`);
-  if (!el) return;
-  const cur = DATA[id].arquitetura.camadas[li].nome;
-  el.innerHTML = `<input class="sec-edit-input" id="arq-lname-input-${id}-${li}" value="${cur.replace(/"/g,'&quot;')}" style="width:180px;padding:3px 7px"
-    onblur="saveArqLayerName('${id}',${li})" onkeydown="if(event.key==='Enter')saveArqLayerName('${id}',${li})">`;
-  document.getElementById(`arq-lname-input-${id}-${li}`)?.focus();
-}
-
-function saveArqLayerName(id, li) {
-  const val = document.getElementById(`arq-lname-input-${id}-${li}`)?.value.trim();
-  if (val !== undefined) DATA[id].arquitetura.camadas[li].nome = val || 'Camada';
-  persistData(id); renderArquiteturaPanel(id);
-}
-
-function addArqChip(id, li) {
-  const val = prompt('Nome do componente:');
-  if (!val?.trim()) return;
-  DATA[id].arquitetura.camadas[li].componentes.push(val.trim());
-  persistData(id); renderArquiteturaPanel(id);
-}
-
-function delArqChip(id, li, ci) {
-  DATA[id].arquitetura.camadas[li].componentes.splice(ci, 1);
-  persistData(id); renderArquiteturaPanel(id);
-}
-
-function editArqConexao(id, li) {
-  const con = document.getElementById(`arq-con-${id}-${li}`);
-  if (!con) return;
-  const cur = DATA[id].arquitetura.camadas[li].conexao || {};
-  const body = con.querySelector('.arq-connector-body');
-  body.innerHTML = `
-    <span class="arq-connector-arrow">↓</span>
-    <div class="arq-connector-form">
-      <input class="sec-edit-input" id="arq-con-proto-${id}-${li}" value="${(cur.protocolo||'').replace(/"/g,'&quot;')}" placeholder="Protocolo (ex: MQTT)" style="width:140px;padding:3px 7px"
-        onkeydown="if(event.key==='Enter')saveArqConexao('${id}',${li})">
-      <input class="sec-edit-input" id="arq-con-desc-${id}-${li}"  value="${(cur.desc||'').replace(/"/g,'&quot;')}"      placeholder="Descrição (opcional)"    style="width:160px;padding:3px 7px"
-        onkeydown="if(event.key==='Enter')saveArqConexao('${id}',${li})">
-      <button class="calc-action-btn save"    onclick="saveArqConexao('${id}',${li})">✓</button>
-      <button class="calc-action-btn discard" onclick="renderArquiteturaPanel('${id}')">✕</button>
-    </div>`;
-  document.getElementById(`arq-con-proto-${id}-${li}`)?.focus();
-}
-
-function saveArqConexao(id, li) {
-  const g = s => document.getElementById(s);
-  DATA[id].arquitetura.camadas[li].conexao = {
-    protocolo: g(`arq-con-proto-${id}-${li}`)?.value.trim() || '',
-    desc:      g(`arq-con-desc-${id}-${li}`)?.value.trim()  || '',
-  };
-  persistData(id); renderArquiteturaPanel(id);
 }
 
 /* --- APIs --- */

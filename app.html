@@ -616,6 +616,75 @@
       color: var(--text-mid); font-size: .78rem;
     }
 
+    /* ---- VISÃO GERAL (informativo) ---- */
+    .info-wrap { max-width: 860px; margin: 0 auto; padding: 28px 14px 48px; }
+    .info-hero {
+      background: linear-gradient(135deg, var(--blue-dark) 60%, var(--blue-mid));
+      color: var(--white);
+      border-radius: 14px;
+      padding: 28px 28px 24px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .info-hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--teal), var(--green-light));
+    }
+    .info-hero-label { font-size: .65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; font-weight: 700; }
+    .info-hero h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; line-height: 1.25; }
+    .info-pitch-view { font-size: .84rem; opacity: .88; line-height: 1.65; white-space: pre-wrap; }
+    .info-pitch-view:empty::before { content: 'Clique em Editar para adicionar uma descrição da solução.'; opacity: .5; font-style: italic; }
+    .info-pitch-edit { display: none; }
+    .info-pitch-edit textarea {
+      width: 100%; min-height: 110px; padding: 10px 12px;
+      background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.3);
+      border-radius: 8px; color: var(--white); font-family: inherit; font-size: .84rem;
+      line-height: 1.65; resize: vertical; outline: none;
+    }
+    .info-pitch-edit textarea::placeholder { color: rgba(255,255,255,.4); }
+    .info-hero-actions { display: flex; gap: 8px; margin-top: 14px; }
+    .info-btn-edit {
+      background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.25);
+      color: rgba(255,255,255,.85); font-family: inherit; font-size: .7rem; font-weight: 700;
+      letter-spacing: .5px; text-transform: uppercase; padding: 5px 14px; border-radius: 6px;
+      cursor: pointer; transition: background .15s;
+    }
+    .info-btn-edit:hover { background: rgba(255,255,255,.22); }
+    .info-btn-save {
+      background: var(--teal); border: none; color: var(--white); font-family: inherit;
+      font-size: .7rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 6px; cursor: pointer;
+    }
+    .info-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .info-kpi {
+      background: var(--white); border: 1.5px solid var(--gray-mid); border-radius: 10px;
+      padding: 14px 16px; text-align: center;
+    }
+    .info-kpi-val { font-size: 1.4rem; font-weight: 800; color: var(--blue-dark); }
+    .info-kpi-label { font-size: .67rem; color: var(--text-mid); margin-top: 3px; }
+    .info-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 600px) { .info-cols { grid-template-columns: 1fr; } }
+    .info-card {
+      background: var(--white); border: 1.5px solid var(--gray-mid); border-radius: 10px; padding: 16px 18px;
+    }
+    .info-card-title {
+      font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--teal); margin-bottom: 10px;
+    }
+    .info-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .info-list li { font-size: .78rem; color: var(--text-dark); display: flex; gap: 7px; align-items: flex-start; line-height: 1.45; }
+    .info-list li::before { content: '•'; color: var(--teal); font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .info-list-empty { font-size: .75rem; color: var(--text-mid); font-style: italic; }
+    .info-risk-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 7px; font-size: .78rem; line-height: 1.45; }
+    .info-risk-sev { font-size: .65rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
+    .info-risk-sev.red    { background: #fde8e8; color: var(--red-risk); }
+    .info-risk-sev.yellow { background: #fef9e7; color: #b45309; }
+    .info-risk-sev.ok     { background: #f0fdf4; color: #166534; }
+
     /* ---- TIMELINE / GESTÃO ---- */
     .timeline-wrap { max-width: 680px; margin: 0 auto; padding: 28px 14px 48px; }
     .timeline { position: relative; padding: 4px 0 4px 0; }
@@ -2362,6 +2431,7 @@ function defaultData(id, tab) {
     },
     riscos: [],
     parceiros: [],
+    informativo: { pitch: '' },
   };
 }
 
@@ -2391,14 +2461,16 @@ function renderPanel(id) {
   panel.innerHTML = `
   <div class="subtab-bar">
     <div class="subtab-bar-inner" id="subtab-bar-${id}">
-      <button class="subtab-btn active" data-subtab="mercado"   onclick="activateSubTab('${id}','mercado')">Mercado</button>
-      <button class="subtab-btn"        data-subtab="tecnologia" onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
+      <button class="subtab-btn active" data-subtab="informativo" onclick="activateSubTab('${id}','informativo')">Visão Geral</button>
+      <button class="subtab-btn"        data-subtab="mercado"     onclick="activateSubTab('${id}','mercado')">Mercado</button>
+      <button class="subtab-btn"        data-subtab="tecnologia"  onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
       <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
       <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
       <button class="subtab-btn"        data-subtab="parceiros"   onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
     </div>
   </div>
-  <div class="subtab-panel active" data-tab="${id}" data-subtab="mercado"><main>
+  <div class="subtab-panel active" data-tab="${id}" data-subtab="informativo"><div id="informativo-panel-${id}"></div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="mercado"><main>
 
   <!-- 1. MERCADO GLOBAL -->
   <section class="section" id="sec1-section-${id}">
@@ -2850,9 +2922,10 @@ function renderPanel(id) {
   renderTecnologiaPanel(id);
   renderArquiteturaPanel(id);
   renderParceirosPanel(id);
-  // restaura sub-aba ativa se diferente de mercado
+  renderInfoPanel(id);
+  // restaura sub-aba ativa se diferente de informativo
   const _sub = activeSubTab[id];
-  if (_sub && _sub !== 'mercado') activateSubTab(id, _sub);
+  if (_sub && _sub !== 'informativo') activateSubTab(id, _sub);
 }
 
 /* ---- Shared helper ---- */
@@ -3276,6 +3349,112 @@ function _fmtDate(str) {
 function _daysBetween(a, b) {
   if (!a || !b) return null;
   return Math.round((new Date(b + 'T00:00:00') - new Date(a + 'T00:00:00')) / 86400000);
+}
+
+/* ====================================================
+   renderInfoPanel — Visão Geral / Informativo da solução
+   ==================================================== */
+function renderInfoPanel(id) {
+  const el = document.getElementById('informativo-panel-' + id);
+  if (!el) return;
+  const d   = DATA[id] || {};
+  const tab = TABS.find(t => t.id === id) || {};
+  const m   = d.mercado   || {};
+  const b   = d.brasil    || {};
+  const inf = d.informativo || {};
+
+  const riscoSev = v => Math.abs(v) >= 2.2 ? 'Alta' : Math.abs(v) >= 1.6 ? 'Média' : 'Baixa';
+  const riscoCls = v => Math.abs(v) >= 2.2 ? 'red'  : Math.abs(v) >= 1.6 ? 'yellow' : 'ok';
+
+  const riscos = (d.riscos || []).slice(0, 4).map(r => `
+    <div class="info-risk-item">
+      <span class="info-risk-sev ${riscoCls(r.impacto)}">${riscoSev(r.impacto)}</span>
+      <span>${r.risco || ''}</span>
+    </div>`).join('') || '<p class="info-list-empty">Sem riscos cadastrados.</p>';
+
+  const difs = (d.diferenciais || []).slice(0, 5).map(x =>
+    `<li>${x.texto || x}</li>`).join('') || '<li class="info-list-empty" style="list-style:none">Sem diferenciais cadastrados.</li>';
+
+  const segs = (d.segmentos || []).slice(0, 5).map(s =>
+    `<li>${s.nome || s}</li>`).join('') || '<li class="info-list-empty" style="list-style:none">Sem segmentos cadastrados.</li>';
+
+  const proj = (m.proj || []);
+  const proj0 = proj[0]  || {};
+  const projN = proj[proj.length - 1] || {};
+
+  el.innerHTML = `
+  <div class="info-wrap">
+
+    <!-- Hero / Pitch -->
+    <div class="info-hero">
+      <div class="info-hero-label">${tab.icon || ''} ${tab.label || ''}</div>
+      <h2>Visão Geral da Solução</h2>
+      <div class="info-pitch-view" id="info-pitch-view-${id}">${inf.pitch || ''}</div>
+      <div class="info-pitch-edit" id="info-pitch-edit-${id}">
+        <textarea id="info-pitch-ta-${id}" placeholder="Descreva a oportunidade, o problema que a solução resolve e o posicionamento estratégico da Unifique...">${inf.pitch || ''}</textarea>
+      </div>
+      <div class="info-hero-actions">
+        <button class="info-btn-edit" id="info-edit-btn-${id}" onclick="_infEdit('${id}')">Editar</button>
+        <button class="info-btn-save" id="info-save-btn-${id}" style="display:none" onclick="_infSave('${id}')">Salvar</button>
+        <button class="info-btn-edit" id="info-cancel-btn-${id}" style="display:none" onclick="_infCancel('${id}')">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="info-kpis">
+      <div class="info-kpi">
+        <div class="info-kpi-val">${m.moeda || 'US$'} ${proj0.bi != null ? proj0.bi + 'B' : '—'}</div>
+        <div class="info-kpi-label">Mercado atual (${proj0.ano || '—'})</div>
+      </div>
+      <div class="info-kpi">
+        <div class="info-kpi-val">${m.moeda || 'US$'} ${projN.bi != null ? projN.bi + 'B' : '—'}</div>
+        <div class="info-kpi-label">Projeção (${projN.ano || '—'})</div>
+      </div>
+      <div class="info-kpi">
+        <div class="info-kpi-val">${m.cagr_projecao ? m.cagr_projecao + '%' : '—'}</div>
+        <div class="info-kpi-label">CAGR projetado</div>
+      </div>
+      <div class="info-kpi">
+        <div class="info-kpi-val">${b.potencial_bi ? 'R$ ' + b.potencial_bi + 'B' : '—'}</div>
+        <div class="info-kpi-label">Potencial Brasil</div>
+      </div>
+    </div>
+
+    <!-- Diferenciais + Riscos -->
+    <div class="info-cols">
+      <div class="info-card">
+        <div class="info-card-title">Diferenciais</div>
+        <ul class="info-list">${difs}</ul>
+      </div>
+      <div class="info-card">
+        <div class="info-card-title">Principais riscos</div>
+        ${riscos}
+      </div>
+    </div>
+
+  </div>`;
+}
+
+function _infEdit(id) {
+  document.getElementById('info-pitch-view-' + id).style.display = 'none';
+  document.getElementById('info-pitch-edit-' + id).style.display = 'block';
+  document.getElementById('info-edit-btn-' + id).style.display = 'none';
+  document.getElementById('info-save-btn-' + id).style.display = '';
+  document.getElementById('info-cancel-btn-' + id).style.display = '';
+}
+function _infCancel(id) {
+  document.getElementById('info-pitch-view-' + id).style.display = '';
+  document.getElementById('info-pitch-edit-' + id).style.display = 'none';
+  document.getElementById('info-edit-btn-' + id).style.display = '';
+  document.getElementById('info-save-btn-' + id).style.display = 'none';
+  document.getElementById('info-cancel-btn-' + id).style.display = 'none';
+}
+function _infSave(id) {
+  const val = document.getElementById('info-pitch-ta-' + id).value.trim();
+  if (!DATA[id].informativo) DATA[id].informativo = {};
+  DATA[id].informativo.pitch = val;
+  persistData(id);
+  renderInfoPanel(id);
 }
 
 function renderGestaoPanel(id) {
@@ -4179,8 +4358,9 @@ async function persistData(id) {
         for (const [k, v] of Object.entries(rest)) {
           const def = defaultData(k, TABS.find(t => t.id === k) || {});
           const merged = { ...def, ...v };
-          merged.mercado   = { ...def.mercado,   ...(v.mercado   || {}) };
-          merged.brasil    = { ...def.brasil,    ...(v.brasil    || {}) };
+          merged.mercado      = { ...def.mercado,      ...(v.mercado      || {}) };
+          merged.brasil       = { ...def.brasil,       ...(v.brasil       || {}) };
+          merged.informativo  = { ...def.informativo,  ...(v.informativo  || {}) };
           merged.benchmark = {
             ...def.benchmark, ...(v.benchmark || {}),
             capex:          { ...def.benchmark.capex, ...((v.benchmark||{}).capex || {}) },

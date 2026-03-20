@@ -3387,7 +3387,7 @@ function renderInfoPanel(id) {
 
     <!-- Hero / Pitch -->
     <div class="info-hero">
-      <div class="info-hero-label">${tab.icon || ''} ${tab.label || ''}</div>
+      <div class="info-hero-label">${tab.label || ''}</div>
       <h2>Visão Geral da Solução</h2>
       <div class="info-pitch-view" id="info-pitch-view-${id}">${inf.pitch || ''}</div>
       <div class="info-pitch-edit" id="info-pitch-edit-${id}">
@@ -4356,7 +4356,9 @@ async function persistData(id) {
         if (dbData.__tabs__) TABS = dbData.__tabs__;
         const { __tabs__: _, ...rest } = dbData;
         for (const [k, v] of Object.entries(rest)) {
-          const def = defaultData(k, TABS.find(t => t.id === k) || {});
+          // Usa os dados estáticos (ricos) como base, não o defaultData genérico.
+          // Isso preserva campos como brasil.kpis que não existem no defaultData.
+          const def = DATA[k] || defaultData(k, TABS.find(t => t.id === k) || {});
           const merged = { ...def, ...v };
           merged.mercado      = { ...def.mercado,      ...(v.mercado      || {}) };
           merged.brasil       = { ...def.brasil,       ...(v.brasil       || {}) };

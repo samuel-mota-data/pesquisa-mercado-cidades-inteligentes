@@ -3720,6 +3720,7 @@ function removeCalcRow(btn, tabId) {
 /* ---- Troca de abas ---- */
 function activateTab(id) {
   activeTabId = id;
+  sessionStorage.setItem('usc_tab', id);
   renderTabBar();
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
   renderPanel(id);
@@ -4850,6 +4851,7 @@ function confirmParcDelete() {
 
 function activateSubTab(tabId, subId) {
   activeSubTab[tabId] = subId;
+  sessionStorage.setItem('usc_subtab_' + tabId, subId);
   document.querySelectorAll(`#subtab-bar-${tabId} .subtab-btn`).forEach(b =>
     b.classList.toggle('active', b.dataset.subtab === subId));
   document.querySelectorAll(`.subtab-panel[data-tab="${tabId}"]`).forEach(p =>
@@ -5013,8 +5015,16 @@ async function persistData(id) {
     persistData('hidrometros');
   }
 
+  const savedTab = sessionStorage.getItem('usc_tab');
+  const startTab = (savedTab && TABS.find(t => t.id === savedTab)) ? savedTab : TABS[0].id;
+  // Restaura sub-abas antes de renderizar
+  TABS.forEach(t => {
+    const sub = sessionStorage.getItem('usc_subtab_' + t.id);
+    if (sub) activeSubTab[t.id] = sub;
+  });
+  activeTabId = startTab;
   renderTabBar();
-  renderPanel('hidrometros');
+  renderPanel(startTab);
 })();
 </script>
 </body>

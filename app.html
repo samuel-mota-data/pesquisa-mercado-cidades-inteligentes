@@ -3726,10 +3726,6 @@ function _nbFileUpload(tabId, bid, input, kind) {
 }
 
 function _nbKeyDown(e, tabId, bid) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    _nbAdd(tabId, bid);
-  }
   if (e.key === 'Backspace') {
     const el = e.target;
     if ((el.innerText || '').trim() === '') {

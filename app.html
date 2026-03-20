@@ -825,6 +825,45 @@
     }
     .nb-add-btn:hover { border-color: var(--teal); color: var(--teal); }
 
+    /* ---- Calculadora — cenários ---- */
+    .calc-scen-bar { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+    .calc-scen-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px; cursor: pointer;
+      font-size: .75rem; font-weight: 600;
+      border: 1.5px solid var(--gray-mid); background: var(--white);
+      color: var(--text-mid); transition: border-color .15s, color .15s, background .15s;
+      user-select: none;
+    }
+    .calc-scen-pill.active { border-color: var(--teal); background: rgba(0,200,212,.08); color: var(--teal); }
+    .calc-scen-pill:hover:not(.active) { border-color: var(--blue-mid); color: var(--blue-mid); }
+    .calc-scen-name { outline: none; min-width: 20px; }
+    .calc-scen-del { background: none; border: none; color: currentColor; cursor: pointer; font-size: .8rem; padding: 0 0 0 2px; line-height: 1; opacity: .5; }
+    .calc-scen-del:hover { opacity: 1; }
+    .calc-scen-add {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 20px; cursor: pointer;
+      font-size: .8rem; font-weight: 700;
+      border: 1.5px dashed var(--gray-mid); background: none;
+      color: var(--text-mid); font-family: inherit;
+      transition: border-color .15s, color .15s;
+    }
+    .calc-scen-add:hover { border-color: var(--teal); color: var(--teal); }
+    /* Comparativo */
+    .calc-compare-wrap { margin-top: 16px; }
+    .calc-compare-label { font-size: .65rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-mid); margin-bottom: 8px; }
+    .calc-compare-grid { display: flex; gap: 10px; flex-wrap: wrap; }
+    .calc-compare-card {
+      flex: 1; min-width: 110px; padding: 12px 14px; border-radius: 10px;
+      border: 1.5px solid var(--gray-mid); background: var(--white);
+      cursor: pointer; text-align: center; transition: border-color .15s, box-shadow .15s;
+    }
+    .calc-compare-card:hover { border-color: var(--teal); box-shadow: 0 2px 12px rgba(0,200,212,.1); }
+    .calc-compare-card.active { border-color: var(--teal); background: rgba(0,200,212,.05); }
+    .calc-compare-nome { font-size: .7rem; font-weight: 700; color: var(--text-mid); margin-bottom: 4px; }
+    .calc-compare-val { font-size: 1.05rem; font-weight: 800; color: var(--blue-dark); }
+    .calc-compare-sub { font-size: .6rem; color: var(--text-mid); margin-top: 2px; }
+
     /* ---- TIMELINE / GESTÃO ---- */
     .timeline-wrap { max-width: 680px; margin: 0 auto; padding: 28px 14px 48px; }
     .timeline { position: relative; padding: 4px 0 4px 0; }
@@ -2887,7 +2926,7 @@ function renderPanel(id) {
   <!-- 5. CALCULADORA DE PREÇO -->
   <section class="section" id="calc-section-${id}">
     <div class="section-title">
-      <span>5. Calculadora de Preço — ${bm.nome}</span>
+      <span>5. Calculadora de Preço</span>
       <span class="badge">Interativo</span>
       <span class="badge" style="background:rgba(245,200,66,.15);color:var(--yellow);border:1px solid rgba(245,200,66,.3);font-size:.6rem">⚠ Preços estimados</span>
       <button class="calc-edit-toggle" id="calc-toggle-${id}" onclick="toggleCalcEdit('${id}')">Editar</button>
@@ -2895,7 +2934,9 @@ function renderPanel(id) {
         <button class="calc-action-btn save"    onclick="saveCalc('${id}')">Salvar</button>
         <button class="calc-action-btn discard" onclick="discardCalc('${id}')">Descartar</button>
       </span>
+      <button class="calc-scen-add" style="margin-left:auto" onclick="addCalcScenario('${id}')">+ Novo cenário</button>
     </div>
+    <div class="calc-scen-bar" id="calc-scen-bar-${id}"></div>
 
     <!-- Parâmetros compartilhados -->
     <div class="cards cards-2" style="margin-bottom:8px">
@@ -2987,6 +3028,7 @@ function renderPanel(id) {
       <div class="big-num" style="font-size:1.2rem; margin-top:6px" id="co-final-${id}"></div>
       <div class="sub" style="margin-top:4px; font-size:.65rem" id="co-sub-${id}"></div>
     </div>
+    <div id="calc-compare-${id}"></div>
   </section>
 
   <!-- 6. RISCOS -->
@@ -3058,6 +3100,9 @@ function renderPanel(id) {
   initializedConc.add(id);
   initializedPanels.add(id);
   setCalcReadonly(id, true);
+  initCalcScenarios(id);
+  renderCalcScenariosBar(id);
+  renderCalcCompare(id);
   renderGestaoPanel(id);
   renderTecnologiaPanel(id);
   renderArquiteturaPanel(id);
@@ -3320,6 +3365,166 @@ function delConcRow(id, btn) { btn.closest('tr').remove(); markDirtyConc(id); }
 
 /* ---- Calculadora de preço ---- */
 const initializedPanels = new Set();
+const calcScenario = {}; // índice do cenário ativo por tabId
+
+function initCalcScenarios(id) {
+  const d = DATA[id];
+  if (!d) return;
+  if (!Array.isArray(d.calc_scenarios) || !d.calc_scenarios.length) {
+    d.calc_scenarios = [{ nome: 'Cenário 1', benchmark: JSON.parse(JSON.stringify(d.benchmark)) }];
+  }
+  if (calcScenario[id] == null) calcScenario[id] = 0;
+  const idx = Math.min(calcScenario[id], d.calc_scenarios.length - 1);
+  calcScenario[id] = idx;
+  d.benchmark = d.calc_scenarios[idx].benchmark;
+}
+
+function renderCalcScenariosBar(id) {
+  const bar = document.getElementById('calc-scen-bar-' + id);
+  if (!bar) return;
+  const scenarios = DATA[id]?.calc_scenarios || [];
+  const active = calcScenario[id] || 0;
+  bar.innerHTML = scenarios.map((sc, i) => `
+    <div class="calc-scen-pill${i === active ? ' active' : ''}" onclick="switchCalcScenario('${id}',${i})">
+      <span class="calc-scen-name"
+        ${i === active ? 'contenteditable="true"' : ''}
+        onblur="renameCalcScenario('${id}',${i},this.innerText)"
+        onclick="event.stopPropagation()">${sc.nome || 'Cenário ' + (i+1)}</span>
+      ${scenarios.length > 1 ? `<button class="calc-scen-del" onclick="event.stopPropagation();delCalcScenario('${id}',${i})" title="Remover cenário">×</button>` : ''}
+    </div>`).join('');
+}
+
+function switchCalcScenario(id, idx) {
+  if (idx === calcScenario[id]) return;
+  _syncCalcToData(id);
+  // Sai do modo edição
+  const section = document.getElementById('calc-section-' + id);
+  if (section) section.classList.remove('calc-editing');
+  const toggle = document.getElementById('calc-toggle-' + id);
+  if (toggle) { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
+  hideDirty(id);
+  calcScenario[id] = idx;
+  DATA[id].benchmark = DATA[id].calc_scenarios[idx].benchmark;
+  _loadCalcFromData(id);
+  renderCalcScenariosBar(id);
+  renderCalcCompare(id);
+}
+
+function addCalcScenario(id) {
+  _syncCalcToData(id);
+  const scenarios = DATA[id].calc_scenarios;
+  scenarios.push({ nome: 'Cenário ' + (scenarios.length + 1), benchmark: JSON.parse(JSON.stringify(DATA[id].benchmark)) });
+  calcScenario[id] = scenarios.length - 1;
+  DATA[id].benchmark = scenarios[calcScenario[id]].benchmark;
+  _loadCalcFromData(id);
+  renderCalcScenariosBar(id);
+  renderCalcCompare(id);
+  persistData(id);
+}
+
+function delCalcScenario(id, idx) {
+  const scenarios = DATA[id].calc_scenarios;
+  if (scenarios.length <= 1) return;
+  scenarios.splice(idx, 1);
+  const newIdx = Math.max(0, Math.min(calcScenario[id], scenarios.length - 1));
+  calcScenario[id] = newIdx;
+  DATA[id].benchmark = scenarios[newIdx].benchmark;
+  _loadCalcFromData(id);
+  renderCalcScenariosBar(id);
+  renderCalcCompare(id);
+  persistData(id);
+}
+
+function renameCalcScenario(id, idx, nome) {
+  if (!DATA[id]?.calc_scenarios?.[idx]) return;
+  DATA[id].calc_scenarios[idx].nome = nome.trim() || 'Cenário ' + (idx + 1);
+  renderCalcCompare(id);
+  persistData(id);
+}
+
+function renderCalcCompare(id) {
+  const el = document.getElementById('calc-compare-' + id);
+  if (!el) return;
+  const scenarios = DATA[id]?.calc_scenarios || [];
+  if (scenarios.length <= 1) { el.innerHTML = ''; return; }
+  const fmt = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const cards = scenarios.map((sc, i) => {
+    const bm  = sc.benchmark || {};
+    const pts = bm.capex?.pontos_modelo  || 1;
+    const mes = bm.capex?.meses_contrato || 1;
+    const hw  = bm.capex?.hardware_unit  || 0;
+    const mob = bm.capex?.mobilizacao    || 0;
+    const capexDil = ((hw * pts + mob) / pts) / mes;
+    const opexTotal = Object.values(bm.opex_por_ponto || {}).reduce((a, v) => a + v, 0);
+    const marg = bm.margem_opex || 0;
+    const opexMarg = marg < 100 ? opexTotal / (1 - marg / 100) : opexTotal;
+    const final = capexDil + opexMarg;
+    const active = i === (calcScenario[id] || 0);
+    return `<div class="calc-compare-card${active ? ' active' : ''}" onclick="switchCalcScenario('${id}',${i})">
+      <div class="calc-compare-nome">${sc.nome || 'Cenário ' + (i+1)}</div>
+      <div class="calc-compare-val">${fmt(final)}</div>
+      <div class="calc-compare-sub">por ponto / mês</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="calc-compare-wrap">
+    <div class="calc-compare-label">Comparativo de cenários</div>
+    <div class="calc-compare-grid">${cards}</div>
+  </div>`;
+}
+
+// Lê o DOM e salva no benchmark ativo (sem persistir no DB)
+function _syncCalcToData(id) {
+  const bm = DATA[id]?.benchmark;
+  if (!bm) return;
+  const gi  = s => document.getElementById(s + id);
+  const val = s => { const el = gi(s); return el ? (parseFloat(el.value) || 0) : 0; };
+  bm.capex.pontos_modelo  = val('ci-pts-');
+  bm.capex.meses_contrato = val('ci-mes-');
+  bm.capex.hardware_unit  = val('ci-hw-');
+  bm.margem_opex          = val('ci-marg-');
+  const firstExtra = document.querySelector(`#capex-rows-${id} .calc-capex-extra`);
+  if (firstExtra) bm.capex.mobilizacao = parseFloat(firstExtra.value) || 0;
+  bm.opex_por_ponto = {};
+  document.querySelectorAll(`#opex-rows-${id} .opex-line`).forEach(row => {
+    const lbl = row.querySelector('.lbl-input');
+    const num = row.querySelector('.calc-opex');
+    if (lbl && num) bm.opex_por_ponto[lbl.value || 'Item'] = parseFloat(num.value) || 0;
+  });
+}
+
+// Escreve o benchmark ativo nos inputs do DOM
+function _loadCalcFromData(id) {
+  const bm = DATA[id]?.benchmark;
+  if (!bm) return;
+  const gi  = s => document.getElementById(s + id);
+  const set = (s, v) => { const el = gi(s); if (el) el.value = v; };
+  set('ci-pts-',  bm.capex.pontos_modelo);
+  set('ci-mes-',  bm.capex.meses_contrato);
+  set('ci-hw-',   bm.capex.hardware_unit);
+  set('ci-marg-', bm.margem_opex);
+  const capexContainer = document.getElementById('capex-rows-' + id);
+  if (capexContainer) {
+    capexContainer.innerHTML = `<div class="opex-line">
+      <span class="op-badge op-add op-clickable" data-op="+" onclick="cycleOp(this,'${id}')">+</span>
+      <input class="calc-input lbl-input" type="text" value="Mobilização única">
+      <input class="calc-input calc-capex-extra" data-tab="${id}" type="number" min="0" value="${bm.capex.mobilizacao}" oninput="recalc('${id}')">
+      <button class="calc-del" onclick="removeCalcRow(this,'${id}')" title="Remover">×</button>
+    </div>`;
+  }
+  const opexContainer = document.getElementById('opex-rows-' + id);
+  if (opexContainer) {
+    opexContainer.innerHTML = Object.entries(bm.opex_por_ponto || {}).map(([k, v]) => `
+      <div class="opex-line">
+        <span class="op-badge op-add op-clickable" data-op="+" onclick="cycleOp(this,'${id}')">+</span>
+        <input class="calc-input lbl-input" type="text" value="${k}">
+        <input class="calc-input calc-opex" data-tab="${id}" type="number" min="0" value="${v}" oninput="recalc('${id}')">
+        <button class="calc-del" onclick="removeCalcRow(this,'${id}')" title="Remover">×</button>
+      </div>`).join('');
+  }
+  const isEditing = document.getElementById('calc-section-' + id)?.classList.contains('calc-editing');
+  setCalcReadonly(id, !isEditing);
+  recalc(id);
+}
 
 function setCalcReadonly(id, readonly) {
   document.querySelectorAll(`#calc-section-${id} .calc-input`).forEach(el => {
@@ -3369,7 +3574,9 @@ function saveCalc(id) {
   const toggle  = document.getElementById('calc-toggle-'  + id);
   if (section) section.classList.remove('calc-editing');
   if (toggle)  { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
-  persistData();
+  setCalcReadonly(id, true);
+  renderCalcCompare(id);
+  persistData(id);
 }
 
 function discardCalc(id) { resetInitialized(id); renderPanel(id); }
@@ -4704,6 +4911,7 @@ async function persistData(id) {
             capex:          { ...def.benchmark.capex, ...((v.benchmark||{}).capex || {}) },
             opex_por_ponto: (v.benchmark||{}).opex_por_ponto ?? def.benchmark.opex_por_ponto,
           };
+          merged.calc_scenarios = v.calc_scenarios || [];
           DATA[k] = merged;
         }
       }

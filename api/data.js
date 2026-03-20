@@ -15,12 +15,22 @@ async function ensureTable(client) {
   `);
 }
 
+function checkAuth(req) {
+  const auth = req.headers['authorization'] || '';
+  const token = process.env.ADMIN_TOKEN;
+  return token && auth === `Bearer ${token}`;
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  if (!checkAuth(req)) {
+    return res.status(401).json({ error: 'Não autorizado' });
+  }
 
   const client = await pool.connect();
   try {

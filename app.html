@@ -3149,7 +3149,7 @@ function renderPanel(id) {
   renderArquiteturaPanel(id);
   renderParceirosPanel(id);
   renderInfoPanel(id);
-  // restaura sub-aba ativa se diferente de informativo
+  // restaura sub-aba ativa
   const _sub = activeSubTab[id];
   if (_sub && _sub !== 'informativo') activateSubTab(id, _sub);
 }
@@ -3719,6 +3719,10 @@ function removeCalcRow(btn, tabId) {
 
 /* ---- Troca de abas ---- */
 function activateTab(id) {
+  // Propaga a sub-aba atual para a nova aba
+  const currentSub = activeSubTab[activeTabId] || 'informativo';
+  activeSubTab[id] = currentSub;
+  sessionStorage.setItem('usc_subtab_' + id, currentSub);
   activeTabId = id;
   sessionStorage.setItem('usc_tab', id);
   renderTabBar();

@@ -877,7 +877,7 @@
     .calc-info-tooltip {
       display: none;
       position: absolute; top: calc(100% + 10px); left: 0;
-      width: 300px; background: var(--white);
+      width: 360px; background: var(--white);
       border: 1.5px solid var(--gray-mid); border-radius: 12px;
       box-shadow: 0 8px 32px rgba(26,43,140,.14);
       padding: 16px 18px; z-index: 500;
@@ -2961,12 +2961,12 @@ function renderPanel(id) {
       <span class="calc-info-wrap">
         <span class="calc-info-btn">i</span>
         <div class="calc-info-tooltip">
-          <strong>Como funciona a calculadora</strong>
+          <strong>Como usar a calculadora</strong>
           <ul>
-            <li><strong>CAPEX</strong> — custo de hardware por ponto multiplicado pelo nº de pontos, mais custos extras (ex.: mobilização). Diluído ao longo dos meses de contrato.</li>
-            <li><strong>OPEX</strong> — soma dos custos mensais por ponto (conectividade, plataforma, suporte). A margem é aplicada sobre o total.</li>
-            <li><strong>Mensalidade final</strong> — CAPEX diluído + OPEX com margem. Representa o valor cobrado por ponto por mês no modelo Full OPEX.</li>
-            <li><strong>Cenários</strong> — crie variações com "+ Novo cenário" para comparar fornecedores ou modelos de precificação.</li>
+            <li><strong>Editar / Salvar</strong> — clique em "Editar" para habilitar os campos. Após ajustar os valores, clique "Salvar" para confirmar ou "Descartar" para cancelar.</li>
+            <li><strong>Operadores</strong> — em modo edição, clique no badge colorido (<strong>+</strong> <strong>−</strong> <strong>×</strong> <strong>÷</strong>) de qualquer linha para ciclar entre as operações. Ex.: use <strong>−</strong> para aplicar um desconto ou <strong>×</strong> para um multiplicador.</li>
+            <li><strong>Adicionar / remover linhas</strong> — use os botões "+ Adicionar custo" para incluir novos itens de CAPEX ou OPEX. Clique em <strong>×</strong> na linha para removê-la.</li>
+            <li><strong>Cenários</strong> — clique em "+ Novo cenário" para duplicar os valores atuais em um cenário independente. Clique no nome do cenário ativo para renomeá-lo. O comparativo de preços aparece automaticamente quando há 2 ou mais cenários.</li>
           </ul>
         </div>
       </span>

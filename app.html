@@ -864,6 +864,37 @@
     .calc-compare-val { font-size: 1.05rem; font-weight: 800; color: var(--blue-dark); }
     .calc-compare-sub { font-size: .6rem; color: var(--text-mid); margin-top: 2px; }
 
+    /* ---- Info tooltip da calculadora ---- */
+    .calc-info-wrap { position: relative; display: inline-flex; align-items: center; }
+    .calc-info-btn {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: rgba(37,64,192,.12); border: 1.5px solid rgba(37,64,192,.25);
+      color: var(--blue-mid); font-size: .65rem; font-weight: 800;
+      font-style: italic; display: inline-flex; align-items: center; justify-content: center;
+      cursor: default; user-select: none; flex-shrink: 0;
+      font-family: Georgia, serif; line-height: 1;
+    }
+    .calc-info-tooltip {
+      display: none;
+      position: absolute; top: calc(100% + 10px); left: 0;
+      width: 300px; background: var(--white);
+      border: 1.5px solid var(--gray-mid); border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(26,43,140,.14);
+      padding: 16px 18px; z-index: 500;
+      font-size: .76rem; color: var(--text-mid); font-weight: 400;
+      line-height: 1.6; pointer-events: none;
+    }
+    .calc-info-tooltip::before {
+      content: ''; position: absolute; top: -7px; left: 14px;
+      width: 12px; height: 12px; background: var(--white);
+      border-left: 1.5px solid var(--gray-mid); border-top: 1.5px solid var(--gray-mid);
+      transform: rotate(45deg);
+    }
+    .calc-info-wrap:hover .calc-info-tooltip { display: block; }
+    .calc-info-tooltip strong { color: var(--blue-dark); font-weight: 700; }
+    .calc-info-tooltip ul { margin: 8px 0 0 14px; padding: 0; }
+    .calc-info-tooltip li { margin-bottom: 4px; }
+
     /* ---- TIMELINE / GESTÃO ---- */
     .timeline-wrap { max-width: 680px; margin: 0 auto; padding: 28px 14px 48px; }
     .timeline { position: relative; padding: 4px 0 4px 0; }
@@ -2927,6 +2958,18 @@ function renderPanel(id) {
   <section class="section" id="calc-section-${id}">
     <div class="section-title">
       <span>5. Calculadora de Preço</span>
+      <span class="calc-info-wrap">
+        <span class="calc-info-btn">i</span>
+        <div class="calc-info-tooltip">
+          <strong>Como funciona a calculadora</strong>
+          <ul>
+            <li><strong>CAPEX</strong> — custo de hardware por ponto multiplicado pelo nº de pontos, mais custos extras (ex.: mobilização). Diluído ao longo dos meses de contrato.</li>
+            <li><strong>OPEX</strong> — soma dos custos mensais por ponto (conectividade, plataforma, suporte). A margem é aplicada sobre o total.</li>
+            <li><strong>Mensalidade final</strong> — CAPEX diluído + OPEX com margem. Representa o valor cobrado por ponto por mês no modelo Full OPEX.</li>
+            <li><strong>Cenários</strong> — crie variações com "+ Novo cenário" para comparar fornecedores ou modelos de precificação.</li>
+          </ul>
+        </div>
+      </span>
       <button class="calc-edit-toggle" id="calc-toggle-${id}" onclick="toggleCalcEdit('${id}')">Editar</button>
       <span id="calc-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
         <button class="calc-action-btn save"    onclick="saveCalc('${id}')">Salvar</button>

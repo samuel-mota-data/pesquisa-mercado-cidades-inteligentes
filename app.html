@@ -2927,8 +2927,6 @@ function renderPanel(id) {
   <section class="section" id="calc-section-${id}">
     <div class="section-title">
       <span>5. Calculadora de Preço</span>
-      <span class="badge">Interativo</span>
-      <span class="badge" style="background:rgba(245,200,66,.15);color:var(--yellow);border:1px solid rgba(245,200,66,.3);font-size:.6rem">⚠ Preços estimados</span>
       <button class="calc-edit-toggle" id="calc-toggle-${id}" onclick="toggleCalcEdit('${id}')">Editar</button>
       <span id="calc-dirty-${id}" style="display:none; gap:5px; margin-left:6px; align-items:center">
         <button class="calc-action-btn save"    onclick="saveCalc('${id}')">Salvar</button>
@@ -3390,7 +3388,7 @@ function renderCalcScenariosBar(id) {
         ${i === active ? 'contenteditable="true"' : ''}
         onblur="renameCalcScenario('${id}',${i},this.innerText)"
         onclick="event.stopPropagation()">${sc.nome || 'Cenário ' + (i+1)}</span>
-      ${scenarios.length > 1 ? `<button class="calc-scen-del" onclick="event.stopPropagation();delCalcScenario('${id}',${i})" title="Remover cenário">×</button>` : ''}
+      ${scenarios.length > 1 ? `<button class="calc-scen-del" style="margin-left:8px" onclick="event.stopPropagation();_askDelCalcScenario('${id}',${i})" title="Excluir cenário">×</button>` : ''}
     </div>`).join('');
 }
 
@@ -3420,6 +3418,11 @@ function addCalcScenario(id) {
   renderCalcScenariosBar(id);
   renderCalcCompare(id);
   persistData(id);
+}
+
+function _askDelCalcScenario(id, idx) {
+  const nome = DATA[id]?.calc_scenarios?.[idx]?.nome || 'Cenário ' + (idx + 1);
+  showConfirm('Excluir cenário?', `"${nome}" será removido permanentemente.`, () => delCalcScenario(id, idx));
 }
 
 function delCalcScenario(id, idx) {

@@ -616,74 +616,179 @@
       color: var(--text-mid); font-size: .78rem;
     }
 
-    /* ---- VISÃO GERAL (informativo) ---- */
-    .info-wrap { max-width: 860px; margin: 0 auto; padding: 28px 14px 48px; }
-    .info-hero {
-      background: linear-gradient(135deg, var(--blue-dark) 60%, var(--blue-mid));
-      color: var(--white);
-      border-radius: 14px;
-      padding: 28px 28px 24px;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
+    /* ---- VISÃO GERAL — estilo notebook/Notion ---- */
+    .info-page {
+      max-width: 720px; margin: 0 auto; padding: 36px 28px 64px;
+      background: var(--white); min-height: 100%;
     }
-    .info-hero::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--teal), var(--green-light));
+    /* Título da página */
+    .info-page-title {
+      font-size: 1.9rem; font-weight: 800; color: var(--text-dark);
+      line-height: 1.2; margin-bottom: 6px; letter-spacing: -.5px;
     }
-    .info-hero-label { font-size: .65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; font-weight: 700; }
-    .info-hero h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 10px; line-height: 1.25; }
-    .info-pitch-view { font-size: .84rem; opacity: .88; line-height: 1.65; white-space: pre-wrap; }
-    .info-pitch-view:empty::before { content: 'Clique em Editar para adicionar uma descrição da solução.'; opacity: .5; font-style: italic; }
+    .info-page-sub {
+      font-size: .75rem; color: var(--text-mid); margin-bottom: 28px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .info-page-sub::after {
+      content: ''; flex: 1; height: 1px; background: var(--gray-mid);
+    }
+    /* Propriedades — tabela estilo Notion */
+    .info-props { margin-bottom: 32px; }
+    .info-prop {
+      display: grid; grid-template-columns: 160px 1fr;
+      align-items: baseline; padding: 6px 0;
+      border-bottom: 1px solid var(--gray-light);
+      font-size: .82rem;
+    }
+    .info-prop:first-child { border-top: 1px solid var(--gray-light); }
+    .info-prop-key { color: var(--text-mid); font-weight: 600; }
+    .info-prop-val { color: var(--text-dark); font-weight: 500; }
+    .info-prop-val strong { color: var(--blue-dark); }
+    /* Bloco de texto editável */
+    .info-body-block { margin-bottom: 32px; }
+    .info-block-label {
+      font-size: .68rem; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--teal);
+      margin-bottom: 10px;
+    }
+    .info-pitch-view {
+      font-size: .88rem; color: var(--text-dark); line-height: 1.75;
+      white-space: pre-wrap; min-height: 40px; cursor: text;
+      border-radius: 6px; padding: 10px 12px;
+      border: 1.5px solid transparent; transition: border-color .15s;
+    }
+    .info-pitch-view:hover { border-color: var(--gray-mid); }
+    .info-pitch-view.empty::before {
+      content: 'Clique para adicionar uma descrição da solução…';
+      color: #b0b8cc; font-style: italic;
+    }
     .info-pitch-edit { display: none; }
     .info-pitch-edit textarea {
-      width: 100%; min-height: 110px; padding: 10px 12px;
-      background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.3);
-      border-radius: 8px; color: var(--white); font-family: inherit; font-size: .84rem;
-      line-height: 1.65; resize: vertical; outline: none;
+      width: 100%; min-height: 120px; padding: 10px 12px;
+      border: 1.5px solid var(--teal); border-radius: 6px;
+      font-family: inherit; font-size: .88rem; color: var(--text-dark);
+      line-height: 1.75; resize: vertical; outline: none;
+      background: #f9fbff;
     }
-    .info-pitch-edit textarea::placeholder { color: rgba(255,255,255,.4); }
-    .info-hero-actions { display: flex; gap: 8px; margin-top: 14px; }
-    .info-btn-edit {
-      background: rgba(255,255,255,.12); border: 1.5px solid rgba(255,255,255,.25);
-      color: rgba(255,255,255,.85); font-family: inherit; font-size: .7rem; font-weight: 700;
-      letter-spacing: .5px; text-transform: uppercase; padding: 5px 14px; border-radius: 6px;
-      cursor: pointer; transition: background .15s;
+    .info-edit-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .info-btn-save, .info-btn-cancel {
+      border: none; font-family: inherit; font-size: .72rem; font-weight: 700;
+      padding: 5px 16px; border-radius: 6px; cursor: pointer;
     }
-    .info-btn-edit:hover { background: rgba(255,255,255,.22); }
-    .info-btn-save {
-      background: var(--teal); border: none; color: var(--white); font-family: inherit;
-      font-size: .7rem; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
-      padding: 5px 14px; border-radius: 6px; cursor: pointer;
+    .info-btn-save   { background: var(--teal); color: var(--white); }
+    .info-btn-cancel { background: var(--gray-light); color: var(--text-mid); }
+    /* Seções de conteúdo */
+    .info-section { margin-bottom: 28px; }
+    .info-section-title {
+      font-size: .82rem; font-weight: 700; color: var(--blue-dark);
+      padding-bottom: 6px; border-bottom: 2px solid var(--gray-mid);
+      margin-bottom: 14px;
     }
-    .info-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
-    .info-kpi {
-      background: var(--white); border: 1.5px solid var(--gray-mid); border-radius: 10px;
-      padding: 14px 16px; text-align: center;
+    /* Lista de diferenciais */
+    .info-dif-list { display: flex; flex-direction: column; gap: 10px; }
+    .info-dif-item { display: flex; gap: 10px; align-items: flex-start; }
+    .info-dif-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--teal); flex-shrink: 0; margin-top: 6px;
     }
-    .info-kpi-val { font-size: 1.4rem; font-weight: 800; color: var(--blue-dark); }
-    .info-kpi-label { font-size: .67rem; color: var(--text-mid); margin-top: 3px; }
-    .info-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 600px) { .info-cols { grid-template-columns: 1fr; } }
-    .info-card {
-      background: var(--white); border: 1.5px solid var(--gray-mid); border-radius: 10px; padding: 16px 18px;
+    .info-dif-text { font-size: .84rem; color: var(--text-dark); line-height: 1.6; }
+    .info-dif-name { font-weight: 700; }
+    .info-dif-desc { color: var(--text-mid); }
+    /* Riscos */
+    .info-risk-list { display: flex; flex-direction: column; gap: 8px; }
+    .info-risk-row { display: flex; gap: 10px; align-items: flex-start; font-size: .84rem; line-height: 1.55; }
+    .info-risk-badge {
+      font-size: .62rem; font-weight: 700; padding: 2px 8px; border-radius: 4px;
+      flex-shrink: 0; margin-top: 2px; letter-spacing: .3px;
     }
-    .info-card-title {
-      font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--teal); margin-bottom: 10px;
+    .info-risk-badge.red    { background: #fde8e8; color: #c0392b; }
+    .info-risk-badge.yellow { background: #fef3cd; color: #7d5a00; }
+    .info-risk-badge.ok     { background: #e8f8f0; color: #1a6640; }
+    .info-empty { font-size: .8rem; color: #b0b8cc; font-style: italic; }
+
+    /* ---- NOTEBOOK — editor de blocos ---- */
+    .nb-editor { outline: none; }
+    .nb-block {
+      position: relative; display: flex; align-items: flex-start;
+      gap: 0; padding: 1px 0; border-radius: 4px;
+      transition: background .1s;
     }
-    .info-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-    .info-list li { font-size: .78rem; color: var(--text-dark); display: flex; gap: 7px; align-items: flex-start; line-height: 1.45; }
-    .info-list li::before { content: '•'; color: var(--teal); font-weight: 900; flex-shrink: 0; margin-top: 1px; }
-    .info-list-empty { font-size: .75rem; color: var(--text-mid); font-style: italic; }
-    .info-risk-item { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 7px; font-size: .78rem; line-height: 1.45; }
-    .info-risk-sev { font-size: .65rem; font-weight: 700; padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; }
-    .info-risk-sev.red    { background: #fde8e8; color: var(--red-risk); }
-    .info-risk-sev.yellow { background: #fef9e7; color: #b45309; }
-    .info-risk-sev.ok     { background: #f0fdf4; color: #166534; }
+    .nb-block:hover { background: #f7f8fc; }
+    .nb-block:hover .nb-handle { opacity: 1; }
+    .nb-handle {
+      opacity: 0; flex-shrink: 0; width: 28px; display: flex;
+      flex-direction: column; align-items: center; gap: 1px;
+      padding-top: 3px; cursor: pointer; transition: opacity .15s;
+      position: relative;
+    }
+    .nb-handle-btn {
+      background: none; border: none; cursor: pointer;
+      color: #b0b8cc; font-size: .75rem; padding: 2px 4px;
+      border-radius: 4px; line-height: 1; transition: background .1s, color .1s;
+    }
+    .nb-handle-btn:hover { background: var(--gray-mid); color: var(--text-dark); }
+    /* Type dropdown */
+    .nb-type-menu {
+      position: absolute; left: 28px; top: 0; z-index: 500;
+      background: var(--white); border: 1px solid var(--gray-mid);
+      border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.12);
+      padding: 4px; min-width: 160px; display: none;
+    }
+    .nb-type-menu.open { display: block; }
+    .nb-type-opt {
+      display: flex; align-items: center; gap: 8px; padding: 6px 10px;
+      border-radius: 5px; cursor: pointer; font-size: .78rem;
+      color: var(--text-dark); white-space: nowrap;
+    }
+    .nb-type-opt:hover { background: var(--gray-light); }
+    .nb-type-opt.active { color: var(--blue-dark); font-weight: 700; }
+    .nb-type-icon { font-size: .9rem; width: 18px; text-align: center; flex-shrink: 0; }
+    /* Content area */
+    .nb-content { flex: 1; min-width: 0; padding: 3px 6px 3px 0; outline: none; }
+    .nb-content[contenteditable=true]:empty::before {
+      content: attr(data-ph); color: #c0c8d8; pointer-events: none;
+    }
+    /* Block type styles */
+    .nb-h1 { font-size: 1.65rem; font-weight: 800; color: var(--text-dark); line-height: 1.2; padding-top: 18px; padding-bottom: 4px; }
+    .nb-h2 { font-size: 1.2rem;  font-weight: 700; color: var(--text-dark); line-height: 1.25; padding-top: 14px; padding-bottom: 2px; }
+    .nb-h3 { font-size: 1rem;    font-weight: 700; color: var(--text-mid);  line-height: 1.3;  padding-top: 10px; }
+    .nb-p  { font-size: .88rem;  color: var(--text-dark); line-height: 1.75; }
+    .nb-quote {
+      font-size: .88rem; color: var(--text-mid); line-height: 1.7;
+      border-left: 3px solid var(--teal); padding-left: 14px; font-style: italic;
+    }
+    .nb-bullet {
+      font-size: .88rem; color: var(--text-dark); line-height: 1.7;
+      padding-left: 4px;
+    }
+    .nb-bullet::before { content: '•'; color: var(--teal); font-weight: 900; margin-right: 8px; }
+    .nb-divider-wrap { padding: 10px 0; width: 100%; }
+    .nb-divider-wrap hr { border: none; border-top: 2px solid var(--gray-mid); }
+    /* Image & Video blocks */
+    .nb-media-block { width: 100%; }
+    .nb-media-url-row { display: flex; gap: 8px; align-items: center; }
+    .nb-media-url-row input {
+      flex: 1; padding: 8px 10px; border: 1.5px solid var(--gray-mid);
+      border-radius: 6px; font-family: inherit; font-size: .82rem; outline: none;
+    }
+    .nb-media-url-row input:focus { border-color: var(--teal); }
+    .nb-media-url-row button {
+      background: var(--teal); color: var(--white); border: none;
+      padding: 8px 14px; border-radius: 6px; font-family: inherit;
+      font-size: .78rem; font-weight: 700; cursor: pointer;
+    }
+    .nb-img-preview { margin-top: 8px; max-width: 100%; border-radius: 8px; display: block; }
+    .nb-video-preview { margin-top: 8px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
+    /* Add block button */
+    .nb-add-btn {
+      display: flex; align-items: center; gap: 6px; margin-top: 12px;
+      background: none; border: 1.5px dashed var(--gray-mid);
+      color: var(--text-mid); font-family: inherit; font-size: .78rem;
+      font-weight: 600; padding: 8px 16px; border-radius: 8px;
+      cursor: pointer; width: 100%; transition: border-color .15s, color .15s;
+    }
+    .nb-add-btn:hover { border-color: var(--teal); color: var(--teal); }
 
     /* ---- TIMELINE / GESTÃO ---- */
     .timeline-wrap { max-width: 680px; margin: 0 auto; padding: 28px 14px 48px; }
@@ -3354,107 +3459,246 @@ function _daysBetween(a, b) {
 /* ====================================================
    renderInfoPanel — Visão Geral / Informativo da solução
    ==================================================== */
+/* ====================================================
+   NOTEBOOK — Editor de blocos (estilo Notion)
+   ==================================================== */
+const NB_TYPES = [
+  { type: 'p',       icon: '¶',  label: 'Parágrafo'  },
+  { type: 'h1',      icon: 'H1', label: 'Título 1'   },
+  { type: 'h2',      icon: 'H2', label: 'Título 2'   },
+  { type: 'h3',      icon: 'H3', label: 'Título 3'   },
+  { type: 'quote',   icon: '❝',  label: 'Citação'    },
+  { type: 'bullet',  icon: '•',  label: 'Lista'      },
+  { type: 'divider', icon: '—',  label: 'Separador'  },
+  { type: 'image',   icon: '🖼',  label: 'Imagem'     },
+  { type: 'video',   icon: '▶',  label: 'Vídeo'      },
+];
+const NB_TEXT_TYPES = new Set(['p','h1','h2','h3','quote','bullet']);
+const NB_PH = { p:'Escreva algo…', h1:'Título', h2:'Subtítulo', h3:'Cabeçalho', quote:'Citação…', bullet:'Item de lista' };
+
+let _nbSaveTimer = {};
+
+function _nbId() { return Math.random().toString(36).slice(2,9); }
+
+function _nbBlocks(id) {
+  if (!DATA[id]) DATA[id] = {};
+  if (!DATA[id].informativo) DATA[id].informativo = {};
+  if (!DATA[id].informativo.blocks) {
+    // migra do campo pitch legado
+    const pitch = DATA[id].informativo.pitch || '';
+    DATA[id].informativo.blocks = pitch
+      ? [{ id: _nbId(), type: 'p', content: pitch }]
+      : [];
+  }
+  return DATA[id].informativo.blocks;
+}
+
+function _nbScheduleSave(tabId) {
+  clearTimeout(_nbSaveTimer[tabId]);
+  _nbSaveTimer[tabId] = setTimeout(() => persistData(tabId), 900);
+}
+
+function _nbYtId(url) {
+  const m = url.match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+
+function _nbBlockHtml(block, tabId) {
+  const t = block.type;
+  if (t === 'divider') {
+    return `<div class="nb-divider-wrap"><hr></div>`;
+  }
+  if (t === 'image') {
+    const src = block.content || '';
+    return `<div class="nb-media-block">
+      <div class="nb-media-url-row">
+        <input type="url" placeholder="Cole a URL da imagem…" value="${src.replace(/"/g,'&quot;')}"
+          oninput="_nbMediaInput('${tabId}','${block.id}',this.value)"
+          onblur="_nbMediaInput('${tabId}','${block.id}',this.value)">
+      </div>
+      ${src ? `<img class="nb-img-preview" src="${src}" alt="" onerror="this.style.display='none'" onload="this.style.display='block'">` : ''}
+    </div>`;
+  }
+  if (t === 'video') {
+    const url = block.content || '';
+    const ytId = _nbYtId(url);
+    return `<div class="nb-media-block">
+      <div class="nb-media-url-row">
+        <input type="url" placeholder="Cole a URL do YouTube ou Vimeo…" value="${url.replace(/"/g,'&quot;')}"
+          oninput="_nbMediaInput('${tabId}','${block.id}',this.value)"
+          onblur="_nbMediaInput('${tabId}','${block.id}',this.value)">
+      </div>
+      ${ytId ? `<iframe class="nb-video-preview" src="https://www.youtube.com/embed/${ytId}" allowfullscreen></iframe>` : ''}
+    </div>`;
+  }
+  const cls = 'nb-' + t;
+  const ph  = NB_PH[t] || '';
+  return `<div class="nb-content ${cls}" contenteditable="true" data-ph="${ph}"
+    data-bid="${block.id}" data-tab="${tabId}"
+    onblur="_nbContentBlur('${tabId}','${block.id}',this)"
+    onkeydown="_nbKeyDown(event,'${tabId}','${block.id}')">${block.content || ''}</div>`;
+}
+
+function _nbRenderBlocks(tabId) {
+  const editor = document.getElementById('nb-editor-' + tabId);
+  if (!editor) return;
+  const blocks = _nbBlocks(tabId);
+  editor.innerHTML = blocks.map(b => `
+    <div class="nb-block" data-bid="${b.id}">
+      <div class="nb-handle">
+        <button class="nb-handle-btn" title="Tipo de bloco" onclick="_nbToggleMenu('${tabId}','${b.id}',this)">⠿</button>
+        <button class="nb-handle-btn" title="Excluir bloco" onclick="_nbDel('${tabId}','${b.id}')">×</button>
+        <div class="nb-type-menu" id="nb-menu-${b.id}">
+          ${NB_TYPES.map(tp => `
+            <div class="nb-type-opt${tp.type===b.type?' active':''}" onclick="_nbSetType('${tabId}','${b.id}','${tp.type}');_nbCloseMenus()">
+              <span class="nb-type-icon">${tp.icon}</span>${tp.label}
+            </div>`).join('')}
+        </div>
+      </div>
+      ${_nbBlockHtml(b, tabId)}
+    </div>`).join('');
+}
+
+function _nbToggleMenu(tabId, bid, btn) {
+  _nbCloseMenus();
+  const m = document.getElementById('nb-menu-' + bid);
+  if (m) m.classList.add('open');
+  const close = e => { if (!btn.closest('.nb-handle').contains(e.target)) { _nbCloseMenus(); document.removeEventListener('mousedown', close); } };
+  setTimeout(() => document.addEventListener('mousedown', close), 0);
+}
+function _nbCloseMenus() {
+  document.querySelectorAll('.nb-type-menu.open').forEach(m => m.classList.remove('open'));
+}
+
+function _nbSetType(tabId, bid, newType) {
+  const blocks = _nbBlocks(tabId);
+  const b = blocks.find(x => x.id === bid);
+  if (!b) return;
+  if (NB_TEXT_TYPES.has(b.type) && NB_TEXT_TYPES.has(newType)) {
+    // preserva conteúdo
+    b.type = newType;
+  } else {
+    b.type = newType;
+    if (!NB_TEXT_TYPES.has(newType)) b.content = '';
+  }
+  _nbRenderBlocks(tabId);
+  _nbScheduleSave(tabId);
+  // foca no bloco se for texto
+  if (NB_TEXT_TYPES.has(newType)) {
+    const el = document.querySelector(`[data-bid="${bid}"].nb-content`);
+    if (el) { el.focus(); const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+  }
+}
+
+function _nbContentBlur(tabId, bid, el) {
+  const blocks = _nbBlocks(tabId);
+  const b = blocks.find(x => x.id === bid);
+  if (b) { b.content = el.innerText || ''; _nbScheduleSave(tabId); }
+}
+
+function _nbMediaInput(tabId, bid, val) {
+  const blocks = _nbBlocks(tabId);
+  const b = blocks.find(x => x.id === bid);
+  if (!b) return;
+  b.content = val;
+  _nbScheduleSave(tabId);
+  // re-render só o preview
+  const blockEl = document.querySelector(`.nb-block[data-bid="${bid}"]`);
+  if (blockEl) {
+    const wrap = blockEl.querySelector('.nb-media-block');
+    if (wrap) wrap.outerHTML; // trigger noop; full re-render below
+    _nbRenderBlocks(tabId);
+  }
+}
+
+function _nbKeyDown(e, tabId, bid) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    _nbAdd(tabId, bid);
+  }
+  if (e.key === 'Backspace') {
+    const el = e.target;
+    if ((el.innerText || '').trim() === '') {
+      e.preventDefault();
+      _nbDel(tabId, bid, true);
+    }
+  }
+}
+
+function _nbAdd(tabId, afterBid) {
+  const blocks = _nbBlocks(tabId);
+  const newBlock = { id: _nbId(), type: 'p', content: '' };
+  if (afterBid) {
+    const idx = blocks.findIndex(b => b.id === afterBid);
+    blocks.splice(idx + 1, 0, newBlock);
+  } else {
+    blocks.push(newBlock);
+  }
+  _nbRenderBlocks(tabId);
+  _nbScheduleSave(tabId);
+  setTimeout(() => {
+    const el = document.querySelector(`[data-bid="${newBlock.id}"].nb-content`);
+    if (el) el.focus();
+  }, 0);
+}
+
+function _nbDel(tabId, bid, focusPrev) {
+  const blocks = _nbBlocks(tabId);
+  const idx = blocks.findIndex(b => b.id === bid);
+  if (idx === -1) return;
+  const prevBid = idx > 0 ? blocks[idx - 1].id : null;
+  blocks.splice(idx, 1);
+  if (!blocks.length) blocks.push({ id: _nbId(), type: 'p', content: '' });
+  _nbRenderBlocks(tabId);
+  _nbScheduleSave(tabId);
+  if (focusPrev && prevBid) {
+    setTimeout(() => {
+      const el = document.querySelector(`[data-bid="${prevBid}"].nb-content`);
+      if (el) { el.focus(); const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+    }, 0);
+  }
+}
+
 function renderInfoPanel(id) {
   const el = document.getElementById('informativo-panel-' + id);
   if (!el) return;
   const d   = DATA[id] || {};
   const tab = TABS.find(t => t.id === id) || {};
-  const m   = d.mercado   || {};
-  const b   = d.brasil    || {};
-  const inf = d.informativo || {};
-
-  const riscoSev = v => Math.abs(v) >= 2.2 ? 'Alta' : Math.abs(v) >= 1.6 ? 'Média' : 'Baixa';
-  const riscoCls = v => Math.abs(v) >= 2.2 ? 'red'  : Math.abs(v) >= 1.6 ? 'yellow' : 'ok';
-
-  const riscos = (d.riscos || []).slice(0, 4).map(r => `
-    <div class="info-risk-item">
-      <span class="info-risk-sev ${riscoCls(r.impacto)}">${riscoSev(r.impacto)}</span>
-      <span>${r.risco || ''}</span>
-    </div>`).join('') || '<p class="info-list-empty">Sem riscos cadastrados.</p>';
-
-  const difs = (d.diferenciais || []).slice(0, 5).map(x =>
-    `<li>${x.texto || x}</li>`).join('') || '<li class="info-list-empty" style="list-style:none">Sem diferenciais cadastrados.</li>';
-
-  const segs = (d.segmentos || []).slice(0, 5).map(s =>
-    `<li>${s.nome || s}</li>`).join('') || '<li class="info-list-empty" style="list-style:none">Sem segmentos cadastrados.</li>';
-
-  const proj = (m.proj || []);
-  const proj0 = proj[0]  || {};
+  const m   = d.mercado || {};
+  const b   = d.brasil  || {};
+  const proj  = m.proj || [];
+  const proj0 = proj[0] || {};
   const projN = proj[proj.length - 1] || {};
 
   el.innerHTML = `
-  <div class="info-wrap">
+  <div class="info-page">
+    <div class="info-page-title">${tab.label || 'Visão Geral'}</div>
+    <div class="info-page-sub">Smart Cities &amp; IoT</div>
 
-    <!-- Hero / Pitch -->
-    <div class="info-hero">
-      <div class="info-hero-label">${tab.label || ''}</div>
-      <h2>Visão Geral da Solução</h2>
-      <div class="info-pitch-view" id="info-pitch-view-${id}">${inf.pitch || ''}</div>
-      <div class="info-pitch-edit" id="info-pitch-edit-${id}">
-        <textarea id="info-pitch-ta-${id}" placeholder="Descreva a oportunidade, o problema que a solução resolve e o posicionamento estratégico da Unifique...">${inf.pitch || ''}</textarea>
+    <div class="info-props">
+      <div class="info-prop">
+        <span class="info-prop-key">Mercado atual</span>
+        <span class="info-prop-val"><strong>${m.moeda||'US$'} ${proj0.bi!=null?proj0.bi+'B':'—'}</strong>&ensp;(${proj0.ano||'—'})</span>
       </div>
-      <div class="info-hero-actions">
-        <button class="info-btn-edit" id="info-edit-btn-${id}" onclick="_infEdit('${id}')">Editar</button>
-        <button class="info-btn-save" id="info-save-btn-${id}" style="display:none" onclick="_infSave('${id}')">Salvar</button>
-        <button class="info-btn-edit" id="info-cancel-btn-${id}" style="display:none" onclick="_infCancel('${id}')">Cancelar</button>
+      <div class="info-prop">
+        <span class="info-prop-key">Projeção</span>
+        <span class="info-prop-val"><strong>${m.moeda||'US$'} ${projN.bi!=null?projN.bi+'B':'—'}</strong>&ensp;(${projN.ano||'—'})</span>
+      </div>
+      <div class="info-prop">
+        <span class="info-prop-key">CAGR projetado</span>
+        <span class="info-prop-val"><strong>${m.cagr_projecao?m.cagr_projecao+'%':'—'}</strong></span>
+      </div>
+      <div class="info-prop">
+        <span class="info-prop-key">Potencial Brasil</span>
+        <span class="info-prop-val"><strong>${b.potencial_bi?'R$ '+b.potencial_bi+'B':'—'}</strong></span>
       </div>
     </div>
 
-    <!-- KPIs -->
-    <div class="info-kpis">
-      <div class="info-kpi">
-        <div class="info-kpi-val">${m.moeda || 'US$'} ${proj0.bi != null ? proj0.bi + 'B' : '—'}</div>
-        <div class="info-kpi-label">Mercado atual (${proj0.ano || '—'})</div>
-      </div>
-      <div class="info-kpi">
-        <div class="info-kpi-val">${m.moeda || 'US$'} ${projN.bi != null ? projN.bi + 'B' : '—'}</div>
-        <div class="info-kpi-label">Projeção (${projN.ano || '—'})</div>
-      </div>
-      <div class="info-kpi">
-        <div class="info-kpi-val">${m.cagr_projecao ? m.cagr_projecao + '%' : '—'}</div>
-        <div class="info-kpi-label">CAGR projetado</div>
-      </div>
-      <div class="info-kpi">
-        <div class="info-kpi-val">${b.potencial_bi ? 'R$ ' + b.potencial_bi + 'B' : '—'}</div>
-        <div class="info-kpi-label">Potencial Brasil</div>
-      </div>
-    </div>
-
-    <!-- Diferenciais + Riscos -->
-    <div class="info-cols">
-      <div class="info-card">
-        <div class="info-card-title">Diferenciais</div>
-        <ul class="info-list">${difs}</ul>
-      </div>
-      <div class="info-card">
-        <div class="info-card-title">Principais riscos</div>
-        ${riscos}
-      </div>
-    </div>
-
+    <div class="nb-editor" id="nb-editor-${id}"></div>
+    <button class="nb-add-btn" onclick="_nbAdd('${id}', null)">+ Adicionar bloco</button>
   </div>`;
-}
 
-function _infEdit(id) {
-  document.getElementById('info-pitch-view-' + id).style.display = 'none';
-  document.getElementById('info-pitch-edit-' + id).style.display = 'block';
-  document.getElementById('info-edit-btn-' + id).style.display = 'none';
-  document.getElementById('info-save-btn-' + id).style.display = '';
-  document.getElementById('info-cancel-btn-' + id).style.display = '';
-}
-function _infCancel(id) {
-  document.getElementById('info-pitch-view-' + id).style.display = '';
-  document.getElementById('info-pitch-edit-' + id).style.display = 'none';
-  document.getElementById('info-edit-btn-' + id).style.display = '';
-  document.getElementById('info-save-btn-' + id).style.display = 'none';
-  document.getElementById('info-cancel-btn-' + id).style.display = 'none';
-}
-function _infSave(id) {
-  const val = document.getElementById('info-pitch-ta-' + id).value.trim();
-  if (!DATA[id].informativo) DATA[id].informativo = {};
-  DATA[id].informativo.pitch = val;
-  persistData(id);
-  renderInfoPanel(id);
+  _nbRenderBlocks(id);
 }
 
 function renderGestaoPanel(id) {

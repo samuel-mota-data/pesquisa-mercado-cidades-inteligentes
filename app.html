@@ -1406,6 +1406,16 @@ let TABS = [
   { id: 'solar',          label: 'Solar Municipal',              icon: '☀️' },
 ];
 
+let CI_TABS = [
+  { id: 'ci_seguranca',     label: 'Segurança',            icon: '🔒' },
+  { id: 'ci_emergencia',    label: 'Emergência & Cuidado', icon: '🆘' },
+  { id: 'ci_monitoramento', label: 'Monitoramento',        icon: '📊' },
+  { id: 'ci_acesso',        label: 'Acesso',               icon: '🚪' },
+  { id: 'ci_automacao',     label: 'Automação',            icon: '⚡' },
+];
+let ciActiveTabId = 'ci_seguranca';
+let _ciSitePage = 'solucoes';
+
 let DATA = {
 
   /* ==================================================
@@ -2624,6 +2634,10 @@ let DATA = {
     <button class="site-page-btn active" id="site-btn-solucoes" onclick="switchSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="site-btn-kanban" onclick="switchSitePage('kanban')">Kanban de Compras</button>
   </nav>
+  <nav class="site-page-nav" id="site-page-nav-casainte" style="display:none">
+    <button class="site-page-btn active" id="ci-site-btn-solucoes" onclick="switchCiSitePage('solucoes')">Soluções</button>
+    <button class="site-page-btn" id="ci-site-btn-kanban" onclick="switchCiSitePage('kanban')">Kanban de Compras</button>
+  </nav>
 </header>
 
 <div id="page-solucoes">
@@ -2720,6 +2734,31 @@ let DATA = {
   <div class="kanban-board" id="kanban-board"></div>
 </div>
 
+<div id="page-ci-solucoes" style="display:none">
+<nav class="tab-bar">
+  <div class="tab-bar-center">
+    <button class="tab-nav-btn" onclick="scrollCiTabBar(-1)" title="← Anterior">‹</button>
+    <div class="tab-bar-scroll" id="ci-tab-bar-scroll">
+      <div class="tab-bar-inner" id="ci-tab-bar"></div>
+    </div>
+    <button class="tab-nav-btn" onclick="scrollCiTabBar(1)" title="Próximo →">›</button>
+  </div>
+</nav>
+<div class="tab-panel" id="panel-ci_seguranca"></div>
+<div class="tab-panel" id="panel-ci_emergencia"></div>
+<div class="tab-panel" id="panel-ci_monitoramento"></div>
+<div class="tab-panel" id="panel-ci_acesso"></div>
+<div class="tab-panel" id="panel-ci_automacao"></div>
+</div><!-- /#page-ci-solucoes -->
+
+<div id="page-ci-kanban" style="display:none">
+  <div class="kanban-toolbar">
+    <span class="kanban-title">Kanban de Compras — Casa Inteligente</span>
+    <button class="kanban-refresh-btn" onclick="renderCiKanban()">↺ Atualizar</button>
+  </div>
+  <div class="kanban-board" id="ci-kanban-board"></div>
+</div>
+
 <div id="page-other-project" style="display:none">
   <div class="other-proj-placeholder">
     <div class="other-proj-icon">🚧</div>
@@ -2752,15 +2791,31 @@ function switchProject(proj) {
   ['cidades','telemed','seguro','casainte'].forEach(p => {
     document.getElementById('proj-btn-' + p).classList.toggle('active', p === proj);
   });
-  const isCidades = proj === 'cidades';
-  document.getElementById('site-page-nav-cidades').style.display = isCidades ? '' : 'none';
-  // páginas do projeto cidades
-  document.getElementById('page-solucoes').style.display = (isCidades && _currentSitePage === 'solucoes') ? '' : 'none';
-  document.getElementById('page-kanban').style.display   = (isCidades && _currentSitePage === 'kanban')   ? '' : 'none';
-  // placeholder para outros projetos
-  const ph = document.getElementById('page-other-project');
-  ph.style.display = isCidades ? 'none' : '';
-  if (!isCidades) {
+  // oculta tudo
+  ['site-page-nav-cidades','site-page-nav-casainte'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  ['page-solucoes','page-kanban','page-ci-solucoes','page-ci-kanban','page-other-project'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  if (proj === 'cidades') {
+    document.getElementById('site-page-nav-cidades').style.display = '';
+    document.getElementById(_currentSitePage === 'kanban' ? 'page-kanban' : 'page-solucoes').style.display = '';
+    if (_currentSitePage === 'kanban') renderKanban();
+  } else if (proj === 'casainte') {
+    document.getElementById('site-page-nav-casainte').style.display = '';
+    if (_ciSitePage === 'kanban') {
+      document.getElementById('page-ci-kanban').style.display = '';
+      renderCiKanban();
+    } else {
+      document.getElementById('page-ci-solucoes').style.display = '';
+      renderCiTabBar();
+      document.querySelectorAll('#page-ci-solucoes .tab-panel').forEach(p =>
+        p.classList.toggle('active', p.id === 'panel-' + ciActiveTabId));
+      if (!document.getElementById('panel-' + ciActiveTabId)?.innerHTML.trim()) renderPanel(ciActiveTabId);
+    }
+  } else {
+    document.getElementById('page-other-project').style.display = '';
     document.getElementById('other-proj-title').textContent = PROJECT_LABELS[proj] || proj;
   }
 }
@@ -2896,7 +2951,7 @@ function defaultData(id, tab) {
    ==================================================== */
 function renderPanel(id) {
   const panel = document.getElementById('panel-' + id);
-  const tab = TABS.find(t => t.id === id) || {};
+  const tab = TABS.find(t => t.id === id) || CI_TABS.find(t => t.id === id) || {};
   if (!DATA[id]) DATA[id] = defaultData(id, tab);
   const d = DATA[id];
 
@@ -3978,13 +4033,80 @@ function activateTab(id) {
   activeTabId = id;
   sessionStorage.setItem('usc_tab', id);
   renderTabBar();
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+  document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
   renderPanel(id);
 }
 
 document.getElementById('tab-bar').addEventListener('click', e => {
   if (e.target.classList.contains('tab-btn')) activateTab(e.target.dataset.tab);
 });
+
+/* ---- Casa Inteligente — tab navigation ---- */
+function renderCiTabBar() {
+  document.getElementById('ci-tab-bar').innerHTML = CI_TABS.map(t =>
+    `<button class="tab-btn${t.id === ciActiveTabId ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`
+  ).join('');
+}
+
+document.getElementById('ci-tab-bar').addEventListener('click', e => {
+  if (e.target.classList.contains('tab-btn')) activateCiTab(e.target.dataset.tab);
+});
+
+function activateCiTab(id) {
+  const currentSub = activeSubTab[ciActiveTabId] || 'informativo';
+  activeSubTab[id] = currentSub;
+  sessionStorage.setItem('usc_subtab_' + id, currentSub);
+  ciActiveTabId = id;
+  sessionStorage.setItem('usc_ci_tab', id);
+  renderCiTabBar();
+  document.querySelectorAll('#page-ci-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
+  renderPanel(id);
+}
+
+function switchCiSitePage(page) {
+  _ciSitePage = page;
+  document.getElementById('page-ci-solucoes').style.display = page === 'solucoes' ? '' : 'none';
+  document.getElementById('page-ci-kanban').style.display   = page === 'kanban'   ? '' : 'none';
+  document.getElementById('ci-site-btn-solucoes').classList.toggle('active', page === 'solucoes');
+  document.getElementById('ci-site-btn-kanban').classList.toggle('active', page === 'kanban');
+  if (page === 'kanban') renderCiKanban();
+}
+
+function scrollCiTabBar(dir) {
+  const el = document.getElementById('ci-tab-bar-scroll');
+  if (el) el.scrollBy({ left: dir * 160, behavior: 'smooth' });
+}
+
+function renderCiKanban() {
+  const board = document.getElementById('ci-kanban-board');
+  if (!board) return;
+  const cols = {};
+  TEC_FORN_STATUSES.forEach(s => cols[s.key] = []);
+  CI_TABS.forEach(tab => {
+    (DATA[tab.id]?.tecnologia || []).forEach((item, tecIdx) => {
+      (item.fornecedores || []).forEach((f, fi) => {
+        const stKey = f.status || 'sem_obs';
+        cols[stKey].push({ forn: f.nome||'—', tag: f.tag||'', preco: f.preco||'', device: item.titulo||'—', solution: tab.label });
+      });
+    });
+  });
+  board.innerHTML = TEC_FORN_STATUSES.map(s => {
+    const cards = cols[s.key].map(c => {
+      const tagBadge = c.tag ? `<span class="acomp-entry-tag" style="font-size:.58rem">${_escForn(c.tag)}</span>` : '';
+      const precoTxt = c.preco ? `<span class="kanban-card-price">R$ ${_escForn(c.preco)}</span>` : '';
+      return `<div class="kanban-card">
+        <div class="kanban-card-forn">${_escForn(c.forn)}</div>
+        <div class="kanban-card-meta">${tagBadge}${precoTxt}</div>
+        <div class="kanban-card-device">${_escForn(c.device)}</div>
+        <span class="kanban-card-solution">${_escForn(c.solution)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="kanban-col">
+      <div class="kanban-col-head" style="border-color:${s.color};color:${s.color};background:${s.bg}">${_escForn(s.label)}<span style="float:right;font-weight:400;opacity:.7">${cols[s.key].length}</span></div>
+      <div class="kanban-col-body">${cards || '<div class="kanban-empty-col">—</div>'}</div>
+    </div>`;
+  }).join('');
+}
 
 /* ====================================================
    GESTÃO DE PROCESSO — Timeline / Roadmap
@@ -5727,9 +5849,16 @@ async function persistData(id) {
     const sub = sessionStorage.getItem('usc_subtab_' + t.id);
     if (sub) activeSubTab[t.id] = sub;
   });
+  // Restaura aba ativa do CI
+  const savedCiTab = sessionStorage.getItem('usc_ci_tab');
+  if (savedCiTab && CI_TABS.find(t => t.id === savedCiTab)) ciActiveTabId = savedCiTab;
+  CI_TABS.forEach(t => {
+    const sub = sessionStorage.getItem('usc_subtab_' + t.id);
+    if (sub) activeSubTab[t.id] = sub;
+  });
   activeTabId = startTab;
   renderTabBar();
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + startTab));
+  document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + startTab));
   renderPanel(startTab);
 })();
 </script>

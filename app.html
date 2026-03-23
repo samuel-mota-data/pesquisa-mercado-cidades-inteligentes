@@ -612,6 +612,9 @@
     }
     .tab-btn:hover { color: rgba(255,255,255,.85); }
     .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+    /* separador | entre abas principais */
+    .tab-bar-inner .tab-btn + .tab-btn { position: relative; padding-left: 20px; }
+    .tab-bar-inner .tab-btn + .tab-btn::before { content:'|'; position:absolute; left:3px; top:50%; transform:translateY(-50%); color:rgba(255,255,255,.25); font-size:.8rem; pointer-events:none; font-weight:300; }
 
     /* ---- TAB PANELS ---- */
     .tab-panel { display: none; }
@@ -639,6 +642,9 @@
     }
     .subtab-btn:hover { color: var(--blue-dark); }
     .subtab-btn.active { color: var(--blue-dark); border-bottom-color: var(--blue-mid); }
+    /* separador | entre sub-abas */
+    .subtab-bar-inner .subtab-btn + .subtab-btn { position: relative; padding-left: 20px; }
+    .subtab-bar-inner .subtab-btn + .subtab-btn::before { content:'|'; position:absolute; left:3px; top:50%; transform:translateY(-50%); color:var(--gray-mid); font-size:.8rem; pointer-events:none; font-weight:300; }
     .subtab-panel { display: none; }
     .subtab-panel.active { display: block; }
     .subtab-empty {
@@ -4047,20 +4053,13 @@ document.getElementById('tab-bar').addEventListener('click', e => {
 
 /* ---- Casa Inteligente — tab navigation ---- */
 function renderCiTabBar() {
-  let html = '';
-  let sepAdded = false;
-  CI_TABS.forEach(t => {
-    if (!t.directSubTab && !sepAdded) {
-      html += `<span style="color:var(--gray-mid);margin:0 6px;align-self:center;font-size:1rem;user-select:none">|</span>`;
-      sepAdded = true;
-    }
+  document.getElementById('ci-tab-bar').innerHTML = CI_TABS.map(t => {
     const isActive = t.id === ciActiveTabId;
     const style = t.directSubTab
       ? `style="background:${isActive ? '#d4a800' : '#f5c842'};color:#1a2b8c;border-bottom-color:${isActive ? '#d4a800' : '#f5c842'}"`
       : '';
-    html += `<button class="tab-btn${isActive ? ' active' : ''}" data-tab="${t.id}" ${style}>${t.label}</button>`;
-  });
-  document.getElementById('ci-tab-bar').innerHTML = html;
+    return `<button class="tab-btn${isActive ? ' active' : ''}" data-tab="${t.id}" ${style}>${t.label}</button>`;
+  }).join('');
 }
 
 document.getElementById('ci-tab-bar').addEventListener('click', e => {

@@ -54,10 +54,15 @@
     header h1 { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
     header p  { margin-top: 4px; opacity: .75; font-size: .75rem; }
     /* Project nav */
-    .project-nav { max-width:1100px; margin:14px auto 0; display:flex; gap:6px; border-bottom:1px solid rgba(255,255,255,.15); padding-bottom:0; }
+    .project-nav { max-width:1100px; margin:14px auto 0; display:flex; gap:6px; border-bottom:1px solid rgba(255,255,255,.15); padding-bottom:0; flex-wrap:wrap; }
     .project-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:5px 16px; border-radius:8px 8px 0 0; border:1px solid rgba(255,255,255,.15); border-bottom:none; background:rgba(0,0,0,.18); color:rgba(255,255,255,.5); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.4px; text-transform:uppercase; }
     .project-btn:hover { background:rgba(255,255,255,.1); color:rgba(255,255,255,.85); }
     .project-btn.active { background:rgba(255,255,255,.14); color:var(--white); border-color:rgba(255,255,255,.25); }
+    /* Other project placeholder */
+    .other-proj-placeholder { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:80px 24px; color:var(--text-mid); }
+    .other-proj-icon { font-size:2.5rem; }
+    .other-proj-title { font-size:1.1rem; font-weight:800; color:var(--blue-dark); }
+    .other-proj-msg { font-size:.82rem; text-align:center; line-height:1.6; color:var(--text-mid); }
     /* Page nav */
     .site-page-nav { max-width:1100px; margin:6px auto 0; display:flex; gap:4px; }
     .site-page-btn { font-family:inherit; font-size:.72rem; font-weight:700; padding:6px 18px; border-radius:6px 6px 0 0; border:none; background:rgba(255,255,255,.12); color:rgba(255,255,255,.65); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.3px; }
@@ -2610,9 +2615,12 @@ let DATA = {
     <p id="page-desc">Estudo completo sobre o mercado global de smart metering, concorrentes e posicionamento estratégico.</p>
   </div>
   <nav class="project-nav">
-    <button class="project-btn active" id="proj-btn-cidades">Cidades Inteligentes</button>
+    <button class="project-btn active" id="proj-btn-cidades"    onclick="switchProject('cidades')">Cidades Inteligentes</button>
+    <button class="project-btn"        id="proj-btn-telemed"    onclick="switchProject('telemed')">Telemedicina</button>
+    <button class="project-btn"        id="proj-btn-seguro"     onclick="switchProject('seguro')">Seguro Residencial</button>
+    <button class="project-btn"        id="proj-btn-casainte"   onclick="switchProject('casainte')">Casa Inteligente</button>
   </nav>
-  <nav class="site-page-nav">
+  <nav class="site-page-nav" id="site-page-nav-cidades">
     <button class="site-page-btn active" id="site-btn-solucoes" onclick="switchSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="site-btn-kanban" onclick="switchSitePage('kanban')">Kanban de Compras</button>
   </nav>
@@ -2712,6 +2720,14 @@ let DATA = {
   <div class="kanban-board" id="kanban-board"></div>
 </div>
 
+<div id="page-other-project" style="display:none">
+  <div class="other-proj-placeholder">
+    <div class="other-proj-icon">🚧</div>
+    <div class="other-proj-title" id="other-proj-title"></div>
+    <div class="other-proj-msg">Projeto em desenvolvimento.<br>Em breve disponível aqui.</div>
+  </div>
+</div>
+
 <footer>
   Fontes: Research and Markets · Industry Research · Reports Insights
   &nbsp;|&nbsp; Unifique &copy; <span id="ano"></span>
@@ -2722,6 +2738,32 @@ let DATA = {
      ============================================= -->
 <script>
 document.getElementById('ano').textContent = new Date().getFullYear();
+
+/* ---- Projetos ---- */
+const PROJECT_LABELS = {
+  cidades:  'Cidades Inteligentes',
+  telemed:  'Telemedicina',
+  seguro:   'Seguro Residencial',
+  casainte: 'Casa Inteligente',
+};
+let _currentProject = 'cidades';
+function switchProject(proj) {
+  _currentProject = proj;
+  ['cidades','telemed','seguro','casainte'].forEach(p => {
+    document.getElementById('proj-btn-' + p).classList.toggle('active', p === proj);
+  });
+  const isCidades = proj === 'cidades';
+  document.getElementById('site-page-nav-cidades').style.display = isCidades ? '' : 'none';
+  // páginas do projeto cidades
+  document.getElementById('page-solucoes').style.display = (isCidades && _currentSitePage === 'solucoes') ? '' : 'none';
+  document.getElementById('page-kanban').style.display   = (isCidades && _currentSitePage === 'kanban')   ? '' : 'none';
+  // placeholder para outros projetos
+  const ph = document.getElementById('page-other-project');
+  ph.style.display = isCidades ? 'none' : '';
+  if (!isCidades) {
+    document.getElementById('other-proj-title').textContent = PROJECT_LABELS[proj] || proj;
+  }
+}
 
 /* ---- Páginas do site ---- */
 let _currentSitePage = 'solucoes';

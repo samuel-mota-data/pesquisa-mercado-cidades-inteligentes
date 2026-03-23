@@ -1055,9 +1055,25 @@
     .tec-fornec-doc-btn { flex-shrink:0; display:flex; align-items:center; gap:4px; font-family:inherit; font-size:.65rem; font-weight:600; padding:4px 8px; border-radius:5px; border:1.5px solid var(--gray-mid); background:var(--white); color:var(--text-mid); cursor:pointer; white-space:nowrap; overflow:hidden; max-width:130px; }
     .tec-fornec-doc-btn:hover { border-color:var(--blue-mid); color:var(--blue-mid); }
     .tec-fornec-doc-btn.has-doc { border-color:var(--teal); color:var(--teal); background:rgba(0,200,212,.06); }
-    .tec-fornec-del { flex-shrink:0; background:none; border:none; color:var(--text-mid); font-size:.9rem; cursor:pointer; padding:2px 4px; line-height:1; }
-    .tec-fornec-del:hover { color:#c0392b; }
+    .tec-fornec-del { flex-shrink:0; background:none; border:none; color:var(--text-mid); font-size:.9rem; cursor:pointer; padding:2px 5px; line-height:1; border-radius:4px; }
+    .tec-fornec-del:hover { color:#c0392b; background:#fdecea; }
     .tec-fornec-empty { font-size:.68rem; color:var(--text-mid); padding:4px 0; }
+    /* View mode */
+    .tec-fornec-view-nome { font-size:.75rem; font-weight:700; color:var(--blue-dark); flex:2; }
+    .tec-fornec-view-preco { font-size:.75rem; font-weight:600; color:var(--teal); flex:1; }
+    .tec-fornec-view-empty { font-size:.72rem; color:var(--text-mid); flex:1; }
+    .tec-fornec-doc-badge { font-size:.62rem; font-weight:600; color:var(--teal); text-decoration:none; flex-shrink:0; border:1px solid var(--teal); border-radius:4px; padding:2px 6px; background:rgba(0,200,212,.06); max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .tec-fornec-doc-badge:hover { background:rgba(0,200,212,.14); }
+    .tec-fornec-view-actions { display:flex; gap:4px; flex-shrink:0; margin-left:auto; opacity:0; transition:opacity .15s; }
+    .tec-fornec-row:hover .tec-fornec-view-actions { opacity:1; }
+    .tec-fornec-edit-btn { font-family:inherit; font-size:.65rem; font-weight:700; padding:3px 9px; border-radius:5px; border:1.5px solid var(--blue-mid); color:var(--blue-mid); background:none; cursor:pointer; }
+    .tec-fornec-edit-btn:hover { background:rgba(37,64,192,.07); }
+    /* Edit mode */
+    .tec-fornec-row-edit { background:var(--gray-light); border-radius:7px; padding:6px 8px; }
+    .tec-fornec-save-btn { flex-shrink:0; font-family:inherit; font-size:.65rem; font-weight:700; padding:4px 10px; border-radius:5px; border:none; background:var(--teal); color:var(--white); cursor:pointer; }
+    .tec-fornec-save-btn:hover { opacity:.85; }
+    .tec-fornec-cancel-btn { flex-shrink:0; font-family:inherit; font-size:.65rem; font-weight:600; padding:4px 8px; border-radius:5px; border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; }
+    .tec-fornec-cancel-btn:hover { border-color:var(--text-mid); color:var(--text-dark); }
 
     /* APIs table */
     .arq-table { width:100%; border-collapse:collapse; font-size:.72rem; }
@@ -4388,30 +4404,57 @@ function addTecItem(id) {
 }
 
 /* ---- Fornecedores do card de tecnologia ---- */
+function _escForn(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _escFornAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/&/g,'&amp;'); }
+
+// Estado de edição por fornecedor: key = `${id}_${i}_${fi}`
+const _tecFornEditing = new Set();
+
 function renderTecFornecedores(id, i) {
   const el = document.getElementById(`tec-fornec-${id}-${i}`);
   if (!el) return;
   const item = DATA[id]?.tecnologia?.[i];
   if (!item) return;
   if (!item.fornecedores) item.fornecedores = [];
+
   const rows = item.fornecedores.map((f, fi) => {
-    const docLabel = f.doc?.nome
-      ? `<span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">${_escForn(f.doc.nome)}</span>`
-      : '📎 Orçamento';
-    const hasDoc = f.doc?.nome ? ' has-doc' : '';
-    return `<div class="tec-fornec-row" id="tec-fornec-row-${id}-${i}-${fi}">
-      <input class="tec-fornec-nome" placeholder="Fornecedor" value="${_escFornAttr(f.nome)}"
-        onblur="saveTecFornecedor('${id}',${i},${fi},'nome',this.value)">
-      <input class="tec-fornec-preco" placeholder="R$ Preço" value="${_escFornAttr(f.preco)}"
-        onblur="saveTecFornecedor('${id}',${i},${fi},'preco',this.value)">
-      <button class="tec-fornec-doc-btn${hasDoc}" onclick="document.getElementById('tec-fornec-file-${id}-${i}-${fi}').click()" title="${f.doc?.nome||'Anexar orçamento'}">
-        ${docLabel}
-      </button>
-      <input type="file" id="tec-fornec-file-${id}-${i}-${fi}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-        onchange="_tecFornDocUpload('${id}',${i},${fi},this)">
-      ${f.doc?.data ? `<a href="${f.doc.data}" download="${_escFornAttr(f.doc.nome)}" title="Baixar" style="font-size:.75rem;color:var(--teal);text-decoration:none;flex-shrink:0">⬇</a>` : ''}
-      <button class="tec-fornec-del" onclick="delTecFornecedor('${id}',${i},${fi})" title="Remover">×</button>
-    </div>`;
+    const key = `${id}_${i}_${fi}`;
+    const editing = _tecFornEditing.has(key);
+
+    if (editing) {
+      // Modo edição
+      const hasDoc = f.doc?.nome ? ' has-doc' : '';
+      const docLabel = f.doc?.nome
+        ? `<span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">${_escForn(f.doc.nome)}</span>`
+        : '📎 Orçamento';
+      return `<div class="tec-fornec-row tec-fornec-row-edit" id="tec-fornec-row-${id}-${i}-${fi}">
+        <input class="tec-fornec-nome" id="tfn-nome-${id}-${i}-${fi}" placeholder="Fornecedor" value="${_escFornAttr(f.nome)}">
+        <input class="tec-fornec-preco" id="tfn-preco-${id}-${i}-${fi}" placeholder="R$ Preço" value="${_escFornAttr(f.preco)}">
+        <button class="tec-fornec-doc-btn${hasDoc}" onclick="document.getElementById('tec-fornec-file-${id}-${i}-${fi}').click()" title="${_escFornAttr(f.doc?.nome||'Anexar orçamento')}">
+          ${docLabel}
+        </button>
+        <input type="file" id="tec-fornec-file-${id}-${i}-${fi}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+          onchange="_tecFornDocUpload('${id}',${i},${fi},this)">
+        <button class="tec-fornec-save-btn" onclick="saveTecFornecedor('${id}',${i},${fi})">Salvar</button>
+        <button class="tec-fornec-cancel-btn" onclick="cancelTecFornecedor('${id}',${i},${fi})">Cancelar</button>
+      </div>`;
+    } else {
+      // Modo visualização
+      const docBadge = f.doc?.nome
+        ? `<a href="${f.doc.data}" download="${_escFornAttr(f.doc.nome)}" class="tec-fornec-doc-badge" title="Baixar ${_escFornAttr(f.doc.nome)}">📎 ${_escForn(f.doc.nome)}</a>`
+        : '';
+      const nomeDisp = f.nome ? `<span class="tec-fornec-view-nome">${_escForn(f.nome)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
+      const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">${_escForn(f.preco)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
+      return `<div class="tec-fornec-row" id="tec-fornec-row-${id}-${i}-${fi}">
+        ${nomeDisp}
+        ${precoDisp}
+        ${docBadge}
+        <div class="tec-fornec-view-actions">
+          <button class="tec-fornec-edit-btn" onclick="editTecFornecedor('${id}',${i},${fi})" title="Editar">Editar</button>
+          <button class="tec-fornec-del" onclick="_askDelTecFornecedor('${id}',${i},${fi})" title="Remover">×</button>
+        </div>
+      </div>`;
+    }
   }).join('');
 
   el.innerHTML = `
@@ -4422,31 +4465,52 @@ function renderTecFornecedores(id, i) {
     ${rows || '<div class="tec-fornec-empty">Nenhum fornecedor cadastrado.</div>'}`;
 }
 
-function _escForn(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function _escFornAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/&/g,'&amp;'); }
+function editTecFornecedor(id, i, fi) {
+  _tecFornEditing.add(`${id}_${i}_${fi}`);
+  renderTecFornecedores(id, i);
+  setTimeout(() => document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.focus(), 30);
+}
 
-function saveTecFornecedor(id, i, fi, field, val) {
+function cancelTecFornecedor(id, i, fi) {
+  const key = `${id}_${i}_${fi}`;
+  // Se era novo e sem dados, remove
+  const f = DATA[id].tecnologia[i].fornecedores[fi];
+  if (!f.nome && !f.preco && !f.doc) {
+    DATA[id].tecnologia[i].fornecedores.splice(fi, 1);
+    persistData(id);
+  }
+  _tecFornEditing.delete(key);
+  renderTecFornecedores(id, i);
+}
+
+function saveTecFornecedor(id, i, fi) {
   if (!DATA[id].tecnologia[i].fornecedores) DATA[id].tecnologia[i].fornecedores = [];
-  DATA[id].tecnologia[i].fornecedores[fi][field] = val.trim();
+  const nome  = document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.value.trim() || '';
+  const preco = document.getElementById(`tfn-preco-${id}-${i}-${fi}`)?.value.trim() || '';
+  DATA[id].tecnologia[i].fornecedores[fi].nome  = nome;
+  DATA[id].tecnologia[i].fornecedores[fi].preco = preco;
+  _tecFornEditing.delete(`${id}_${i}_${fi}`);
   persistData(id);
+  renderTecFornecedores(id, i);
 }
 
 function addTecFornecedor(id, i) {
   if (!DATA[id].tecnologia[i].fornecedores) DATA[id].tecnologia[i].fornecedores = [];
+  const fi = DATA[id].tecnologia[i].fornecedores.length;
   DATA[id].tecnologia[i].fornecedores.push({ nome: '', preco: '', doc: null });
-  persistData(id);
+  _tecFornEditing.add(`${id}_${i}_${fi}`);
   renderTecFornecedores(id, i);
-  // foca no nome do novo fornecedor
-  setTimeout(() => {
-    const rows = document.querySelectorAll(`#tec-fornec-${id}-${i} .tec-fornec-nome`);
-    if (rows.length) rows[rows.length - 1].focus();
-  }, 30);
+  setTimeout(() => document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.focus(), 30);
 }
 
-function delTecFornecedor(id, i, fi) {
-  DATA[id].tecnologia[i].fornecedores.splice(fi, 1);
-  persistData(id);
-  renderTecFornecedores(id, i);
+function _askDelTecFornecedor(id, i, fi) {
+  const nome = DATA[id].tecnologia[i].fornecedores[fi]?.nome || 'este fornecedor';
+  showConfirm('Remover fornecedor?', `"${_escForn(nome)}" será removido permanentemente.`, () => {
+    _tecFornEditing.delete(`${id}_${i}_${fi}`);
+    DATA[id].tecnologia[i].fornecedores.splice(fi, 1);
+    persistData(id);
+    renderTecFornecedores(id, i);
+  });
 }
 
 function _tecFornDocUpload(id, i, fi, input) {
@@ -4456,6 +4520,7 @@ function _tecFornDocUpload(id, i, fi, input) {
   reader.onload = e => {
     if (!DATA[id].tecnologia[i].fornecedores[fi]) return;
     DATA[id].tecnologia[i].fornecedores[fi].doc = { nome: file.name, data: e.target.result };
+    // Mantém em modo edição após upload — salva automaticamente só o doc
     persistData(id);
     renderTecFornecedores(id, i);
   };

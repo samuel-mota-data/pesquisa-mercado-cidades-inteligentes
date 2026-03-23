@@ -1048,7 +1048,15 @@
     .acomp-filter-btn.active { border-color:var(--teal); background:var(--teal); color:var(--white); }
     .acomp-clear-btn { font-family:inherit; font-size:.62rem; padding:3px 9px; border-radius:5px; border:none; background:none; color:var(--text-mid); cursor:pointer; text-decoration:underline; margin-left:auto; }
     .acomp-clear-btn:hover { color:#c0392b; }
+    .acomp-device-section { margin-bottom:28px; }
     .acomp-group-header { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--blue-dark); padding:4px 0 8px; border-bottom:2px solid var(--gray-mid); margin-bottom:10px; }
+    .acomp-suppliers { display:flex; flex-direction:column; gap:8px; }
+    .acomp-supplier-card { background:var(--white); border:1px solid var(--gray-mid); border-radius:10px; overflow:hidden; }
+    .acomp-supplier-head { display:flex; align-items:center; gap:7px; padding:10px 14px; border-bottom:1px solid var(--gray-light); background:var(--gray-light); }
+    .acomp-history { padding:8px 14px 6px; display:flex; flex-direction:column; gap:5px; }
+    .acomp-history-row { display:flex; align-items:center; gap:6px; }
+    .acomp-history-date { font-size:.6rem; color:var(--text-mid); font-weight:600; flex-shrink:0; min-width:105px; }
+    .acomp-history-arrow { font-size:.65rem; color:var(--text-mid); flex-shrink:0; }
     /* Modal de seleção de status */
     .status-modal-opt { display:block; width:100%; text-align:left; font-family:inherit; font-size:.75rem; font-weight:700; padding:9px 14px; border-radius:8px; border:2px solid transparent; cursor:pointer; transition:opacity .12s; }
     .status-modal-opt:hover { opacity:.82; }
@@ -2770,7 +2778,7 @@ function renderPanel(id) {
       <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
       <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
       <button class="subtab-btn"        data-subtab="parceiros"      onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
-      <button class="subtab-btn"        data-subtab="acompanhamento" onclick="activateSubTab('${id}','acompanhamento')">Acompanhamento</button>
+      <button class="subtab-btn"        data-subtab="acompanhamento" onclick="activateSubTab('${id}','acompanhamento')">Processo de Compra</button>
     </div>
   </div>
   <div class="subtab-panel active" data-tab="${id}" data-subtab="informativo"><div id="informativo-panel-${id}"></div></div>
@@ -4658,26 +4666,63 @@ function renderAcompanhamentoPanel(id) {
       onclick="setAcompFilter('${id}','${s.key}')">${_escForn(s.label)}</button>`;
   }).join('');
 
+  // Filtra entradas
   const filtered = filter ? log.filter(e => e.newStatus === filter) : log;
 
-  // "Processo de compra" → agrupa por dispositivo (tecTitulo)
-  let timelineHtml = '';
-  if (filter === 'compra' && filtered.length) {
-    const groups = {};
-    filtered.forEach((e, idx) => {
-      const key = e.tecTitulo || '—';
-      if (!groups[key]) groups[key] = [];
-      groups[key].push({ e, idx: log.indexOf(e) });
-    });
-    timelineHtml = Object.entries(groups).map(([tec, items]) => `
-      <div style="margin-bottom:22px">
-        <div class="acomp-group-header">${_escForn(tec)}</div>
-        <div class="acomp-timeline">${items.map(({ e, idx }) => _acompEntryHtml(id, e, idx)).join('')}</div>
-      </div>`).join('');
-  } else if (filtered.length) {
-    const indexedEntries = filtered.map(e => ({ e, idx: log.indexOf(e) }));
-    timelineHtml = `<div class="acomp-timeline">${indexedEntries.map(({ e, idx }) => _acompEntryHtml(id, e, idx)).join('')}</div>`;
-  }
+  // Agrupa: dispositivo (tecIdx) → fornecedor (fi) → entradas cronológicas
+  // Usa tecIdx+fi como chave única do fornecedor
+  const devices = {}; // tecIdx → { titulo, suppliers: { fi → { nome, tag, entries[] } } }
+  filtered.forEach(e => {
+    const dk = e.tecIdx ?? e.tecTitulo;
+    if (!devices[dk]) devices[dk] = { titulo: e.tecTitulo || '—', suppliers: {} };
+    const sk = String(e.fi ?? e.fornecedor);
+    if (!devices[dk].suppliers[sk]) devices[dk].suppliers[sk] = { nome: e.fornecedor, tag: e.tag, entries: [] };
+    devices[dk].suppliers[sk].entries.push(e);
+  });
+  // Ordena entradas de cada fornecedor do mais antigo para o mais novo
+  Object.values(devices).forEach(d => Object.values(d.suppliers).forEach(s => {
+    s.entries.sort((a, b) => new Date(a.date) - new Date(b.date));
+  }));
+
+  const devicesHtml = Object.entries(devices).map(([, dev]) => {
+    const suppliersHtml = Object.values(dev.suppliers).map(sup => {
+      // Status atual do fornecedor (última entrada)
+      const lastEntry = sup.entries[sup.entries.length - 1];
+      const curSt = _tfStatus(lastEntry?.newStatus);
+      const tagBadge = sup.tag ? `<span class="acomp-entry-tag">${_escForn(sup.tag)}</span>` : '';
+
+      const historyRows = sup.entries.map(e => {
+        const logIdx = log.indexOf(e);
+        const oldSt = _tfStatus(e.oldStatus);
+        const newSt = _tfStatus(e.newStatus);
+        const d = new Date(e.date);
+        const dateStr = d.toLocaleDateString('pt-BR') + ' ' +
+          d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="acomp-history-row">
+          <span class="acomp-history-date">${dateStr}</span>
+          <span class="tec-fornec-status" style="background:${oldSt.bg};color:${oldSt.color};cursor:default;font-size:.58rem">${_escForn(oldSt.label)}</span>
+          <span class="acomp-history-arrow">→</span>
+          <span class="tec-fornec-status" style="background:${newSt.bg};color:${newSt.color};cursor:default;font-size:.58rem">${_escForn(newSt.label)}</span>
+          <button class="tec-fornec-del" onclick="delAcompEntry('${id}',${logIdx})" title="Excluir">×</button>
+        </div>`;
+      }).join('');
+
+      return `<div class="acomp-supplier-card">
+        <div class="acomp-supplier-head">
+          <span class="acomp-entry-forn">${_escForn(sup.nome)}</span>
+          ${tagBadge}
+          <span style="flex:1"></span>
+          <span class="tec-fornec-status" style="background:${curSt.bg};color:${curSt.color};cursor:default">${_escForn(curSt.label)}</span>
+        </div>
+        <div class="acomp-history">${historyRows}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="acomp-device-section">
+      <div class="acomp-group-header">${_escForn(dev.titulo)}</div>
+      <div class="acomp-suppliers">${suppliersHtml}</div>
+    </div>`;
+  }).join('');
 
   container.innerHTML = `<div class="acomp-wrap">
     <div class="acomp-filter-bar">
@@ -4685,28 +4730,7 @@ function renderAcompanhamentoPanel(id) {
       ${filterBtns}
       ${filter ? `<button class="acomp-clear-btn" onclick="setAcompFilter('${id}',null)">Limpar filtro</button>` : ''}
     </div>
-    ${timelineHtml || `<div class="acomp-empty">${log.length ? 'Nenhum resultado para o filtro.' : 'Nenhuma mudança de status registrada ainda.<br>Altere o status de um fornecedor na aba Tecnologia.'}</div>`}
-  </div>`;
-}
-
-function _acompEntryHtml(id, e, logIdx) {
-  const oldSt = _tfStatus(e.oldStatus);
-  const newSt = _tfStatus(e.newStatus);
-  const d = new Date(e.date);
-  const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-  const tagBadge = e.tag ? `<span class="acomp-entry-tag">${_escForn(e.tag)}</span>` : '';
-  return `<div class="acomp-entry">
-    <div class="acomp-entry-date">${dateStr}</div>
-    <div class="acomp-entry-card">
-      <span class="acomp-entry-forn">${_escForn(e.fornecedor)}</span>
-      ${tagBadge}
-      <span class="acomp-entry-tec">${_escForn(e.tecTitulo)}</span>
-      <span class="acomp-entry-arrow" style="flex:1"></span>
-      <span class="tec-fornec-status" style="background:${oldSt.bg};color:${oldSt.color};cursor:default">${_escForn(oldSt.label)}</span>
-      <span style="font-size:.7rem;color:var(--text-mid)">→</span>
-      <span class="tec-fornec-status" style="background:${newSt.bg};color:${newSt.color};cursor:default">${_escForn(newSt.label)}</span>
-      <button class="tec-fornec-del" onclick="delAcompEntry('${id}',${logIdx})" title="Excluir registro">×</button>
-    </div>
+    ${devicesHtml || `<div class="acomp-empty">${log.length ? 'Nenhum resultado para o filtro selecionado.' : 'Nenhuma mudança de status registrada ainda.<br>Altere o status de um fornecedor na aba Tecnologia.'}</div>`}
   </div>`;
 }
 

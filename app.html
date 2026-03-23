@@ -1026,6 +1026,29 @@
     .arq-detail-proto-row input:focus { border-color:var(--teal); }
     .arq-detail-body { padding:16px 18px 8px; }
 
+    /* Status badge nos fornecedores */
+    .tec-fornec-status { flex-shrink:0; font-family:inherit; font-size:.6rem; font-weight:700; padding:3px 9px; border-radius:20px; border:none; cursor:pointer; transition:opacity .15s; white-space:nowrap; }
+    .tec-fornec-status:hover { opacity:.8; }
+    /* Timeline de acompanhamento */
+    .acomp-wrap { padding:20px; }
+    .acomp-empty { color:var(--text-mid); font-size:.78rem; padding:32px 0; text-align:center; }
+    .acomp-timeline { position:relative; padding-left:22px; }
+    .acomp-timeline::before { content:''; position:absolute; left:7px; top:0; bottom:0; width:2px; background:var(--gray-mid); border-radius:2px; }
+    .acomp-entry { position:relative; margin-bottom:18px; }
+    .acomp-entry::before { content:''; position:absolute; left:-18px; top:4px; width:8px; height:8px; border-radius:50%; background:var(--teal); border:2px solid var(--white); box-shadow:0 0 0 2px var(--teal); }
+    .acomp-entry-date { font-size:.58rem; color:var(--text-mid); font-weight:600; margin-bottom:3px; letter-spacing:.2px; }
+    .acomp-entry-card { background:var(--white); border-radius:8px; border:1px solid var(--gray-mid); padding:9px 13px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .acomp-entry-forn { font-size:.75rem; font-weight:700; color:var(--blue-dark); }
+    .acomp-entry-tag { font-size:.6rem; font-weight:700; color:var(--blue-mid); background:rgba(37,64,192,.08); border-radius:20px; padding:2px 7px; }
+    .acomp-entry-tec { font-size:.6rem; color:var(--text-mid); }
+    .acomp-entry-arrow { font-size:.7rem; color:var(--text-mid); }
+    .acomp-filter-bar { display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+    .acomp-filter-label { font-size:.62rem; font-weight:700; color:var(--text-mid); text-transform:uppercase; letter-spacing:.5px; }
+    .acomp-filter-btn { font-family:inherit; font-size:.65rem; font-weight:600; padding:4px 11px; border-radius:20px; border:1.5px solid var(--gray-mid); background:var(--white); color:var(--text-mid); cursor:pointer; }
+    .acomp-filter-btn.active { border-color:var(--teal); background:var(--teal); color:var(--white); }
+    .acomp-clear-btn { font-family:inherit; font-size:.62rem; padding:3px 9px; border-radius:5px; border:none; background:none; color:var(--text-mid); cursor:pointer; text-decoration:underline; margin-left:auto; }
+    .acomp-clear-btn:hover { color:#c0392b; }
+
     /* Road-Map */
     .rdm-wrap { padding:20px; }
     .rdm-scenarios-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
@@ -2741,7 +2764,8 @@ function renderPanel(id) {
       <button class="subtab-btn"        data-subtab="roadmap"     onclick="activateSubTab('${id}','roadmap')">Road-Map</button>
       <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
       <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
-      <button class="subtab-btn"        data-subtab="parceiros"   onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
+      <button class="subtab-btn"        data-subtab="parceiros"      onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
+      <button class="subtab-btn"        data-subtab="acompanhamento" onclick="activateSubTab('${id}','acompanhamento')">Acompanhamento</button>
     </div>
   </div>
   <div class="subtab-panel active" data-tab="${id}" data-subtab="informativo"><div id="informativo-panel-${id}"></div></div>
@@ -3162,6 +3186,7 @@ function renderPanel(id) {
   <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div id="arquitetura-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="parceiros"><div id="parceiros-panel-${id}"></div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="acompanhamento"><div id="acompanhamento-panel-${id}"></div></div>
 `;
 
   /* ---- Charts (criados após innerHTML estar no DOM) ---- */
@@ -3215,6 +3240,7 @@ function renderPanel(id) {
   renderRoadmapPanel(id);
   renderArquiteturaPanel(id);
   renderParceirosPanel(id);
+  renderAcompanhamentoPanel(id);
   renderInfoPanel(id);
   // restaura sub-aba ativa
   const _sub = activeSubTab[id];
@@ -4409,6 +4435,16 @@ function addTecItem(id) {
   _tecEditForm(id, i);
 }
 
+/* ---- Status dos fornecedores ---- */
+const TEC_FORN_STATUSES = [
+  { key: 'sem_obs',   label: 'Sem observação',      bg: '#e9ecef', color: '#6c757d' },
+  { key: 'inicio',    label: 'Início do orçamento',  bg: '#fff3cd', color: '#856404' },
+  { key: 'concluido', label: 'Orçamento concluído',  bg: '#dbeafe', color: '#1e40af' },
+  { key: 'compra',    label: 'Processo de compra',   bg: '#ede9fe', color: '#6d28d9' },
+  { key: 'comprado',  label: 'Comprado',             bg: '#dcfce7', color: '#166534' },
+];
+function _tfStatus(key) { return TEC_FORN_STATUSES.find(s => s.key === key) || TEC_FORN_STATUSES[0]; }
+
 /* ---- Fornecedores do card de tecnologia ---- */
 function _escForn(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function _escFornAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/&/g,'&amp;'); }
@@ -4453,6 +4489,7 @@ function renderTecFornecedores(id, i) {
       const docBadge = f.doc?.nome
         ? `<a href="${f.doc.data}" download="${_escFornAttr(f.doc.nome)}" class="tec-fornec-doc-badge" title="Baixar ${_escFornAttr(f.doc.nome)}">📎 ${_escForn(f.doc.nome)}</a>`
         : '';
+      const st = _tfStatus(f.status);
       const nomeDisp  = f.nome  ? `<span class="tec-fornec-view-nome">${_escForn(f.nome)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
       const tagDisp   = f.tag   ? `<span class="tec-fornec-view-tag">${_escForn(f.tag)}</span>`   : '';
       const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">R$ ${_escForn(f.preco)}</span>` : '';
@@ -4460,6 +4497,8 @@ function renderTecFornecedores(id, i) {
         <div class="tec-fornec-view-left">${nomeDisp}${tagDisp}</div>
         ${precoDisp}
         ${docBadge}
+        <button class="tec-fornec-status" style="background:${st.bg};color:${st.color}"
+          onclick="cycleTecFornStatus('${id}',${i},${fi})" title="Clique para avançar status">${_escForn(st.label)}</button>
         <div class="tec-fornec-view-actions">
           <button class="tec-fornec-edit-btn" onclick="editTecFornecedor('${id}',${i},${fi})">Editar</button>
           <button class="tec-fornec-del" onclick="_askDelTecFornecedor('${id}',${i},${fi})">×</button>
@@ -4538,6 +4577,87 @@ function _tecFornDocUpload(id, i, fi, input) {
     renderTecFornecedores(id, i);
   };
   reader.readAsDataURL(file);
+}
+
+function cycleTecFornStatus(id, i, fi) {
+  const f = DATA[id]?.tecnologia?.[i]?.fornecedores?.[fi];
+  if (!f) return;
+  const idx = TEC_FORN_STATUSES.findIndex(s => s.key === (f.status || 'sem_obs'));
+  const next = TEC_FORN_STATUSES[(idx + 1) % TEC_FORN_STATUSES.length];
+  const oldSt = _tfStatus(f.status);
+  f.status = next.key;
+  // Registra no log
+  if (!DATA[id].statusLog) DATA[id].statusLog = [];
+  const item = DATA[id].tecnologia[i];
+  DATA[id].statusLog.unshift({
+    date:       new Date().toISOString(),
+    tecIdx:     i,
+    tecTitulo:  item?.titulo || '—',
+    fi,
+    fornecedor: f.nome || '—',
+    tag:        f.tag  || '',
+    oldStatus:  oldSt.key,
+    newStatus:  next.key,
+  });
+  persistData(id);
+  renderTecFornecedores(id, i);
+  renderAcompanhamentoPanel(id);
+}
+
+/* ---- Acompanhamento ---- */
+const acompFilterStatus = {}; // tabId → key | null
+
+function renderAcompanhamentoPanel(id) {
+  const container = document.getElementById('acompanhamento-panel-' + id);
+  if (!container) return;
+  if (!DATA[id].statusLog) DATA[id].statusLog = [];
+  const log = DATA[id].statusLog;
+  const filter = acompFilterStatus[id] || null;
+
+  // Barra de filtros
+  const filterBtns = TEC_FORN_STATUSES.map(s => {
+    const active = filter === s.key ? ' active' : '';
+    return `<button class="acomp-filter-btn${active}" style="${active ? `background:${s.bg};color:${s.color};border-color:${s.color}` : ''}"
+      onclick="setAcompFilter('${id}','${s.key}')">${_escForn(s.label)}</button>`;
+  }).join('');
+
+  const filtered = filter ? log.filter(e => e.newStatus === filter) : log;
+
+  const entries = filtered.map(e => {
+    const oldSt = _tfStatus(e.oldStatus);
+    const newSt = _tfStatus(e.newStatus);
+    const d = new Date(e.date);
+    const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    const tagBadge = e.tag ? `<span class="acomp-entry-tag">${_escForn(e.tag)}</span>` : '';
+    return `<div class="acomp-entry">
+      <div class="acomp-entry-date">${dateStr}</div>
+      <div class="acomp-entry-card">
+        <span class="acomp-entry-forn">${_escForn(e.fornecedor)}</span>
+        ${tagBadge}
+        <span class="acomp-entry-tec">${_escForn(e.tecTitulo)}</span>
+        <span class="acomp-entry-arrow">→</span>
+        <span class="tec-fornec-status" style="background:${oldSt.bg};color:${oldSt.color};cursor:default">${_escForn(oldSt.label)}</span>
+        <span style="font-size:.7rem;color:var(--text-mid)">→</span>
+        <span class="tec-fornec-status" style="background:${newSt.bg};color:${newSt.color};cursor:default">${_escForn(newSt.label)}</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `<div class="acomp-wrap">
+    <div class="acomp-filter-bar">
+      <span class="acomp-filter-label">Filtrar por status</span>
+      ${filterBtns}
+      ${filter ? `<button class="acomp-clear-btn" onclick="setAcompFilter('${id}',null)">Limpar filtro</button>` : ''}
+    </div>
+    ${filtered.length
+      ? `<div class="acomp-timeline">${entries}</div>`
+      : `<div class="acomp-empty">${log.length ? 'Nenhum resultado para o filtro.' : 'Nenhuma mudança de status registrada ainda.<br>Altere o status de um fornecedor na aba Tecnologia.'}</div>`}
+  </div>`;
+}
+
+function setAcompFilter(id, key) {
+  acompFilterStatus[id] = key;
+  renderAcompanhamentoPanel(id);
 }
 
 /* ---- Road-Map ---- */
@@ -5307,6 +5427,7 @@ async function persistData(id) {
           };
           merged.calc_scenarios = v.calc_scenarios || [];
           merged.roadmap = { scenarios: v.roadmap?.scenarios || [] };
+          merged.statusLog = v.statusLog || [];
           merged.arquitetura = {
             camadas: v.arquitetura?.camadas || def.arquitetura?.camadas || [],
             apis:    v.arquitetura?.apis    || def.arquitetura?.apis    || [],

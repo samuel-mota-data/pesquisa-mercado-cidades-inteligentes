@@ -1048,6 +1048,11 @@
     .acomp-filter-btn.active { border-color:var(--teal); background:var(--teal); color:var(--white); }
     .acomp-clear-btn { font-family:inherit; font-size:.62rem; padding:3px 9px; border-radius:5px; border:none; background:none; color:var(--text-mid); cursor:pointer; text-decoration:underline; margin-left:auto; }
     .acomp-clear-btn:hover { color:#c0392b; }
+    .acomp-group-header { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--blue-dark); padding:4px 0 8px; border-bottom:2px solid var(--gray-mid); margin-bottom:10px; }
+    /* Modal de seleção de status */
+    .status-modal-opt { display:block; width:100%; text-align:left; font-family:inherit; font-size:.75rem; font-weight:700; padding:9px 14px; border-radius:8px; border:2px solid transparent; cursor:pointer; transition:opacity .12s; }
+    .status-modal-opt:hover { opacity:.82; }
+    .status-modal-opt-active { border-width:2px !important; }
 
     /* Road-Map */
     .rdm-wrap { padding:20px; }
@@ -4579,14 +4584,47 @@ function _tecFornDocUpload(id, i, fi, input) {
   reader.readAsDataURL(file);
 }
 
+// Abre modal para escolher próximo status
 function cycleTecFornStatus(id, i, fi) {
   const f = DATA[id]?.tecnologia?.[i]?.fornecedores?.[fi];
   if (!f) return;
-  const idx = TEC_FORN_STATUSES.findIndex(s => s.key === (f.status || 'sem_obs'));
-  const next = TEC_FORN_STATUSES[(idx + 1) % TEC_FORN_STATUSES.length];
+  const currentKey = f.status || 'sem_obs';
+  const cur = _tfStatus(currentKey);
+
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  const opts = TEC_FORN_STATUSES.map(s => {
+    const isActive = s.key === currentKey;
+    return `<button class="status-modal-opt${isActive ? ' status-modal-opt-active' : ''}"
+      style="background:${s.bg};color:${s.color};border-color:${isActive ? s.color : 'transparent'}"
+      onclick="_applyTecFornStatus('${id}',${i},${fi},'${s.key}')">${_escForn(s.label)}</button>`;
+  }).join('');
+
+  ov.innerHTML = `
+    <div class="confirm-box" style="max-width:340px">
+      <h4 style="margin-bottom:6px">Alterar status</h4>
+      <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+        ${_escForn(f.nome || '—')} &nbsp;·&nbsp; atual: <strong style="color:${cur.color}">${_escForn(cur.label)}</strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:7px">${opts}</div>
+      <div class="confirm-actions" style="margin-top:14px">
+        <button class="confirm-cancel">Cancelar</button>
+      </div>
+    </div>`;
+  ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
+  // guarda referência para fechar depois
+  ov.id = `status-modal-${id}-${i}-${fi}`;
+}
+
+function _applyTecFornStatus(id, i, fi, newKey) {
+  const ov = document.getElementById(`status-modal-${id}-${i}-${fi}`);
+  if (ov) ov.remove();
+  const f = DATA[id]?.tecnologia?.[i]?.fornecedores?.[fi];
+  if (!f || f.status === newKey) return;
   const oldSt = _tfStatus(f.status);
-  f.status = next.key;
-  // Registra no log
+  f.status = newKey;
   if (!DATA[id].statusLog) DATA[id].statusLog = [];
   const item = DATA[id].tecnologia[i];
   DATA[id].statusLog.unshift({
@@ -4597,7 +4635,7 @@ function cycleTecFornStatus(id, i, fi) {
     fornecedor: f.nome || '—',
     tag:        f.tag  || '',
     oldStatus:  oldSt.key,
-    newStatus:  next.key,
+    newStatus:  newKey,
   });
   persistData(id);
   renderTecFornecedores(id, i);
@@ -4614,7 +4652,6 @@ function renderAcompanhamentoPanel(id) {
   const log = DATA[id].statusLog;
   const filter = acompFilterStatus[id] || null;
 
-  // Barra de filtros
   const filterBtns = TEC_FORN_STATUSES.map(s => {
     const active = filter === s.key ? ' active' : '';
     return `<button class="acomp-filter-btn${active}" style="${active ? `background:${s.bg};color:${s.color};border-color:${s.color}` : ''}"
@@ -4623,25 +4660,24 @@ function renderAcompanhamentoPanel(id) {
 
   const filtered = filter ? log.filter(e => e.newStatus === filter) : log;
 
-  const entries = filtered.map(e => {
-    const oldSt = _tfStatus(e.oldStatus);
-    const newSt = _tfStatus(e.newStatus);
-    const d = new Date(e.date);
-    const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
-    const tagBadge = e.tag ? `<span class="acomp-entry-tag">${_escForn(e.tag)}</span>` : '';
-    return `<div class="acomp-entry">
-      <div class="acomp-entry-date">${dateStr}</div>
-      <div class="acomp-entry-card">
-        <span class="acomp-entry-forn">${_escForn(e.fornecedor)}</span>
-        ${tagBadge}
-        <span class="acomp-entry-tec">${_escForn(e.tecTitulo)}</span>
-        <span class="acomp-entry-arrow">→</span>
-        <span class="tec-fornec-status" style="background:${oldSt.bg};color:${oldSt.color};cursor:default">${_escForn(oldSt.label)}</span>
-        <span style="font-size:.7rem;color:var(--text-mid)">→</span>
-        <span class="tec-fornec-status" style="background:${newSt.bg};color:${newSt.color};cursor:default">${_escForn(newSt.label)}</span>
-      </div>
-    </div>`;
-  }).join('');
+  // "Processo de compra" → agrupa por dispositivo (tecTitulo)
+  let timelineHtml = '';
+  if (filter === 'compra' && filtered.length) {
+    const groups = {};
+    filtered.forEach((e, idx) => {
+      const key = e.tecTitulo || '—';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push({ e, idx: log.indexOf(e) });
+    });
+    timelineHtml = Object.entries(groups).map(([tec, items]) => `
+      <div style="margin-bottom:22px">
+        <div class="acomp-group-header">${_escForn(tec)}</div>
+        <div class="acomp-timeline">${items.map(({ e, idx }) => _acompEntryHtml(id, e, idx)).join('')}</div>
+      </div>`).join('');
+  } else if (filtered.length) {
+    const indexedEntries = filtered.map(e => ({ e, idx: log.indexOf(e) }));
+    timelineHtml = `<div class="acomp-timeline">${indexedEntries.map(({ e, idx }) => _acompEntryHtml(id, e, idx)).join('')}</div>`;
+  }
 
   container.innerHTML = `<div class="acomp-wrap">
     <div class="acomp-filter-bar">
@@ -4649,10 +4685,37 @@ function renderAcompanhamentoPanel(id) {
       ${filterBtns}
       ${filter ? `<button class="acomp-clear-btn" onclick="setAcompFilter('${id}',null)">Limpar filtro</button>` : ''}
     </div>
-    ${filtered.length
-      ? `<div class="acomp-timeline">${entries}</div>`
-      : `<div class="acomp-empty">${log.length ? 'Nenhum resultado para o filtro.' : 'Nenhuma mudança de status registrada ainda.<br>Altere o status de um fornecedor na aba Tecnologia.'}</div>`}
+    ${timelineHtml || `<div class="acomp-empty">${log.length ? 'Nenhum resultado para o filtro.' : 'Nenhuma mudança de status registrada ainda.<br>Altere o status de um fornecedor na aba Tecnologia.'}</div>`}
   </div>`;
+}
+
+function _acompEntryHtml(id, e, logIdx) {
+  const oldSt = _tfStatus(e.oldStatus);
+  const newSt = _tfStatus(e.newStatus);
+  const d = new Date(e.date);
+  const dateStr = d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  const tagBadge = e.tag ? `<span class="acomp-entry-tag">${_escForn(e.tag)}</span>` : '';
+  return `<div class="acomp-entry">
+    <div class="acomp-entry-date">${dateStr}</div>
+    <div class="acomp-entry-card">
+      <span class="acomp-entry-forn">${_escForn(e.fornecedor)}</span>
+      ${tagBadge}
+      <span class="acomp-entry-tec">${_escForn(e.tecTitulo)}</span>
+      <span class="acomp-entry-arrow" style="flex:1"></span>
+      <span class="tec-fornec-status" style="background:${oldSt.bg};color:${oldSt.color};cursor:default">${_escForn(oldSt.label)}</span>
+      <span style="font-size:.7rem;color:var(--text-mid)">→</span>
+      <span class="tec-fornec-status" style="background:${newSt.bg};color:${newSt.color};cursor:default">${_escForn(newSt.label)}</span>
+      <button class="tec-fornec-del" onclick="delAcompEntry('${id}',${logIdx})" title="Excluir registro">×</button>
+    </div>
+  </div>`;
+}
+
+function delAcompEntry(id, logIdx) {
+  showConfirm('Excluir registro?', 'Este registro será removido do histórico permanentemente.', () => {
+    DATA[id].statusLog.splice(logIdx, 1);
+    persistData(id);
+    renderAcompanhamentoPanel(id);
+  });
 }
 
 function setAcompFilter(id, key) {

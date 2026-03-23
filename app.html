@@ -1060,10 +1060,11 @@
     .tec-fornec-del:hover { color:#c0392b; background:#fdecea; }
     .tec-fornec-empty { font-size:.68rem; color:var(--text-mid); padding:4px 0; }
     /* View mode */
-    .tec-fornec-view-nome { font-size:.75rem; font-weight:700; color:var(--blue-dark); flex:2; }
-    .tec-fornec-view-tag { font-size:.62rem; font-weight:700; color:var(--blue-mid); background:rgba(37,64,192,.08); border-radius:20px; padding:2px 8px; flex-shrink:0; white-space:nowrap; }
-    .tec-fornec-view-preco { font-size:.75rem; font-weight:600; color:var(--teal); flex:1; }
-    .tec-fornec-view-empty { font-size:.72rem; color:var(--text-mid); flex:1; }
+    .tec-fornec-view-left { display:flex; align-items:center; gap:6px; flex:1; min-width:0; }
+    .tec-fornec-view-nome { font-size:.75rem; font-weight:700; color:var(--blue-dark); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .tec-fornec-view-tag { font-size:.6rem; font-weight:700; color:var(--blue-mid); background:rgba(37,64,192,.08); border-radius:20px; padding:2px 8px; flex-shrink:0; white-space:nowrap; }
+    .tec-fornec-view-preco { font-size:.75rem; font-weight:700; color:var(--teal); flex-shrink:0; white-space:nowrap; }
+    .tec-fornec-view-empty { font-size:.72rem; color:var(--text-mid); }
     .tec-fornec-doc-badge { font-size:.62rem; font-weight:600; color:var(--teal); text-decoration:none; flex-shrink:0; border:1px solid var(--teal); border-radius:4px; padding:2px 6px; background:rgba(0,200,212,.06); max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .tec-fornec-doc-badge:hover { background:rgba(0,200,212,.14); }
     .tec-fornec-view-actions { display:flex; gap:4px; flex-shrink:0; margin-left:auto; opacity:0; transition:opacity .15s; }
@@ -4446,17 +4447,16 @@ function renderTecFornecedores(id, i) {
       const docBadge = f.doc?.nome
         ? `<a href="${f.doc.data}" download="${_escFornAttr(f.doc.nome)}" class="tec-fornec-doc-badge" title="Baixar ${_escFornAttr(f.doc.nome)}">📎 ${_escForn(f.doc.nome)}</a>`
         : '';
-      const nomeDisp  = f.nome  ? `<span class="tec-fornec-view-nome">${_escForn(f.nome)}</span>`   : `<span class="tec-fornec-view-empty" style="flex:2">—</span>`;
-      const tagDisp   = f.tag   ? `<span class="tec-fornec-view-tag">${_escForn(f.tag)}</span>`     : '';
-      const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">${_escForn(f.preco)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
+      const nomeDisp  = f.nome  ? `<span class="tec-fornec-view-nome">${_escForn(f.nome)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
+      const tagDisp   = f.tag   ? `<span class="tec-fornec-view-tag">${_escForn(f.tag)}</span>`   : '';
+      const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">${_escForn(f.preco)}</span>` : '';
       return `<div class="tec-fornec-row" id="tec-fornec-row-${id}-${i}-${fi}">
-        ${nomeDisp}
-        ${tagDisp}
+        <div class="tec-fornec-view-left">${nomeDisp}${tagDisp}</div>
         ${precoDisp}
         ${docBadge}
         <div class="tec-fornec-view-actions">
-          <button class="tec-fornec-edit-btn" onclick="editTecFornecedor('${id}',${i},${fi})" title="Editar">Editar</button>
-          <button class="tec-fornec-del" onclick="_askDelTecFornecedor('${id}',${i},${fi})" title="Remover">×</button>
+          <button class="tec-fornec-edit-btn" onclick="editTecFornecedor('${id}',${i},${fi})">Editar</button>
+          <button class="tec-fornec-del" onclick="_askDelTecFornecedor('${id}',${i},${fi})">×</button>
         </div>
       </div>`;
     }

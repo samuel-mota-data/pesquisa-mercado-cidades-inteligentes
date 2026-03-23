@@ -53,6 +53,27 @@
     .brand { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 4px; }
     header h1 { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
     header p  { margin-top: 4px; opacity: .75; font-size: .75rem; }
+    /* Page nav */
+    .site-page-nav { max-width:1100px; margin:10px auto 0; display:flex; gap:4px; }
+    .site-page-btn { font-family:inherit; font-size:.72rem; font-weight:700; padding:6px 18px; border-radius:6px 6px 0 0; border:none; background:rgba(255,255,255,.12); color:rgba(255,255,255,.65); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.3px; }
+    .site-page-btn:hover { background:rgba(255,255,255,.2); color:var(--white); }
+    .site-page-btn.active { background:var(--white); color:var(--blue-dark); }
+    /* Kanban */
+    .kanban-toolbar { max-width:1400px; margin:0 auto; padding:16px 24px 8px; display:flex; align-items:center; gap:12px; }
+    .kanban-title { font-size:.9rem; font-weight:800; color:var(--blue-dark); }
+    .kanban-refresh-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:4px 12px; border-radius:6px; border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; }
+    .kanban-refresh-btn:hover { border-color:var(--teal); color:var(--teal); }
+    .kanban-board { display:flex; gap:12px; padding:0 24px 32px; max-width:1400px; margin:0 auto; overflow-x:auto; align-items:flex-start; }
+    .kanban-col { flex:0 0 220px; min-width:0; background:var(--gray-light); border-radius:10px; overflow:hidden; }
+    .kanban-col-head { padding:10px 14px 9px; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; border-bottom:3px solid transparent; }
+    .kanban-col-body { padding:8px; display:flex; flex-direction:column; gap:7px; min-height:80px; }
+    .kanban-card { background:var(--white); border-radius:8px; border:1px solid var(--gray-mid); padding:11px 13px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .kanban-card-forn { font-size:.78rem; font-weight:700; color:var(--blue-dark); margin-bottom:4px; }
+    .kanban-card-meta { display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-bottom:5px; }
+    .kanban-card-price { font-size:.68rem; font-weight:700; color:var(--teal); }
+    .kanban-card-device { font-size:.63rem; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+    .kanban-card-solution { font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:2px 6px; border-radius:4px; background:rgba(37,64,192,.08); color:var(--blue-mid); display:inline-block; }
+    .kanban-empty-col { font-size:.65rem; color:var(--text-mid); text-align:center; padding:16px 8px; }
 
     /* ---- LAYOUT ---- */
     main { max-width: 1100px; margin: 0 auto; padding: 16px 14px 36px; }
@@ -2577,11 +2598,19 @@ let DATA = {
 
 <header>
   <div class="header-inner">
-    <div class="brand" style="display:flex;align-items:center;justify-content:space-between;"><span>Unifique — Pesquisa de mercado</span><button onclick="localStorage.removeItem('uscToken');window.location.href='/login'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.75);font-family:inherit;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:6px;cursor:pointer;">Sair</button></div>
+    <div class="brand" style="display:flex;align-items:center;justify-content:space-between;">
+      <span>Unifique — Pesquisa de mercado</span>
+      <button onclick="localStorage.removeItem('uscToken');window.location.href='/login'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.75);font-family:inherit;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:6px;cursor:pointer;">Sair</button>
+    </div>
     <p id="page-desc">Estudo completo sobre o mercado global de smart metering, concorrentes e posicionamento estratégico.</p>
   </div>
+  <nav class="site-page-nav">
+    <button class="site-page-btn active" id="site-btn-solucoes" onclick="switchSitePage('solucoes')">Soluções</button>
+    <button class="site-page-btn" id="site-btn-kanban" onclick="switchSitePage('kanban')">Kanban de Compras</button>
+  </nav>
 </header>
 
+<div id="page-solucoes">
 <!-- BARRA DE ABAS -->
 <nav class="tab-bar">
   <div class="tab-bar-center">
@@ -2665,6 +2694,16 @@ let DATA = {
 <div class="tab-panel" id="panel-wifi"></div>
 <div class="tab-panel" id="panel-solar"></div>
 
+</div><!-- /#page-solucoes -->
+
+<div id="page-kanban" style="display:none">
+  <div class="kanban-toolbar">
+    <span class="kanban-title">Kanban de Compras</span>
+    <button class="kanban-refresh-btn" onclick="renderKanban()">↺ Atualizar</button>
+  </div>
+  <div class="kanban-board" id="kanban-board"></div>
+</div>
+
 <footer>
   Fontes: Research and Markets · Industry Research · Reports Insights
   &nbsp;|&nbsp; Unifique &copy; <span id="ano"></span>
@@ -2675,6 +2714,63 @@ let DATA = {
      ============================================= -->
 <script>
 document.getElementById('ano').textContent = new Date().getFullYear();
+
+/* ---- Páginas do site ---- */
+let _currentSitePage = 'solucoes';
+function switchSitePage(page) {
+  _currentSitePage = page;
+  document.getElementById('page-solucoes').style.display = page === 'solucoes' ? '' : 'none';
+  document.getElementById('page-kanban').style.display   = page === 'kanban'   ? '' : 'none';
+  document.getElementById('site-btn-solucoes').classList.toggle('active', page === 'solucoes');
+  document.getElementById('site-btn-kanban').classList.toggle('active', page === 'kanban');
+  if (page === 'kanban') renderKanban();
+}
+
+function renderKanban() {
+  const board = document.getElementById('kanban-board');
+  if (!board) return;
+
+  // Coleta todos os fornecedores de todos os tabs e dispositivos
+  const cols = {}; // status key → [{forn, tag, preco, device, solution, tabId, tecIdx, fi}]
+  TEC_FORN_STATUSES.forEach(s => cols[s.key] = []);
+
+  TABS.forEach(tab => {
+    const tec = DATA[tab.id]?.tecnologia || [];
+    tec.forEach((item, tecIdx) => {
+      (item.fornecedores || []).forEach((f, fi) => {
+        const stKey = f.status || 'sem_obs';
+        if (!cols[stKey]) cols[stKey] = [];
+        cols[stKey].push({
+          forn:     f.nome  || '—',
+          tag:      f.tag   || '',
+          preco:    f.preco || '',
+          device:   item.titulo || '—',
+          solution: tab.label,
+          tabId:    tab.id,
+          tecIdx,
+          fi,
+        });
+      });
+    });
+  });
+
+  board.innerHTML = TEC_FORN_STATUSES.map(s => {
+    const cards = cols[s.key].map(c => {
+      const tagBadge = c.tag ? `<span class="acomp-entry-tag" style="font-size:.58rem">${_escForn(c.tag)}</span>` : '';
+      const precoTxt = c.preco ? `<span class="kanban-card-price">R$ ${_escForn(c.preco)}</span>` : '';
+      return `<div class="kanban-card">
+        <div class="kanban-card-forn">${_escForn(c.forn)}</div>
+        <div class="kanban-card-meta">${tagBadge}${precoTxt}</div>
+        <div class="kanban-card-device" title="${_escForn(c.device)}">${_escForn(c.device)}</div>
+        <span class="kanban-card-solution">${_escForn(c.solution)}</span>
+      </div>`;
+    }).join('');
+    return `<div class="kanban-col">
+      <div class="kanban-col-head" style="border-color:${s.color};color:${s.color};background:${s.bg}">${_escForn(s.label)}<span style="float:right;font-weight:400;opacity:.7">${cols[s.key].length}</span></div>
+      <div class="kanban-col-body">${cards || '<div class="kanban-empty-col">—</div>'}</div>
+    </div>`;
+  }).join('');
+}
 
 /* ---- Formatadores ---- */
 const fmtBRL = n => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });

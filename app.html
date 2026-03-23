@@ -4047,9 +4047,13 @@ document.getElementById('tab-bar').addEventListener('click', e => {
 
 /* ---- Casa Inteligente — tab navigation ---- */
 function renderCiTabBar() {
-  document.getElementById('ci-tab-bar').innerHTML = CI_TABS.map(t =>
-    `<button class="tab-btn${t.id === ciActiveTabId ? ' active' : ''}" data-tab="${t.id}">${t.label}</button>`
-  ).join('');
+  document.getElementById('ci-tab-bar').innerHTML = CI_TABS.map(t => {
+    const isActive = t.id === ciActiveTabId;
+    const style = t.directSubTab
+      ? `style="background:${isActive ? '#d4a800' : '#f5c842'};color:#1a2b8c;border-bottom-color:${isActive ? '#d4a800' : '#f5c842'}"`
+      : '';
+    return `<button class="tab-btn${isActive ? ' active' : ''}" data-tab="${t.id}" ${style}>${t.label}</button>`;
+  }).join('');
 }
 
 document.getElementById('ci-tab-bar').addEventListener('click', e => {

@@ -4047,13 +4047,20 @@ document.getElementById('tab-bar').addEventListener('click', e => {
 
 /* ---- Casa Inteligente — tab navigation ---- */
 function renderCiTabBar() {
-  document.getElementById('ci-tab-bar').innerHTML = CI_TABS.map(t => {
+  let html = '';
+  let sepAdded = false;
+  CI_TABS.forEach(t => {
+    if (!t.directSubTab && !sepAdded) {
+      html += `<span style="color:var(--gray-mid);margin:0 6px;align-self:center;font-size:1rem;user-select:none">|</span>`;
+      sepAdded = true;
+    }
     const isActive = t.id === ciActiveTabId;
     const style = t.directSubTab
       ? `style="background:${isActive ? '#d4a800' : '#f5c842'};color:#1a2b8c;border-bottom-color:${isActive ? '#d4a800' : '#f5c842'}"`
       : '';
-    return `<button class="tab-btn${isActive ? ' active' : ''}" data-tab="${t.id}" ${style}>${t.label}</button>`;
-  }).join('');
+    html += `<button class="tab-btn${isActive ? ' active' : ''}" data-tab="${t.id}" ${style}>${t.label}</button>`;
+  });
+  document.getElementById('ci-tab-bar').innerHTML = html;
 }
 
 document.getElementById('ci-tab-bar').addEventListener('click', e => {

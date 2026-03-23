@@ -53,8 +53,13 @@
     .brand { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 4px; }
     header h1 { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
     header p  { margin-top: 4px; opacity: .75; font-size: .75rem; }
+    /* Project nav */
+    .project-nav { max-width:1100px; margin:14px auto 0; display:flex; gap:6px; border-bottom:1px solid rgba(255,255,255,.15); padding-bottom:0; }
+    .project-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:5px 16px; border-radius:8px 8px 0 0; border:1px solid rgba(255,255,255,.15); border-bottom:none; background:rgba(0,0,0,.18); color:rgba(255,255,255,.5); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.4px; text-transform:uppercase; }
+    .project-btn:hover { background:rgba(255,255,255,.1); color:rgba(255,255,255,.85); }
+    .project-btn.active { background:rgba(255,255,255,.14); color:var(--white); border-color:rgba(255,255,255,.25); }
     /* Page nav */
-    .site-page-nav { max-width:1100px; margin:10px auto 0; display:flex; gap:4px; }
+    .site-page-nav { max-width:1100px; margin:6px auto 0; display:flex; gap:4px; }
     .site-page-btn { font-family:inherit; font-size:.72rem; font-weight:700; padding:6px 18px; border-radius:6px 6px 0 0; border:none; background:rgba(255,255,255,.12); color:rgba(255,255,255,.65); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.3px; }
     .site-page-btn:hover { background:rgba(255,255,255,.2); color:var(--white); }
     .site-page-btn.active { background:var(--white); color:var(--blue-dark); }
@@ -2604,6 +2609,9 @@ let DATA = {
     </div>
     <p id="page-desc">Estudo completo sobre o mercado global de smart metering, concorrentes e posicionamento estratégico.</p>
   </div>
+  <nav class="project-nav">
+    <button class="project-btn active" id="proj-btn-cidades">Cidades Inteligentes</button>
+  </nav>
   <nav class="site-page-nav">
     <button class="site-page-btn active" id="site-btn-solucoes" onclick="switchSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="site-btn-kanban" onclick="switchSitePage('kanban')">Kanban de Compras</button>

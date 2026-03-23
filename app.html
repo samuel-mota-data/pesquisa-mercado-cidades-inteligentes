@@ -1042,6 +1042,23 @@
     .rdm-scenario-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--teal); margin-bottom:10px; }
     .rdm-empty { color:var(--text-mid); font-size:.78rem; padding:24px 0; text-align:center; }
 
+    /* Fornecedores no card de tecnologia */
+    .tec-fornec-section { border-top:1px solid var(--gray-mid); margin-top:14px; padding-top:10px; }
+    .tec-fornec-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .tec-fornec-label { font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--teal); }
+    .tec-fornec-add { background:none; border:1.5px dashed var(--teal); color:var(--teal); font-family:inherit; font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:6px; cursor:pointer; }
+    .tec-fornec-add:hover { background:rgba(0,200,212,.07); }
+    .tec-fornec-row { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+    .tec-fornec-nome { flex:2; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
+    .tec-fornec-preco { flex:1; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
+    .tec-fornec-nome:focus, .tec-fornec-preco:focus { border-color:var(--teal); }
+    .tec-fornec-doc-btn { flex-shrink:0; display:flex; align-items:center; gap:4px; font-family:inherit; font-size:.65rem; font-weight:600; padding:4px 8px; border-radius:5px; border:1.5px solid var(--gray-mid); background:var(--white); color:var(--text-mid); cursor:pointer; white-space:nowrap; overflow:hidden; max-width:130px; }
+    .tec-fornec-doc-btn:hover { border-color:var(--blue-mid); color:var(--blue-mid); }
+    .tec-fornec-doc-btn.has-doc { border-color:var(--teal); color:var(--teal); background:rgba(0,200,212,.06); }
+    .tec-fornec-del { flex-shrink:0; background:none; border:none; color:var(--text-mid); font-size:.9rem; cursor:pointer; padding:2px 4px; line-height:1; }
+    .tec-fornec-del:hover { color:#c0392b; }
+    .tec-fornec-empty { font-size:.68rem; color:var(--text-mid); padding:4px 0; }
+
     /* APIs table */
     .arq-table { width:100%; border-collapse:collapse; font-size:.72rem; }
     .arq-table th { text-align:left; padding:7px 10px; font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--blue-dark); border-bottom:2px solid #dde3f0; }
@@ -4284,6 +4301,7 @@ function renderTecnologiaPanel(id) {
           <div class="tec-col"><div class="tec-col-head tec-usar-head">Quando Usar</div><ul class="tec-ul">${rl(item.quando_usar,'tec-li-usar')}</ul></div>
           <div class="tec-col"><div class="tec-col-head tec-evitar-head">Quando Evitar</div><ul class="tec-ul">${rl(item.quando_evitar,'tec-li-evitar')}</ul></div>
         </div>
+        <div class="tec-fornec-section" id="tec-fornec-${id}-${i}"></div>
       </div>
     </div>`;
   }).join('');
@@ -4294,7 +4312,7 @@ function renderTecnologiaPanel(id) {
       <button class="gestao-add-btn" onclick="addTecItem('${id}')">+ Adicionar Tecnologia</button>
     </div>
   </div>`;
-  items.forEach((_, i) => renderCoverFlow(id, i));
+  items.forEach((_, i) => { renderCoverFlow(id, i); renderTecFornecedores(id, i); });
 }
 
 function _tecEditForm(id, i) {
@@ -4339,6 +4357,7 @@ function saveTecItem(id, i) {
   const g = s => document.getElementById(s);
   const toArr = s => (s||'').split('\n').map(x=>x.trim()).filter(Boolean);
   const imagens = DATA[id].tecnologia[i].imagens || [];
+  const fornecedores = DATA[id].tecnologia[i].fornecedores || [];
   DATA[id].tecnologia[i] = {
     titulo:        g(`tec-titulo-${id}-${i}`)?.value.trim() || '',
     resumo:        g(`tec-resumo-${id}-${i}`)?.value.trim() || '',
@@ -4348,6 +4367,7 @@ function saveTecItem(id, i) {
     quando_usar:   toArr(g(`tec-usar-${id}-${i}`)?.value),
     quando_evitar: toArr(g(`tec-evitar-${id}-${i}`)?.value),
     imagens,
+    fornecedores,
   };
   persistData(id);
   renderTecnologiaPanel(id);
@@ -4365,6 +4385,81 @@ function addTecItem(id) {
   DATA[id].tecnologia.push({ titulo:'', resumo:'', fluxo:[], pros:[], contras:[], quando_usar:[], quando_evitar:[], imagens:[] });
   renderTecnologiaPanel(id);
   _tecEditForm(id, i);
+}
+
+/* ---- Fornecedores do card de tecnologia ---- */
+function renderTecFornecedores(id, i) {
+  const el = document.getElementById(`tec-fornec-${id}-${i}`);
+  if (!el) return;
+  const item = DATA[id]?.tecnologia?.[i];
+  if (!item) return;
+  if (!item.fornecedores) item.fornecedores = [];
+  const rows = item.fornecedores.map((f, fi) => {
+    const docLabel = f.doc?.nome
+      ? `<span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">${_escForn(f.doc.nome)}</span>`
+      : '📎 Orçamento';
+    const hasDoc = f.doc?.nome ? ' has-doc' : '';
+    return `<div class="tec-fornec-row" id="tec-fornec-row-${id}-${i}-${fi}">
+      <input class="tec-fornec-nome" placeholder="Fornecedor" value="${_escFornAttr(f.nome)}"
+        onblur="saveTecFornecedor('${id}',${i},${fi},'nome',this.value)">
+      <input class="tec-fornec-preco" placeholder="R$ Preço" value="${_escFornAttr(f.preco)}"
+        onblur="saveTecFornecedor('${id}',${i},${fi},'preco',this.value)">
+      <button class="tec-fornec-doc-btn${hasDoc}" onclick="document.getElementById('tec-fornec-file-${id}-${i}-${fi}').click()" title="${f.doc?.nome||'Anexar orçamento'}">
+        ${docLabel}
+      </button>
+      <input type="file" id="tec-fornec-file-${id}-${i}-${fi}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+        onchange="_tecFornDocUpload('${id}',${i},${fi},this)">
+      ${f.doc?.data ? `<a href="${f.doc.data}" download="${_escFornAttr(f.doc.nome)}" title="Baixar" style="font-size:.75rem;color:var(--teal);text-decoration:none;flex-shrink:0">⬇</a>` : ''}
+      <button class="tec-fornec-del" onclick="delTecFornecedor('${id}',${i},${fi})" title="Remover">×</button>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `
+    <div class="tec-fornec-header">
+      <span class="tec-fornec-label">Fornecedores</span>
+      <button class="tec-fornec-add" onclick="addTecFornecedor('${id}',${i})">+ Fornecedor</button>
+    </div>
+    ${rows || '<div class="tec-fornec-empty">Nenhum fornecedor cadastrado.</div>'}`;
+}
+
+function _escForn(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function _escFornAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/&/g,'&amp;'); }
+
+function saveTecFornecedor(id, i, fi, field, val) {
+  if (!DATA[id].tecnologia[i].fornecedores) DATA[id].tecnologia[i].fornecedores = [];
+  DATA[id].tecnologia[i].fornecedores[fi][field] = val.trim();
+  persistData(id);
+}
+
+function addTecFornecedor(id, i) {
+  if (!DATA[id].tecnologia[i].fornecedores) DATA[id].tecnologia[i].fornecedores = [];
+  DATA[id].tecnologia[i].fornecedores.push({ nome: '', preco: '', doc: null });
+  persistData(id);
+  renderTecFornecedores(id, i);
+  // foca no nome do novo fornecedor
+  setTimeout(() => {
+    const rows = document.querySelectorAll(`#tec-fornec-${id}-${i} .tec-fornec-nome`);
+    if (rows.length) rows[rows.length - 1].focus();
+  }, 30);
+}
+
+function delTecFornecedor(id, i, fi) {
+  DATA[id].tecnologia[i].fornecedores.splice(fi, 1);
+  persistData(id);
+  renderTecFornecedores(id, i);
+}
+
+function _tecFornDocUpload(id, i, fi, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (!DATA[id].tecnologia[i].fornecedores[fi]) return;
+    DATA[id].tecnologia[i].fornecedores[fi].doc = { nome: file.name, data: e.target.result };
+    persistData(id);
+    renderTecFornecedores(id, i);
+  };
+  reader.readAsDataURL(file);
 }
 
 /* ---- Road-Map ---- */

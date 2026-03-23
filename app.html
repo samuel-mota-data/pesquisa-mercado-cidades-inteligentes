@@ -1026,6 +1026,22 @@
     .arq-detail-proto-row input:focus { border-color:var(--teal); }
     .arq-detail-body { padding:16px 18px 8px; }
 
+    /* Road-Map */
+    .rdm-wrap { padding:20px; }
+    .rdm-scenarios-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:18px; }
+    .rdm-scenario-btn { display:flex; align-items:center; gap:5px; padding:6px 14px; border-radius:20px; border:1.5px solid var(--gray-mid); background:var(--white); font-family:inherit; font-size:.75rem; font-weight:600; color:var(--text-mid); cursor:pointer; transition:border-color .15s, background .15s, color .15s; }
+    .rdm-scenario-btn:hover { border-color:var(--teal); color:var(--teal); }
+    .rdm-scenario-btn.active { border-color:var(--teal); background:var(--teal); color:var(--white); }
+    .rdm-scenario-btn .rdm-scenario-x { font-size:.9rem; line-height:1; opacity:.7; padding-left:2px; }
+    .rdm-scenario-btn.active .rdm-scenario-x { opacity:.85; }
+    .rdm-scenario-x:hover { opacity:1 !important; }
+    .rdm-add-scenario { flex-shrink:0; width:32px; height:32px; border-radius:50%; border:2px dashed var(--gray-mid); background:none; color:var(--text-mid); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s, color .15s; }
+    .rdm-add-scenario:hover { border-color:var(--teal); color:var(--teal); }
+    .rdm-scenario-name-edit { display:inline; font-size:.75rem; font-weight:600; background:transparent; border:none; outline:none; font-family:inherit; color:inherit; min-width:20px; max-width:160px; }
+    .rdm-scenario-body { background:var(--gray-light); border-radius:12px; padding:18px 18px 12px; }
+    .rdm-scenario-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--teal); margin-bottom:10px; }
+    .rdm-empty { color:var(--text-mid); font-size:.78rem; padding:24px 0; text-align:center; }
+
     /* APIs table */
     .arq-table { width:100%; border-collapse:collapse; font-size:.72rem; }
     .arq-table th { text-align:left; padding:7px 10px; font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; color:var(--blue-dark); border-bottom:2px solid #dde3f0; }
@@ -2683,6 +2699,7 @@ function renderPanel(id) {
       <button class="subtab-btn active" data-subtab="informativo" onclick="activateSubTab('${id}','informativo')">Visão Geral</button>
       <button class="subtab-btn"        data-subtab="mercado"     onclick="activateSubTab('${id}','mercado')">Mercado</button>
       <button class="subtab-btn"        data-subtab="tecnologia"  onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
+      <button class="subtab-btn"        data-subtab="roadmap"     onclick="activateSubTab('${id}','roadmap')">Road-Map</button>
       <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
       <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
       <button class="subtab-btn"        data-subtab="parceiros"   onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
@@ -3102,6 +3119,7 @@ function renderPanel(id) {
 
 </main></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div id="tecnologia-panel-${id}"></div></div>
+  <div class="subtab-panel" data-tab="${id}" data-subtab="roadmap"><div id="roadmap-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div id="arquitetura-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="parceiros"><div id="parceiros-panel-${id}"></div></div>
@@ -3155,6 +3173,7 @@ function renderPanel(id) {
   renderCalcCompare(id);
   renderGestaoPanel(id);
   renderTecnologiaPanel(id);
+  renderRoadmapPanel(id);
   renderArquiteturaPanel(id);
   renderParceirosPanel(id);
   renderInfoPanel(id);
@@ -3783,10 +3802,21 @@ const NB_PH = { p:'Escreva algo…', h1:'Título', h2:'Subtítulo', h3:'Cabeçal
 let _nbSaveTimer = {};
 const _arqLayerMap = {}; // maps virtual ID → { realTabId, li }
 const arqActiveLayer = {}; // active layer index per tabId
+const _rdmLayerMap = {}; // maps virtual ID → { realTabId, si, ei }
+const rdmActiveScenario = {}; // active scenario index per tabId
+const rdmActiveEtapa = {}; // active etapa per tabId_si → ei | null
 
 function _nbId() { return Math.random().toString(36).slice(2,9); }
 
 function _nbBlocks(id) {
+  // Etapa de road-map (ID virtual)
+  if (_rdmLayerMap[id]) {
+    const { realTabId, si, ei } = _rdmLayerMap[id];
+    const etapa = DATA[realTabId]?.roadmap?.scenarios?.[si]?.etapas?.[ei];
+    if (!etapa) return [];
+    if (!etapa.blocks) etapa.blocks = [{ id: _nbId(), type: 'p', content: '' }];
+    return etapa.blocks;
+  }
   // Camada de arquitetura (ID virtual)
   if (_arqLayerMap[id]) {
     const { realTabId, li } = _arqLayerMap[id];
@@ -3808,7 +3838,7 @@ function _nbBlocks(id) {
 
 function _nbScheduleSave(tabId) {
   clearTimeout(_nbSaveTimer[tabId]);
-  const realTabId = _arqLayerMap[tabId]?.realTabId || tabId;
+  const realTabId = _rdmLayerMap[tabId]?.realTabId || _arqLayerMap[tabId]?.realTabId || tabId;
   _nbSaveTimer[tabId] = setTimeout(() => persistData(realTabId), 900);
 }
 
@@ -4335,6 +4365,204 @@ function addTecItem(id) {
   DATA[id].tecnologia.push({ titulo:'', resumo:'', fluxo:[], pros:[], contras:[], quando_usar:[], quando_evitar:[], imagens:[] });
   renderTecnologiaPanel(id);
   _tecEditForm(id, i);
+}
+
+/* ---- Road-Map ---- */
+function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+const RDM_ACCENTS = ['#2540c0','#00c8d4','#9b5de5','#f5c842','#a8e063','#e03c3c'];
+
+function _rdmVid(tabId, si, ei) { return 'rdmlyr_' + tabId + '_' + si + '_' + ei; }
+
+function _rdmRegisterVids(id) {
+  const scenarios = DATA[id]?.roadmap?.scenarios || [];
+  scenarios.forEach((sc, si) => {
+    (sc.etapas || []).forEach((_, ei) => {
+      _rdmLayerMap[_rdmVid(id, si, ei)] = { realTabId: id, si, ei };
+    });
+  });
+}
+
+function renderRoadmapPanel(id) {
+  const container = document.getElementById('roadmap-panel-' + id);
+  if (!container) return;
+  if (!DATA[id].roadmap) DATA[id].roadmap = { scenarios: [] };
+  const rdm = DATA[id].roadmap;
+  if (!rdm.scenarios) rdm.scenarios = [];
+
+  // Garante pelo menos um cenário inicial
+  if (rdm.scenarios.length === 0) {
+    rdm.scenarios.push({ nome: 'Cenário 1', etapas: [] });
+  }
+
+  _rdmRegisterVids(id);
+
+  const si = rdmActiveScenario[id] ?? 0;
+  const sc = rdm.scenarios[si] || rdm.scenarios[0];
+  const activeSi = rdm.scenarios.indexOf(sc);
+  rdmActiveScenario[id] = activeSi;
+
+  // Barra de cenários
+  const scenariosBar = rdm.scenarios.map((s, i) => {
+    const isActive = i === activeSi;
+    return `<button class="rdm-scenario-btn${isActive ? ' active' : ''}" onclick="selectRdmScenario('${id}',${i})">
+      <span contenteditable="${isActive}" class="rdm-scenario-name-edit"
+        onblur="renameRdmScenario('${id}',${i},this.innerText)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        onclick="event.stopPropagation()"
+      >${_esc(s.nome)}</span>
+      <span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelRdmScenario('${id}',${i})">×</span>
+    </button>`;
+  }).join('');
+
+  // Etapas do cenário ativo (fluxo horizontal)
+  const etapas = sc.etapas || (sc.etapas = []);
+  const activeEi = rdmActiveEtapa[id + '_' + activeSi] ?? null;
+
+  const etapasHtml = etapas.map((etapa, ei) => {
+    const accent = RDM_ACCENTS[ei % RDM_ACCENTS.length];
+    const isActive = ei === activeEi;
+    const nBlocks = (etapa.blocks || []).length;
+    const arrow = ei < etapas.length - 1 ? `
+      <div class="arq-flow-arrow">
+        <span class="arq-flow-arrow-sym">→</span>
+        ${etapa.label ? `<span class="arq-flow-arrow-proto">${_esc(etapa.label)}</span>` : ''}
+      </div>` : '';
+    return `
+      <div class="arq-flow-block${isActive ? ' active' : ''}" onclick="selectRdmEtapa('${id}',${activeSi},${ei})">
+        <div class="arq-flow-accent" style="background:${accent}"></div>
+        <div class="arq-flow-label">${_esc(etapa.nome || 'Etapa')}</div>
+        ${nBlocks ? `<div class="arq-flow-sub">${nBlocks} bloco${nBlocks !== 1 ? 's' : ''}</div>` : ''}
+      </div>
+      ${arrow}`;
+  }).join('');
+
+  // Painel expandido da etapa ativa
+  let detailHtml = '';
+  if (activeEi !== null && etapas[activeEi]) {
+    const etapa = etapas[activeEi];
+    const vid   = _rdmVid(id, activeSi, activeEi);
+    const isLast = activeEi === etapas.length - 1;
+    detailHtml = `
+      <div class="arq-detail-panel" id="rdm-detail-${id}">
+        <div class="arq-detail-header">
+          <div class="arq-detail-name" contenteditable="true"
+            onblur="renameRdmEtapa('${id}',${activeSi},${activeEi},this.innerText)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+          >${_esc(etapa.nome || 'Etapa')}</div>
+          <span class="arq-detail-hint">clique no nome para editar</span>
+          <button class="arq-detail-del" onclick="delRdmEtapa('${id}',${activeSi},${activeEi})">× Remover</button>
+        </div>
+        ${!isLast ? `
+        <div class="arq-detail-proto-row">
+          <span>→ Rótulo para próxima etapa:</span>
+          <input type="text" placeholder="ex: Contrato assinado, Entrega, …" value="${(etapa.label||'').replace(/"/g,'&quot;')}"
+            onblur="saveRdmLabel('${id}',${activeSi},${activeEi},this.value)"
+            onkeydown="if(event.key==='Enter')this.blur()">
+        </div>` : ''}
+        <div class="arq-detail-body">
+          <div id="nb-editor-${vid}"></div>
+          <button class="nb-add-btn" onclick="_nbAdd('${vid}',null)">+ Adicionar bloco</button>
+        </div>
+      </div>`;
+  }
+
+  container.innerHTML = `<div class="rdm-wrap">
+    <div class="rdm-scenarios-bar">
+      ${scenariosBar}
+      <button class="rdm-add-scenario" onclick="addRdmScenario('${id}')" title="Novo cenário">+</button>
+    </div>
+    <div class="rdm-scenario-body">
+      <div class="rdm-scenario-label">Etapas do cenário</div>
+      <div class="arq-flow-row">
+        ${etapasHtml || '<span class="rdm-empty">Nenhuma etapa. Adicione a primeira abaixo.</span>'}
+        <button class="arq-flow-add" onclick="addRdmEtapa('${id}',${activeSi})" title="Adicionar etapa">+</button>
+      </div>
+      ${detailHtml}
+    </div>
+  </div>`;
+
+  // Renderiza o editor de blocos da etapa ativa
+  if (activeEi !== null && etapas[activeEi]) {
+    _nbRenderBlocks(_rdmVid(id, activeSi, activeEi));
+  }
+}
+
+function selectRdmScenario(id, si) {
+  rdmActiveScenario[id] = si;
+  renderRoadmapPanel(id);
+}
+
+function _askDelRdmScenario(id, si) {
+  const nome = DATA[id]?.roadmap?.scenarios?.[si]?.nome || 'este cenário';
+  showConfirm('Excluir cenário?', `"${_esc(nome)}" será removido permanentemente.`, () => delRdmScenario(id, si));
+}
+
+function delRdmScenario(id, si) {
+  DATA[id].roadmap.scenarios.splice(si, 1);
+  if (!DATA[id].roadmap.scenarios.length) {
+    DATA[id].roadmap.scenarios.push({ nome: 'Cenário 1', etapas: [] });
+  }
+  rdmActiveScenario[id] = 0;
+  persistData(id);
+  renderRoadmapPanel(id);
+}
+
+function addRdmScenario(id) {
+  const n = DATA[id].roadmap.scenarios.length + 1;
+  DATA[id].roadmap.scenarios.push({ nome: 'Cenário ' + n, etapas: [] });
+  rdmActiveScenario[id] = DATA[id].roadmap.scenarios.length - 1;
+  persistData(id);
+  renderRoadmapPanel(id);
+  // Foca no nome para edição imediata
+  setTimeout(() => {
+    const btns = document.querySelectorAll('#roadmap-panel-' + id + ' .rdm-scenario-btn.active .rdm-scenario-name-edit');
+    if (btns[0]) { btns[0].focus(); const r = document.createRange(); r.selectNodeContents(btns[0]); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+  }, 40);
+}
+
+function renameRdmScenario(id, si, nome) {
+  DATA[id].roadmap.scenarios[si].nome = nome.trim() || 'Cenário';
+  persistData(id);
+}
+
+function selectRdmEtapa(id, si, ei) {
+  const key = id + '_' + si;
+  rdmActiveEtapa[key] = rdmActiveEtapa[key] === ei ? null : ei;
+  renderRoadmapPanel(id);
+}
+
+function addRdmEtapa(id, si) {
+  const sc = DATA[id].roadmap.scenarios[si];
+  if (!sc.etapas) sc.etapas = [];
+  sc.etapas.push({ nome: 'Nova Etapa', blocks: [], label: '' });
+  _rdmRegisterVids(id);
+  rdmActiveEtapa[id + '_' + si] = sc.etapas.length - 1;
+  persistData(id);
+  renderRoadmapPanel(id);
+  setTimeout(() => document.querySelector('#rdm-detail-' + id + ' .arq-detail-name')?.focus(), 50);
+}
+
+function delRdmEtapa(id, si, ei) {
+  showConfirm('Excluir etapa?', 'O conteúdo desta etapa será removido permanentemente.', () => {
+    DATA[id].roadmap.scenarios[si].etapas.splice(ei, 1);
+    rdmActiveEtapa[id + '_' + si] = null;
+    persistData(id);
+    renderRoadmapPanel(id);
+  });
+}
+
+function renameRdmEtapa(id, si, ei, nome) {
+  DATA[id].roadmap.scenarios[si].etapas[ei].nome = nome.trim() || 'Etapa';
+  persistData(id);
+  // Atualiza só o label no flow sem fechar o painel
+  const blocks = document.querySelectorAll('#roadmap-panel-' + id + ' .arq-flow-block');
+  if (blocks[ei]) blocks[ei].querySelector('.arq-flow-label').textContent = DATA[id].roadmap.scenarios[si].etapas[ei].nome;
+}
+
+function saveRdmLabel(id, si, ei, val) {
+  DATA[id].roadmap.scenarios[si].etapas[ei].label = val.trim();
+  persistData(id);
+  renderRoadmapPanel(id);
 }
 
 /* --- Camadas --- */
@@ -4905,6 +5133,11 @@ async function persistData(id) {
             opex_por_ponto: (v.benchmark||{}).opex_por_ponto ?? def.benchmark.opex_por_ponto,
           };
           merged.calc_scenarios = v.calc_scenarios || [];
+          merged.roadmap = { scenarios: v.roadmap?.scenarios || [] };
+          merged.arquitetura = {
+            camadas: v.arquitetura?.camadas || def.arquitetura?.camadas || [],
+            apis:    v.arquitetura?.apis    || def.arquitetura?.apis    || [],
+          };
           DATA[k] = merged;
         }
       }
@@ -4969,6 +5202,7 @@ async function persistData(id) {
   });
   activeTabId = startTab;
   renderTabBar();
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + startTab));
   renderPanel(startTab);
 })();
 </script>

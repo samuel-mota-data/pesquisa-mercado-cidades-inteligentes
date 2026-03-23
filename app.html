@@ -1407,8 +1407,8 @@ let TABS = [
 ];
 
 let CI_TABS = [
-  { id: 'ci_visaogeral',    label: 'Visão Geral',          icon: '🏠' },
-  { id: 'ci_mercado',       label: 'Mercado',              icon: '📈' },
+  { id: 'ci_visaogeral',    label: 'Visão Geral',          icon: '🏠', directSubTab: 'informativo' },
+  { id: 'ci_mercado',       label: 'Mercado',              icon: '📈', directSubTab: 'mercado'     },
   { id: 'ci_seguranca',     label: 'Segurança',            icon: '🔒' },
   { id: 'ci_emergencia',    label: 'Emergência & Cuidado', icon: '🆘' },
   { id: 'ci_monitoramento', label: 'Monitoramento',        icon: '📊' },
@@ -4057,14 +4057,28 @@ document.getElementById('ci-tab-bar').addEventListener('click', e => {
 });
 
 function activateCiTab(id) {
-  const currentSub = activeSubTab[ciActiveTabId] || 'informativo';
-  activeSubTab[id] = currentSub;
-  sessionStorage.setItem('usc_subtab_' + id, currentSub);
+  const ciTab = CI_TABS.find(t => t.id === id);
+  // abas sem directSubTab propagam a sub-aba ativa; as diretas fixam a sua
+  if (ciTab?.directSubTab) {
+    activeSubTab[id] = ciTab.directSubTab;
+  } else {
+    const currentSub = activeSubTab[ciActiveTabId] || 'informativo';
+    activeSubTab[id] = currentSub;
+    sessionStorage.setItem('usc_subtab_' + id, currentSub);
+  }
   ciActiveTabId = id;
   sessionStorage.setItem('usc_ci_tab', id);
   renderCiTabBar();
   document.querySelectorAll('#page-ci-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
   renderPanel(id);
+  // abas diretas: oculta barra de sub-abas e ativa só a sub-aba correta
+  if (ciTab?.directSubTab) {
+    const panel = document.getElementById('panel-' + id);
+    if (panel) {
+      panel.querySelector('.subtab-bar')?.style.setProperty('display', 'none');
+      activateSubTab(id, ciTab.directSubTab);
+    }
+  }
 }
 
 function switchCiSitePage(page) {

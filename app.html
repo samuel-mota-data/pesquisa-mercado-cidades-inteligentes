@@ -1407,13 +1407,15 @@ let TABS = [
 ];
 
 let CI_TABS = [
+  { id: 'ci_visaogeral',    label: 'Visão Geral',          icon: '🏠' },
+  { id: 'ci_mercado',       label: 'Mercado',              icon: '📈' },
   { id: 'ci_seguranca',     label: 'Segurança',            icon: '🔒' },
   { id: 'ci_emergencia',    label: 'Emergência & Cuidado', icon: '🆘' },
   { id: 'ci_monitoramento', label: 'Monitoramento',        icon: '📊' },
   { id: 'ci_acesso',        label: 'Acesso',               icon: '🚪' },
   { id: 'ci_automacao',     label: 'Automação',            icon: '⚡' },
 ];
-let ciActiveTabId = 'ci_seguranca';
+let ciActiveTabId = 'ci_visaogeral';
 let _ciSitePage = 'solucoes';
 
 let DATA = {
@@ -2744,6 +2746,8 @@ let DATA = {
     <button class="tab-nav-btn" onclick="scrollCiTabBar(1)" title="Próximo →">›</button>
   </div>
 </nav>
+<div class="tab-panel" id="panel-ci_visaogeral"></div>
+<div class="tab-panel" id="panel-ci_mercado"></div>
 <div class="tab-panel" id="panel-ci_seguranca"></div>
 <div class="tab-panel" id="panel-ci_emergencia"></div>
 <div class="tab-panel" id="panel-ci_monitoramento"></div>

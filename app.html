@@ -1051,8 +1051,11 @@
     .tec-fornec-row { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
     .tec-fornec-nome { flex:2; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
     .tec-fornec-tag { flex:1; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
-    .tec-fornec-preco { flex:1; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
-    .tec-fornec-nome:focus, .tec-fornec-tag:focus, .tec-fornec-preco:focus { border-color:var(--teal); }
+    .tec-fornec-preco-wrap { display:flex; align-items:center; flex:1; border:1.5px solid var(--gray-mid); border-radius:5px; background:var(--white); min-width:0; transition:border-color .15s; }
+    .tec-fornec-preco-wrap:focus-within { border-color:var(--teal); }
+    .tec-fornec-preco-prefix { padding:0 4px 0 7px; font-size:.72rem; font-weight:700; color:var(--text-mid); white-space:nowrap; user-select:none; }
+    .tec-fornec-preco { flex:1; font-family:inherit; font-size:.72rem; border:none; padding:4px 7px 4px 0; background:transparent; color:var(--text-dark); outline:none; min-width:0; }
+    .tec-fornec-nome:focus, .tec-fornec-tag:focus { border-color:var(--teal); }
     .tec-fornec-doc-btn { flex-shrink:0; display:flex; align-items:center; gap:4px; font-family:inherit; font-size:.65rem; font-weight:600; padding:4px 8px; border-radius:5px; border:1.5px solid var(--gray-mid); background:var(--white); color:var(--text-mid); cursor:pointer; white-space:nowrap; overflow:hidden; max-width:130px; }
     .tec-fornec-doc-btn:hover { border-color:var(--blue-mid); color:var(--blue-mid); }
     .tec-fornec-doc-btn.has-doc { border-color:var(--teal); color:var(--teal); background:rgba(0,200,212,.06); }
@@ -4433,7 +4436,10 @@ function renderTecFornecedores(id, i) {
       return `<div class="tec-fornec-row tec-fornec-row-edit" id="tec-fornec-row-${id}-${i}-${fi}">
         <input class="tec-fornec-nome" id="tfn-nome-${id}-${i}-${fi}" placeholder="Fornecedor" value="${_escFornAttr(f.nome)}">
         <input class="tec-fornec-tag" id="tfn-tag-${id}-${i}-${fi}" placeholder="Tag" value="${_escFornAttr(f.tag)}">
-        <input class="tec-fornec-preco" id="tfn-preco-${id}-${i}-${fi}" placeholder="R$ Preço" value="${_escFornAttr(f.preco)}">
+        <div class="tec-fornec-preco-wrap">
+          <span class="tec-fornec-preco-prefix">R$</span>
+          <input class="tec-fornec-preco" id="tfn-preco-${id}-${i}-${fi}" placeholder="0,00" value="${_escFornAttr(f.preco)}">
+        </div>
         <button class="tec-fornec-doc-btn${hasDoc}" onclick="document.getElementById('tec-fornec-file-${id}-${i}-${fi}').click()" title="${_escFornAttr(f.doc?.nome||'Anexar orçamento')}">
           ${docLabel}
         </button>
@@ -4449,7 +4455,7 @@ function renderTecFornecedores(id, i) {
         : '';
       const nomeDisp  = f.nome  ? `<span class="tec-fornec-view-nome">${_escForn(f.nome)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
       const tagDisp   = f.tag   ? `<span class="tec-fornec-view-tag">${_escForn(f.tag)}</span>`   : '';
-      const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">${_escForn(f.preco)}</span>` : '';
+      const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">R$ ${_escForn(f.preco)}</span>` : '';
       return `<div class="tec-fornec-row" id="tec-fornec-row-${id}-${i}-${fi}">
         <div class="tec-fornec-view-left">${nomeDisp}${tagDisp}</div>
         ${precoDisp}

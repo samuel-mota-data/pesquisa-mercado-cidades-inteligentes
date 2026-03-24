@@ -5870,6 +5870,478 @@ async function persistData(id) {
     persistData('hidrometros');
   }
 
+  /* ---- Seed inicial — Casa Inteligente ---- */
+  const _ciSeed = id => !DATA[id] || (!DATA[id].mercado?.tamanho_bi && !DATA[id].informativo?.pitch && !(DATA[id].tecnologia?.length));
+
+  if (_ciSeed('ci_visaogeral')) {
+    DATA['ci_visaogeral'] = defaultData('ci_visaogeral', CI_TABS.find(t => t.id === 'ci_visaogeral'));
+    DATA['ci_visaogeral'].desc = 'Pesquisa estratégica sobre automação residencial como produto ISP — análise de 18 operadoras globais.';
+    DATA['ci_visaogeral'].informativo.pitch = `## Casa Inteligente — Visão do Projeto
+
+A Unifique já tentou entrar no mercado de automação residencial via parceria com a **Houseasy** (R$ 6M captados em 2023, 14 ISPs parceiros). A saída foi por **falha técnica da plataforma proprietária** — não por falta de demanda.
+
+Isso muda a pergunta estratégica:
+> De *"vale entrar nesse mercado?"* para *"como evitar o que deu errado da primeira vez?"*
+
+---
+
+### O que a evidência global diz
+
+De **18 operadoras de telecomunicações ao redor do mundo** que tentaram oferecer casa inteligente como produto, apenas **2 mostram resultados positivos reais**:
+- **Comcast Xfinity Home** (EUA) — 32M+ residências, foco em segurança
+- **Telkom IndiHome Smart** (Indonésia) — Tuya Cube (nuvem privada), hardware aberto
+
+O padrão das **16 falhas documentadas** tem 4 causas recorrentes:
+1. Abandono pós-adoção (45% param após 1–2 dispositivos)
+2. Custo de suporte inviável (visita técnica R$ 80–150 vs. mensalidade R$ 10–30)
+3. Hardware proprietário — lockout quando o produto é encerrado (AT&T, Vodafone, Spectrum)
+4. Automação de conforto não gera engajamento real (Orange deu de graça e ainda assim encerrou)
+
+---
+
+### Vantagem Unifique
+
+- Técnico **já visita** o cliente para fibra — instalação de dispositivo tem custo incremental próximo de zero
+- Presença e relacionamento no **interior de SC** onde nenhum grande ISP oferece esses produtos
+- Portfólio complementar: conectividade + energia + automação
+- Mercado ACL para hotéis: regulação com menos de 2 anos, janela competitiva aberta
+
+---
+
+### Fontes
+- [Grand View Research — Smart Home Market](https://www.grandviewresearch.com/press-release/global-smart-homes-market)
+- [Quero Automação — Mercado BR](https://queroautomacao.com.br/mercado-de-automacao-no-brasil-deve-atingir-349bi-ate-2033/)
+- [TeleHelp Brasil](https://telehelp.com.br/)`;
+    persistData('ci_visaogeral');
+  }
+
+  if (_ciSeed('ci_mercado')) {
+    DATA['ci_mercado'] = defaultData('ci_mercado', CI_TABS.find(t => t.id === 'ci_mercado'));
+    DATA['ci_mercado'].desc = 'Mercado global e brasileiro de automação residencial — dados e projeções 2024–2030.';
+    DATA['ci_mercado'].mercado = {
+      moeda: 'US$',
+      tamanho_ano: 2024,
+      tamanho_bi: 127.80,
+      cagr_historico: 22,
+      proj: [
+        { ano: 2024, bi: 127.80 },
+        { ano: 2027, bi: 270    },
+        { ano: 2030, bi: 537.27 },
+      ],
+      cagr_projecao: 27.0,
+      fontes: [
+        { label: 'Grand View Research — Smart Home Global Market 2030', src: 'https://www.grandviewresearch.com/press-release/global-smart-homes-market' },
+        { label: 'Fortune Business Insights — Smart Home Market 2034', src: 'https://www.fortunebusinessinsights.com/industry-reports/smart-home-market-101900' },
+      ],
+    };
+    DATA['ci_mercado'].brasil = {
+      potencial_bi: 14,
+      titulo: 'Brasil — Automação Residencial',
+      barras: [
+        { icon: '🏠', val: 'R$ 14 bi',   label: 'Tamanho do mercado BR em 2024',            src: 'https://queroautomacao.com.br/mercado-de-automacao-no-brasil-deve-atingir-349bi-ate-2033/' },
+        { icon: '📈', val: '30% a.a.',    label: 'CAGR Brasil (vs. 11,9% global)',           src: 'https://smarthomepro.com.br/crescimento-da-automacao-residencial/' },
+        { icon: '🏡', val: '19%',         label: 'Lares urbanos com algum recurso smart',    src: 'https://smarthomepro.com.br/crescimento-da-automacao-residencial/' },
+        { icon: '📦', val: '+900 mil',    label: 'Residências automatizadas — Aureside 2024', src: 'https://queroautomacao.com.br/mercado-de-automacao-no-brasil-deve-atingir-349bi-ate-2033/' },
+        { icon: '🔊', val: '17 M+',       label: 'Dispositivos conectados à Alexa no BR',   src: 'https://smarthomepro.com.br/crescimento-da-automacao-residencial/' },
+        { icon: '📅', val: 'R$ 34,9 bi', label: 'Projeção de mercado BR até 2033',          src: 'https://queroautomacao.com.br/mercado-de-automacao-no-brasil-deve-atingir-349bi-ate-2033/' },
+      ],
+    };
+    DATA['ci_mercado'].segmentos = [
+      { nome: 'Segurança & Controle de Acesso', share: 29, cor: '#2540c0' },
+      { nome: 'Automação & Controle',           share: 24, cor: '#00c8d4' },
+      { nome: 'Entretenimento & Info.',         share: 18, cor: '#a8e063' },
+      { nome: 'Monitoramento de Energia',       share: 16, cor: '#f5c842' },
+      { nome: 'Saúde & Cuidado',                share: 13, cor: '#e03c3c' },
+    ];
+    DATA['ci_mercado'].segmentos_nota = 'Segurança & Controle de Acesso domina com <strong>29%+ do mercado global em 2024</strong> — câmeras, vídeo porteiros, fechaduras inteligentes e serviços de monitoramento. Fonte: <a href="https://www.grandviewresearch.com/press-release/global-smart-homes-market" target="_blank">Grand View Research</a>';
+    DATA['ci_mercado'].diferenciais = [
+      { icon: '📡', titulo: 'Canal de instalação zero-custo',  desc: 'Técnico da Unifique já visita o cliente para fibra — custo incremental de instalação de dispositivo é próximo de zero.' },
+      { icon: '🏘️', titulo: 'Mercado interior SC virgem',      desc: 'Claro e Vivo nunca expandiram produtos smart home além de SP e RJ. Interior de SC está sem concorrência direta.' },
+      { icon: '⚡', titulo: 'Sinergia com portfólio',          desc: 'Monitoramento de energia complementa produto ACL. Solar + Shelly EM criam proposta de valor integrada.' },
+    ];
+    DATA['ci_mercado'].concorrentes = [
+      { nome: 'Claro Smarthome (SP/RJ)',   nivel: 'Baixo'    },
+      { nome: 'Vivo Casa Inteligente',     nivel: 'Baixo'    },
+      { nome: 'TeleHelp (emergência)',     nivel: 'Médio'    },
+      { nome: 'Intelbras (hardware)',      nivel: 'Parceiro' },
+      { nome: 'Amazon Ring/Alexa',         nivel: 'Alto'     },
+      { nome: 'Google Nest',              nivel: 'Alto'     },
+    ];
+    DATA['ci_mercado'].concorrentes_nota = '<strong>Claro e Vivo</strong> nunca expandiram além das capitais. <strong>Amazon e Google</strong> dominam automação de conforto — não disputar esse espaço. Focar em <strong>segurança + emergência + monitoramento</strong> onde ISP regional tem vantagem real de canal.';
+    DATA['ci_mercado'].riscos = [
+      { desafio: 'Abandono pós-adoção — 45% param após 1–2 dispositivos',               impacto: -2.5, periodo: 'Curto prazo (2025–2027)',    regiao: 'Global' },
+      { desafio: 'Custo de suporte incompatível com mensalidades baixas',                impacto: -2.2, periodo: 'Contínuo',                   regiao: 'Brasil' },
+      { desafio: 'Hardware proprietário — lockout se produto for encerrado',             impacto: -2.0, periodo: 'Contínuo',                   regiao: 'Global' },
+      { desafio: 'Risco geopolítico Tuya — câmeras chinesas e privacidade de dados',    impacto: -1.8, periodo: 'Médio prazo (2025–2028)',    regiao: 'EUA/BR' },
+      { desafio: 'Fragmentação de ecossistema — 79% valorizam compatibilidade',         impacto: -1.5, periodo: 'Curto/médio prazo',          regiao: 'Global' },
+    ];
+    persistData('ci_mercado');
+  }
+
+  if (_ciSeed('ci_seguranca')) {
+    DATA['ci_seguranca'] = defaultData('ci_seguranca', CI_TABS.find(t => t.id === 'ci_seguranca'));
+    DATA['ci_seguranca'].desc = 'Câmeras e sensores residenciais em comodato — vertical de maior viabilidade para ISPs regionais.';
+    DATA['ci_seguranca'].mercado = {
+      moeda: 'US$',
+      tamanho_ano: 2024,
+      tamanho_bi: 37.0,
+      cagr_historico: 20,
+      proj: [
+        { ano: 2024, bi: 37.0  },
+        { ano: 2027, bi: 72.0  },
+        { ano: 2030, bi: 155.8 },
+      ],
+      cagr_projecao: 27.0,
+      fontes: [
+        { label: 'Grand View Research — Segurança lidera com 29% do mercado smart home global', src: 'https://www.grandviewresearch.com/press-release/global-smart-homes-market' },
+      ],
+    };
+    DATA['ci_seguranca'].brasil = {
+      potencial_bi: 4.06,
+      titulo: 'Segurança Residencial — Brasil',
+      barras: [
+        { icon: '📷', val: '59%',       label: 'Consumidores BR que pretendem instalar câmera',      src: 'https://smarthomepro.com.br/crescimento-da-automacao-residencial/' },
+        { icon: '🏠', val: 'R$ 210+',   label: 'Câmera IP WiFi Intelbras IM1 Full HD (preço varejo)', src: 'https://www.buscape.com.br/busca/camera+ip+intelbras' },
+        { icon: '📦', val: 'R$ 0',      label: 'Custo incremental de instalação via técnico de fibra', src: '' },
+        { icon: '💰', val: 'R$ 15–25',  label: 'Mensalidade viável em modelo comodato',               src: '' },
+        { icon: '📅', val: '3–5 meses', label: 'Payback do hardware em mensalidades',                 src: '' },
+      ],
+    };
+    DATA['ci_seguranca'].segmentos = [
+      { nome: 'Câmeras IP WiFi residenciais', share: 48, cor: '#2540c0' },
+      { nome: 'Sensores porta/janela/PIR',    share: 27, cor: '#00c8d4' },
+      { nome: 'Sirenes e alarmes',            share: 15, cor: '#a8e063' },
+      { nome: 'Detectores fumaça/gás',        share: 10, cor: '#f5c842' },
+    ];
+    DATA['ci_seguranca'].diferenciais = [
+      { icon: '🔒', titulo: 'Hardware aberto — Intelbras',   desc: 'Empresa brasileira, câmeras com infraestrutura MIBO própria (não Tuya cloud). Sem risco geopolítico. Modelos básicos a partir de R$ 210.' },
+      { icon: '📡', titulo: 'Instalação zero-custo',         desc: 'Técnico da Unifique já visita cliente para fibra. Instalar câmera é atividade incremental na mesma visita.' },
+      { icon: '📋', titulo: 'Modelo validado no Brasil',     desc: 'Claro Smarthome já prova o modelo (câmera comodato + assinatura). Unifique pode replicar no interior de SC onde Claro não está.' },
+    ];
+    DATA['ci_seguranca'].concorrentes = [
+      { nome: 'Claro Smarthome',    nivel: 'Baixo (SP/RJ apenas)' },
+      { nome: 'Amazon Ring',        nivel: 'Alto'                 },
+      { nome: 'Intelbras MIBO',     nivel: 'Parceiro'             },
+      { nome: 'TP-Link Tapo',       nivel: 'Médio'                },
+    ];
+    DATA['ci_seguranca'].concorrentes_nota = '<strong>Amazon Ring e Google Nest Cam</strong> dominam o segmento premium. Unifique não compete com eles — foca em comodato com instalação profissional para clientes de fibra no interior de SC, onde Ring não tem capilaridade de suporte. Parceiro preferencial: <strong style="color:var(--yellow)">Intelbras</strong> — empresa SC, hardware nacional, sem dependência de nuvem chinesa.';
+    DATA['ci_seguranca'].benchmark = {
+      nome: 'Claro Smarthome',
+      produtos: [
+        { titulo: 'Câmera comodato',   val_unit: 0,    sufixo: '(hardware sem custo)', desc: 'Cliente não paga pelo hardware — apenas pela assinatura mensal' },
+        { titulo: 'Assinatura mensal', val_unit: 9.90, sufixo: '/mês',                 desc: 'Monitoramento via app + armazenamento nuvem (WiFi, câmera básica)' },
+      ],
+      capex: { mobilizacao: 50, hardware_unit: 210, pontos_modelo: 100, meses_contrato: 12 },
+      opex_por_ponto: { Plataforma: 2, Suporte: 3, Conectividade: 0 },
+      margem_opex: 45,
+    };
+    DATA['ci_seguranca'].riscos = [
+      { desafio: 'Câmeras como vetor de ataque (botnets Mirai)',        impacto: -2.2, periodo: 'Contínuo',                  regiao: 'Global' },
+      { desafio: 'Dependência de Tuya cloud se usar hardware genérico', impacto: -2.0, periodo: 'Médio prazo (2025–2028)',   regiao: 'Brasil' },
+      { desafio: 'Churn alto se cliente cancela antes do payback',      impacto: -1.8, periodo: 'Curto prazo (2025–2026)',   regiao: 'Brasil' },
+      { desafio: 'Suporte técnico para falhas de câmera/rede',          impacto: -1.2, periodo: 'Contínuo',                  regiao: 'Brasil' },
+    ];
+    DATA['ci_seguranca'].tecnologia = [
+      {
+        titulo: 'Câmera IP WiFi — Intelbras IM1 Full HD',
+        resumo: 'Câmera IP interna/externa WiFi 2MP Full HD com infravermelho 10m. Hardware nacional (Intelbras/SC), infraestrutura de nuvem MIBO própria — sem dependência de Tuya. Modelo ideal para comodato residencial básico.',
+        fluxo: ['Câmera WiFi', 'Roteador Fibra Unifique', 'MIBO Cloud (Intelbras)', 'App Cliente'],
+        pros: ['Hardware nacional sem risco geopolítico', 'App Intelbras MIBO estabelecido', 'Preço competitivo (R$ 210 varejo)', 'Instalação simples na mesma visita da fibra'],
+        contras: ['Depende da qualidade do WiFi do cliente', 'Armazenamento em nuvem terceira (MIBO)'],
+        quando_usar: ['Comodato residencial básico', 'Cliente de fibra novo ou renovação'],
+        quando_evitar: ['Locais com WiFi instável', 'Ambientes comerciais que exigem gravação local 24/7'],
+        imagens: [],
+        fornecedores: [],
+      },
+      {
+        titulo: 'Câmera IP WiFi — TP-Link Tapo C210',
+        resumo: 'Alternativa econômica à Intelbras. Câmera WiFi 3MP, visão 360°, integração com Google Home e Alexa. Usa Tuya-compatível mas com infraestrutura própria TP-Link (Tapo Cloud).',
+        fluxo: ['Câmera WiFi Tapo', 'Roteador Fibra Unifique', 'Tapo Cloud (TP-Link)', 'App Cliente'],
+        pros: ['Custo mais baixo que Intelbras', 'Boa resolução (3MP)', 'Integração nativa com Google/Alexa'],
+        contras: ['Nuvem chinesa (TP-Link/Tapo)', 'Suporte nacional limitado'],
+        quando_usar: ['Piloto de baixo custo', 'Comparativo com Intelbras'],
+        quando_evitar: ['Implantação em escala sem validação de suporte'],
+        imagens: [],
+        fornecedores: [],
+      },
+    ];
+    persistData('ci_seguranca');
+  }
+
+  if (_ciSeed('ci_emergencia')) {
+    DATA['ci_emergencia'] = defaultData('ci_emergencia', CI_TABS.find(t => t.id === 'ci_emergencia'));
+    DATA['ci_emergencia'].desc = 'Monitoramento de emergência para idosos — maior ARPU e menor churn entre todas as vertentes.';
+    DATA['ci_emergencia'].mercado = {
+      moeda: 'US$',
+      tamanho_ano: 2024,
+      tamanho_bi: 8.2,
+      cagr_historico: 18,
+      proj: [
+        { ano: 2024, bi: 8.2  },
+        { ano: 2027, bi: 14.0 },
+        { ano: 2030, bi: 22.5 },
+      ],
+      cagr_projecao: 18.3,
+    };
+    DATA['ci_emergencia'].brasil = {
+      potencial_bi: 0.9,
+      titulo: 'Emergência & Cuidado — Brasil',
+      barras: [
+        { icon: '👴', val: '32 M+',      label: 'Idosos no Brasil em 2025 (IBGE projeção)',                         src: 'https://www.ibge.gov.br/apps/populacao/projecao/' },
+        { icon: '📈', val: '5,7%',       label: 'Crescimento anual da população idosa BR',                          src: 'https://www.ibge.gov.br/apps/populacao/projecao/' },
+        { icon: '💰', val: 'R$ 149/mês', label: 'Mensalidade TeleHelp (plano padrão 2025)',                         src: 'https://telehelp.com.br/planos.php' },
+        { icon: '🏆', val: '17 anos',    label: 'TeleHelp — maior empresa de teleassistência do Brasil',            src: 'https://telehelp.com.br/sobre-a-telehelp.php' },
+        { icon: '📞', val: '500 mil+',   label: 'Atendimentos emergenciais realizados pela TeleHelp',               src: 'https://www.afpesp.org.br/folha-do-servidor/beneficios/afpesp-fecha-parceria-com-a-telehelp-maior-empresa-de-monitoramento-emergencial-do-brasil' },
+        { icon: '🏘️', val: 'Interior SC', label: 'Janela: TeleHelp concentrada em grandes centros — interior SC descoberto', src: 'https://telehelp.com.br/' },
+      ],
+    };
+    DATA['ci_emergencia'].segmentos = [
+      { nome: 'Botão de pânico / chamada emergência', share: 45, cor: '#e03c3c' },
+      { nome: 'Detector de queda',                    share: 25, cor: '#2540c0' },
+      { nome: 'Monitoramento presença/PIR',            share: 18, cor: '#00c8d4' },
+      { nome: 'Detector gás/CO/fumaça',               share: 12, cor: '#f5c842' },
+    ];
+    DATA['ci_emergencia'].diferenciais = [
+      { icon: '❤️',  titulo: 'Motivação emocional — churn mínimo', desc: 'O pagador (filho adulto) toma decisão emocional para proteger o familiar. Cancelar significa deixar o idoso desprotegido — churn estruturalmente baixo.' },
+      { icon: '💰', titulo: 'Maior ARPU — R$ 40–60/mês',          desc: 'TeleHelp pratica R$ 149/mês no padrão, R$ 119/mês via convênios. Unifique pode oferecer R$ 49–59 com instalação profissional e suporte local.' },
+      { icon: '🏘️', titulo: 'Mercado sem cobertura no interior SC', desc: 'TeleHelp foca em grandes centros. Interior de SC (Chapecó, Lages, Joinville, Blumenau) tem idosos sozinhos com filhos em outras cidades — sem concorrente direto.' },
+    ];
+    DATA['ci_emergencia'].concorrentes = [
+      { nome: 'TeleHelp Brasil',   nivel: 'Referência (grande centro)' },
+      { nome: 'HelpCare Brasil',   nivel: 'Médio'                      },
+      { nome: 'Amazon Alexa',      nivel: 'Indireto'                   },
+      { nome: 'Apple Watch (SOS)', nivel: 'Alto (público premium)'     },
+    ];
+    DATA['ci_emergencia'].concorrentes_nota = 'O único modelo <strong>comodato + assinatura IoT com escala real documentada no Brasil é de emergência</strong> — TeleHelp (17 anos, 500k+ atendimentos). Unifique não precisa competir com TeleHelp diretamente — o interior de SC é o espaço não atendido. Fonte: <a href="https://telehelp.com.br/sobre-a-telehelp.php" target="_blank">TeleHelp — Sobre a empresa</a>';
+    DATA['ci_emergencia'].benchmark = {
+      nome: 'TeleHelp Brasil',
+      produtos: [
+        { titulo: 'Adesão padrão',           val_unit: 199,  sufixo: '(taxa única)', desc: 'Inclui kit hardware em comodato (botão pânico + central)' },
+        { titulo: 'Mensalidade padrão',      val_unit: 149,  sufixo: '/mês',        desc: 'Central 24h, médico por telefone, check-in semanal' },
+        { titulo: 'Mensalidade c/ convênio', val_unit: 119,  sufixo: '/mês',        desc: 'Via AFPESP, CAASP — desconto para associações profissionais' },
+      ],
+      capex: { mobilizacao: 100, hardware_unit: 300, pontos_modelo: 50, meses_contrato: 24 },
+      opex_por_ponto: { 'Central 24h': 12, Suporte: 8, Conectividade: 5 },
+      margem_opex: 40,
+    };
+    DATA['ci_emergencia'].riscos = [
+      { desafio: 'Central de monitoramento 24h — custo operacional alto',          impacto: -2.5, periodo: 'Contínuo',                regiao: 'Brasil' },
+      { desafio: 'Responsabilidade civil em falha de atendimento emergencial',      impacto: -2.3, periodo: 'Contínuo',                regiao: 'Brasil' },
+      { desafio: 'Hardware dependente de conectividade (WiFi ou 4G)',               impacto: -1.5, periodo: 'Curto prazo',             regiao: 'Interior SC' },
+      { desafio: 'Necessidade de parceria para central de atendimento 24h',         impacto: -1.3, periodo: 'Curto prazo (2025–2026)', regiao: 'Brasil' },
+    ];
+    DATA['ci_emergencia'].tecnologia = [
+      {
+        titulo: 'Botão de Pânico 4G — Comodato Residencial',
+        resumo: 'Dispositivo portátil com botão de pânico, GPS integrado e conexão 4G independente do WiFi. Funciona dentro e fora de casa. Modelo adotado pela TeleHelp no plano "Proteção Fora de Casa".',
+        fluxo: ['Botão 4G', 'Rede Celular', 'Central de Atendimento 24h', 'Familiar/Emergência'],
+        pros: ['Funciona sem WiFi (4G próprio)', 'Portátil — proteção dentro e fora de casa', 'GPS para localização', 'Resistente à água (IP67)'],
+        contras: ['Depende de cobertura 4G', 'Bateria requer carga diária', 'Necessita central de atendimento própria ou parceira'],
+        quando_usar: ['Idosos ativos que saem de casa', 'Clientes em área com boa cobertura 4G'],
+        quando_evitar: ['Locais rurais sem cobertura celular'],
+        imagens: [],
+        fornecedores: [],
+      },
+      {
+        titulo: 'Kit Sensor Residencial (PIR + Detecção)',
+        resumo: 'Conjunto de sensores PIR para detectar presença, queda e inatividade prolongada dentro de casa. Conecta via WiFi ao roteador da Unifique. Ideal para idosos que moram sozinhos.',
+        fluxo: ['Sensores PIR WiFi', 'Roteador Fibra Unifique', 'Plataforma Cloud', 'App Familiar'],
+        pros: ['Monitoramento passivo — idoso não precisa fazer nada', 'Detecta inatividade (queda, mal-estar)', 'Custo de hardware baixo (R$ 60–100 kit)'],
+        contras: ['Depende do WiFi da Unifique estar ativo', 'Falsos positivos possíveis', 'Não substitui botão de pânico'],
+        quando_usar: ['Idosos com mobilidade reduzida', 'Monitoramento complementar ao botão de pânico'],
+        quando_evitar: ['Substitute único para emergência ativa'],
+        imagens: [],
+        fornecedores: [],
+      },
+    ];
+    persistData('ci_emergencia');
+  }
+
+  if (_ciSeed('ci_monitoramento')) {
+    DATA['ci_monitoramento'] = defaultData('ci_monitoramento', CI_TABS.find(t => t.id === 'ci_monitoramento'));
+    DATA['ci_monitoramento'].desc = 'Monitoramento de energia, água e solar — única vertical com ROI auto-calculável pelo cliente.';
+    DATA['ci_monitoramento'].mercado = {
+      moeda: 'US$',
+      tamanho_ano: 2024,
+      tamanho_bi: 20.4,
+      cagr_historico: 15,
+      proj: [
+        { ano: 2024, bi: 20.4 },
+        { ano: 2027, bi: 33.0 },
+        { ano: 2030, bi: 54.6 },
+      ],
+      cagr_projecao: 16.0,
+    };
+    DATA['ci_monitoramento'].brasil = {
+      potencial_bi: 2.4,
+      titulo: 'Monitoramento de Energia — Brasil',
+      barras: [
+        { icon: '⚡', val: 'R$ 675',    label: 'Shelly 3EM Gen3 (monitor 3 fases) — 4tronics BR',      src: 'https://loja.4tronics.com.br/fabricante/shelly/' },
+        { icon: '💡', val: 'R$ 190+',   label: 'Shelly EM básico disponível no Brasil',                src: 'https://loja.4tronics.com.br/fabricante/shelly/' },
+        { icon: '💰', val: 'R$80–150',  label: 'Economia média/mês em conta de energia com monitoramento', src: '' },
+        { icon: '📅', val: 'R$ 15/mês', label: 'Mensalidade viável (dashboard + alertas)',             src: '' },
+        { icon: '📊', val: '8–9 meses', label: 'Payback do hardware com mensalidade de R$ 15/mês',    src: '' },
+      ],
+    };
+    DATA['ci_monitoramento'].segmentos = [
+      { nome: 'Monitoramento de energia elétrica', share: 45, cor: '#f5c842' },
+      { nome: 'Sensor de vazamento de água',       share: 28, cor: '#00c8d4' },
+      { nome: 'Gateway solar / fotovoltaico',      share: 18, cor: '#a8e063' },
+      { nome: 'Qualidade do ar interno',           share: 9,  cor: '#e0e4ef' },
+    ];
+    DATA['ci_monitoramento'].diferenciais = [
+      { icon: '📊', titulo: 'ROI calculável pelo próprio cliente', desc: 'Único vertical onde o cliente mede o benefício sozinho: "Este dispositivo me economizou R$ 80/mês". Não depende de percepção subjetiva.' },
+      { icon: '⚡', titulo: 'Sinergia com produto ACL/Solar',      desc: 'Shelly EM integra diretamente ao portfólio de energia da Unifique. Monitoramento solar + consumo = proposta de valor completa.' },
+      { icon: '🔧', titulo: 'Hardware passivo, suporte mínimo',    desc: 'Sensor de energia instalado uma vez, mede continuamente. Sem falhas frequentes. Custo de suporte pós-instalação próximo de zero.' },
+    ];
+    DATA['ci_monitoramento'].concorrentes = [
+      { nome: 'Shelly (hardware)',      nivel: 'Parceiro'  },
+      { nome: 'Sense Energy Monitor',  nivel: 'Alto'      },
+      { nome: 'Schneider Electric',    nivel: 'Alto'      },
+      { nome: 'Tigo Energy',           nivel: 'Médio'     },
+    ];
+    DATA['ci_monitoramento'].concorrentes_nota = 'Mercado de monitoramento de energia residencial é fragmentado no Brasil — sem dominante local. <strong style="color:var(--yellow)">Shelly</strong> é o hardware mais usado por instaladores de automação residencial. Distribuidor nacional: <a href="https://loja.4tronics.com.br/fabricante/shelly/" target="_blank">4tronics.com.br</a>.';
+    DATA['ci_monitoramento'].benchmark = {
+      nome: 'Shelly EM (4tronics BR)',
+      produtos: [
+        { titulo: 'Shelly EM básico (1 fase)',     val_unit: 190,  sufixo: '(hardware)', desc: 'Monitor de 1 circuito, WiFi, sem hub. Disponível na 4tronics.com.br' },
+        { titulo: 'Shelly 3EM Gen3 (3 fases)',    val_unit: 675,  sufixo: '(hardware)', desc: 'Monitor trifásico para residências com entrada trifásica ou quadro completo' },
+        { titulo: 'Mensalidade dashboard/alertas', val_unit: 15,   sufixo: '/mês',       desc: 'Plataforma de visualização, alertas de consumo anormal, relatórios mensais' },
+      ],
+      capex: { mobilizacao: 30, hardware_unit: 190, pontos_modelo: 50, meses_contrato: 12 },
+      opex_por_ponto: { Plataforma: 3, Suporte: 2, Conectividade: 0 },
+      margem_opex: 55,
+    };
+    DATA['ci_monitoramento'].riscos = [
+      { desafio: 'Proposta de valor abstrata — cliente não percebe o ROI sem dados históricos', impacto: -1.8, periodo: 'Curto prazo (primeiros 3 meses)', regiao: 'Brasil' },
+      { desafio: 'Dependência de instalação elétrica — quadro monofásico vs. trifásico',        impacto: -1.3, periodo: 'Curto prazo',                     regiao: 'Interior SC' },
+      { desafio: 'Competição com medidores inteligentes das concessionárias (fatura digital)',   impacto: -1.2, periodo: 'Médio prazo (2026–2030)',          regiao: 'Brasil' },
+    ];
+    DATA['ci_monitoramento'].tecnologia = [
+      {
+        titulo: 'Shelly EM — Monitor de Energia WiFi (1 fase)',
+        resumo: 'Dispositivo WiFi para monitoramento de consumo elétrico em tempo real, sem hub dedicado. Instala no quadro elétrico em ~10 minutos. Compatível com Home Assistant, MQTT e API aberta. Distribuído no Brasil pela 4tronics.',
+        fluxo: ['Quadro Elétrico', 'Shelly EM (WiFi)', 'Roteador Fibra Unifique', 'Shelly Cloud / Home Assistant', 'App Cliente'],
+        pros: ['Sem hub dedicado (WiFi nativo)', 'API aberta (MQTT, REST, CoAP)', 'Compatível com Home Assistant', 'Histórico de consumo diário/semanal/mensal', 'R$ 190 no Brasil (4tronics)'],
+        contras: ['Instalação no quadro elétrico requer técnico habilitado', 'Depende de WiFi estável próximo ao quadro'],
+        quando_usar: ['Residências monofásicas', 'Clientes com fatura de energia alta (>R$ 300/mês)', 'Add-on na visita de instalação da fibra'],
+        quando_evitar: ['Locais sem WiFi próximo ao quadro elétrico'],
+        imagens: [],
+        fornecedores: [{ nome: '4tronics', tag: 'Distribuidor BR', preco: '190', status: 'sem_obs' }],
+      },
+      {
+        titulo: 'Shelly 3EM Gen3 — Monitor Trifásico',
+        resumo: 'Monitor de energia para instalações trifásicas. Suporta até 3 circuitos independentes (63A por fase). Ideal para residências maiores ou comercial leve. Mesma plataforma do Shelly EM com histórico e automações.',
+        fluxo: ['Quadro Trifásico', 'Shelly 3EM (WiFi)', 'Roteador Fibra Unifique', 'Shelly Cloud', 'App Cliente'],
+        pros: ['Monitora 3 fases simultaneamente', 'Detecta desbalanceamento de carga', 'Controle de contator integrado (corte remoto)'],
+        contras: ['Preço mais alto (R$ 675)', 'Instalação mais complexa'],
+        quando_usar: ['Residências trifásicas', 'Clientes com ar-condicionado, piscina ou bomba trifásica'],
+        quando_evitar: ['Instalações monofásicas simples'],
+        imagens: [],
+        fornecedores: [{ nome: '4tronics', tag: 'Distribuidor BR', preco: '675', status: 'sem_obs' }],
+      },
+    ];
+    persistData('ci_monitoramento');
+  }
+
+  if (_ciSeed('ci_acesso')) {
+    DATA['ci_acesso'] = defaultData('ci_acesso', CI_TABS.find(t => t.id === 'ci_acesso'));
+    DATA['ci_acesso'].desc = 'Controle de acesso inteligente — uso diário garantido, mas payback longo em comodato.';
+    DATA['ci_acesso'].mercado = {
+      moeda: 'US$',
+      tamanho_ano: 2024,
+      tamanho_bi: 15.8,
+      cagr_historico: 16,
+      proj: [
+        { ano: 2024, bi: 15.8 },
+        { ano: 2027, bi: 26.0 },
+        { ano: 2030, bi: 42.5 },
+      ],
+      cagr_projecao: 17.5,
+    };
+    DATA['ci_acesso'].brasil = {
+      potencial_bi: 1.9,
+      titulo: 'Controle de Acesso — Brasil',
+      barras: [
+        { icon: '🚪', val: '45%',       label: 'Consumidores BR que desejam fechadura digital',       src: 'https://smarthomepro.com.br/crescimento-da-automacao-residencial/' },
+        { icon: '📹', val: 'R$ 350+',   label: 'Vídeo porteiro WiFi (faixa de entrada, varejo BR)',   src: 'https://www.buscape.com.br/' },
+        { icon: '🔑', val: 'R$ 400+',   label: 'Fechadura inteligente (faixa de entrada, varejo BR)', src: 'https://lista.mercadolivre.com.br/fechadura-inteligente' },
+        { icon: '⚠️', val: 'Médio',     label: 'Viabilidade em comodato — payback 9–24 meses',       src: '' },
+      ],
+    };
+    DATA['ci_acesso'].segmentos = [
+      { nome: 'Vídeo porteiro WiFi',  share: 42, cor: '#2540c0' },
+      { nome: 'Fechadura inteligente', share: 35, cor: '#00c8d4' },
+      { nome: 'Controle de portão',   share: 15, cor: '#a8e063' },
+      { nome: 'Teclado digital',      share: 8,  cor: '#f5c842' },
+    ];
+    DATA['ci_acesso'].diferenciais = [
+      { icon: '📅', titulo: 'Uso diário garantido', desc: 'Cliente abre a porta várias vezes por dia — engajamento ativo diferente de lâmpadas ou tomadas que ficam esquecidas.' },
+      { icon: '🎯', titulo: 'Ponto de entrada: vídeo porteiro', desc: 'Hardware mais barato (R$ 300–500), instalação mais simples e responsabilidade menor que fechadura. Validar modelo com vídeo porteiro antes de escalar para fechadura.' },
+    ];
+    DATA['ci_acesso'].riscos = [
+      { desafio: 'Fechadura com falha — cliente fica trancado fora de casa (risco de imagem)',  impacto: -2.8, periodo: 'Contínuo',              regiao: 'Brasil' },
+      { desafio: 'Payback longo para comodato (hardware R$ 400–800)',                          impacto: -2.0, periodo: 'Curto prazo',            regiao: 'Brasil' },
+      { desafio: 'Instalação mais complexa — requer ajuste físico na porta',                   impacto: -1.5, periodo: 'Curto/médio prazo',      regiao: 'Brasil' },
+      { desafio: 'Suporte 24h necessário para falhas de acesso',                               impacto: -1.5, periodo: 'Contínuo',               regiao: 'Brasil' },
+    ];
+    persistData('ci_acesso');
+  }
+
+  if (_ciSeed('ci_automacao')) {
+    DATA['ci_automacao'] = defaultData('ci_automacao', CI_TABS.find(t => t.id === 'ci_automacao'));
+    DATA['ci_automacao'].desc = 'Automação de conforto (lâmpadas, tomadas) — evidência global mostra viabilidade BAIXA como produto principal de ISP.';
+    DATA['ci_automacao'].mercado = {
+      moeda: 'US$',
+      tamanho_ano: 2024,
+      tamanho_bi: 30.7,
+      cagr_historico: 12,
+      proj: [
+        { ano: 2024, bi: 30.7 },
+        { ano: 2027, bi: 44.0 },
+        { ano: 2030, bi: 62.3 },
+      ],
+      cagr_projecao: 12.4,
+    };
+    DATA['ci_automacao'].brasil = {
+      potencial_bi: 3.7,
+      titulo: 'Automação Residencial — Brasil (Alerta)',
+      barras: [
+        { icon: '⚠️', val: '45%',    label: 'Consumidores que param após 1–2 dispositivos (abandono)',    src: 'https://www.grandviewresearch.com/press-release/global-smart-homes-market' },
+        { icon: '❌', val: '<1%',    label: 'Penetração da Deutsche Telekom após 5 anos de produto grátis', src: 'https://www.grandviewresearch.com/press-release/global-smart-homes-market' },
+        { icon: '🏴', val: '6/6',   label: 'Operadoras europeias que encerraram produto de automação',      src: '' },
+        { icon: '🆓', val: 'R$ 0',  label: 'Orange deu de graça — e ainda assim encerrou por falta de uso', src: '' },
+        { icon: '💡', val: 'R$ 25+', label: 'Lâmpada smart (preço varejo BR)',                              src: 'https://lista.mercadolivre.com.br/lampada-inteligente' },
+        { icon: '🔌', val: 'R$ 40+', label: 'Tomada inteligente WiFi (preço varejo BR)',                    src: 'https://lista.mercadolivre.com.br/tomada-inteligente' },
+      ],
+    };
+    DATA['ci_automacao'].segmentos = [
+      { nome: 'Iluminação inteligente',     share: 38, cor: '#f5c842' },
+      { nome: 'Tomadas & interruptores',    share: 32, cor: '#00c8d4' },
+      { nome: 'Controle IR (TV/AC)',        share: 18, cor: '#a8e063' },
+      { nome: 'Sensores temperatura/umid.', share: 12, cor: '#e0e4ef' },
+    ];
+    DATA['ci_automacao'].diferenciais = [
+      { icon: '⚠️', titulo: 'ATENÇÃO: Evidência global desfavorável', desc: 'A Orange deu integração gratuita e encerrou por falta de uso. A Deutsche Telekom ofereceu hardware grátis e atingiu <1% de penetração após 5 anos. Esta vertical tem a maior taxa de fracasso entre ISPs globalmente.' },
+      { icon: '🔄', titulo: 'Possível como upsell tardio', desc: 'Se a Unifique já tiver base estabelecida de segurança/monitoramento, automação pode ser ofertada como add-on. NUNCA como produto principal de entrada.' },
+    ];
+    DATA['ci_automacao'].concorrentes = [
+      { nome: 'Amazon Alexa + Echo',   nivel: 'Alto (dominante)' },
+      { nome: 'Google Home/Nest Hub',  nivel: 'Alto (dominante)' },
+      { nome: 'Tuya Smart Life',       nivel: 'Alto (dominante)' },
+      { nome: 'Apple HomeKit',         nivel: 'Alto (premium)'   },
+    ];
+    DATA['ci_automacao'].concorrentes_nota = '<strong>Amazon, Google e Tuya</strong> dominam automação de conforto com ecossistemas estabelecidos. ISPs que tentaram criar plataforma própria (BT, Orange, Cox) falharam. <strong>Não competir neste espaço como produto principal.</strong> Fonte histórica: <a href="https://www.grandviewresearch.com/press-release/global-smart-homes-market" target="_blank">Grand View Research</a>';
+    DATA['ci_automacao'].riscos = [
+      { desafio: 'Engajamento cai após 30–60 dias — lâmpada volta a ser lâmpada',     impacto: -3.0, periodo: 'Curto prazo (primeiros 2 meses)', regiao: 'Global'  },
+      { desafio: 'ISP não está no caminho natural de compra (Amazon/Magazine > Unifique)', impacto: -2.5, periodo: 'Contínuo',                  regiao: 'Brasil'  },
+      { desafio: 'Suporte para configuração de automações — custo alto por cliente',    impacto: -2.0, periodo: 'Contínuo',                      regiao: 'Brasil'  },
+      { desafio: 'Hardware proprietário — risco de lockout se produto encerrado',       impacto: -2.0, periodo: 'Contínuo',                      regiao: 'Global'  },
+      { desafio: 'Concorrência direta com Amazon/Google — sem vantagem competitiva',    impacto: -1.8, periodo: 'Contínuo',                      regiao: 'Global'  },
+    ];
+    persistData('ci_automacao');
+  }
+
   const savedTab = sessionStorage.getItem('usc_tab');
   const startTab = (savedTab && TABS.find(t => t.id === savedTab)) ? savedTab : TABS[0].id;
   // Restaura sub-abas antes de renderizar

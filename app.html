@@ -655,8 +655,9 @@
     }
 
     /* ---- VISÃO GERAL — estilo notebook/Notion ---- */
+    .info-art-wrap { width: min(90vw, calc(100vw - 32px)); margin: 0 auto; padding: 24px 16px 32px; }
     .info-page {
-      width: 90vw; max-width: 90vw; margin: 0 auto; padding: 36px 28px 64px;
+      width: 100%; padding: 36px 28px 64px;
       background: var(--white);
     }
     /* Título da página */
@@ -4570,7 +4571,7 @@ function renderInfoPanel(id) {
 
   const vid = _infoVid(id, ai);
   el.innerHTML = `
-  <div class="rdm-wrap">
+  <div class="info-art-wrap">
     <div class="rdm-scenarios-bar">
       ${barHtml}
       <button class="rdm-add-scenario" onclick="addInfoArtigo('${id}')" title="Novo artigo">+</button>

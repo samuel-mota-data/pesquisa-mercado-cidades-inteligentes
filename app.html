@@ -4372,7 +4372,7 @@ function _nbRenderBlocks(tabId) {
     <div class="nb-block" data-bid="${b.id}">
       <div class="nb-handle">
         <button class="nb-handle-btn" title="Tipo de bloco" onclick="_nbToggleMenu('${tabId}','${b.id}',this)">⠿</button>
-        <button class="nb-handle-btn" title="Excluir bloco" onclick="_nbDel('${tabId}','${b.id}')">×</button>
+        <button class="nb-handle-btn" title="Excluir bloco" onclick="_nbAskDel('${tabId}','${b.id}')">×</button>
         <div class="nb-type-menu" id="nb-menu-${b.id}">
           ${NB_TYPES.map(tp => `
             <div class="nb-type-opt${tp.type===b.type?' active':''}" onclick="_nbSetType('${tabId}','${b.id}','${tp.type}');_nbCloseMenus()">
@@ -4503,6 +4503,9 @@ function _nbAdd(tabId, afterBid) {
   }, 0);
 }
 
+function _nbAskDel(tabId, bid) {
+  showConfirm('Excluir bloco?', 'Esta ação não pode ser desfeita.', () => _nbDel(tabId, bid, false));
+}
 function _nbDel(tabId, bid, focusPrev) {
   const blocks = _nbBlocks(tabId);
   const idx = blocks.findIndex(b => b.id === bid);

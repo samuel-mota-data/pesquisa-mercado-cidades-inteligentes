@@ -845,7 +845,7 @@
     .nb-html-block { width: 100%; }
     .nb-html-textarea { width: 100%; min-height: 240px; max-height: none; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
     .nb-html-textarea:focus { border-color: var(--teal); }
-    .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; min-height:200px; overflow:hidden; }
+    .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; overflow:hidden; }
     /* Embedded state */
     .nb-media-embedded { position: relative; cursor: default; }
     .nb-media-embedded .nb-media-edit-overlay {
@@ -4344,7 +4344,7 @@ function _nbBlockHtml(block, tabId) {
       const srcdoc = content.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       return `<div class="nb-html-block nb-media-embedded">
         <iframe class="nb-html-iframe" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin"
-          onload="this.style.height=Math.max(this.contentDocument.body.scrollHeight,120)+'px'"></iframe>
+          onload="(function(f){function fit(){f.style.height='0';f.style.height=f.contentDocument.documentElement.scrollHeight+'px';}fit();new ResizeObserver(fit).observe(f.contentDocument.documentElement);})(this)"></iframe>
         <div class="nb-media-edit-overlay">
           <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
           <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>

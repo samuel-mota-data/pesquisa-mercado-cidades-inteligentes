@@ -1,7 +1,8 @@
 {
   "name": "pesquisa-mercado-cidades-inteligentes",
   "version": "1.0.0",
-  "dependencies": {
-    "pg": "^8.11.0"
+  "devDependencies": {
+    "dotenv": "^17.3.1",
+    "pg": "^8.20.0"
   }
 }

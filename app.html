@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estudo de Mercado — Dispositivos Inteligentes | Unifique</title>
+  <title>Unifique Inovação</title>
+  <link rel="icon" type="image/png" href="/favicon.png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     /* =============================================
@@ -634,10 +635,10 @@
     .subtab-btn {
       background: none; border: none; cursor: pointer;
       color: var(--text-mid); font-family: inherit;
-      font-size: .72rem; font-weight: 600;
-      padding: 8px 14px;
+      font-size: .7rem; font-weight: 600;
+      padding: 9px 14px;
       border-bottom: 2px solid transparent;
-      margin-bottom: -1px; white-space: nowrap;
+      margin-bottom: -2px; white-space: nowrap;
       transition: color .15s, border-color .15s;
     }
     .subtab-btn:hover { color: var(--blue-dark); }
@@ -1511,6 +1512,7 @@ let DATA = {
       { desafio: 'Aceitação do consumidor',               impacto: -1.5, periodo: 'Curto/médio (2025-2028)',   regiao: 'Global' },
       { desafio: 'Falta de mão de obra qualificada',      impacto: -1.0, periodo: 'Longo prazo (2025-2033)',   regiao: 'Global / Economias em dev.' },
     ],
+
   },
 
   /* ==================================================
@@ -1600,6 +1602,7 @@ let DATA = {
       { desafio: 'Fragmentação regulatória — falta de padrão técnico nacional',         impacto: -1.5, periodo: 'Curto prazo (2024–2027)',          regiao: 'Brasil' },
       { desafio: 'Complexidade de integração com sistemas legados e protocolos distintos', impacto: -1.2, periodo: 'Médio prazo (2025–2030)',       regiao: 'Global' },
     ],
+
   },
 
   /* ==================================================
@@ -3641,6 +3644,21 @@ function saveDiff(id) {
   if (section) section.classList.remove('diff-editing');
   if (toggle) { toggle.textContent = 'Editar'; toggle.classList.remove('active'); }
   persistData(id);
+  // Re-render view-mode items so changes are visible immediately (no page refresh needed)
+  const listEl = document.getElementById('diff-list-' + id);
+  if (listEl) {
+    listEl.innerHTML = (DATA[id].diferenciais || []).map(df => `
+      <div class="diff-item">
+        <div class="diff-body">
+          <div class="diff-view"><h4>${df.titulo}</h4><p>${df.desc}</p></div>
+          <div class="diff-edit">
+            <input class="diff-edit-input" type="text" placeholder="Título" value="${df.titulo.replace(/"/g, '&quot;')}" oninput="markDirtyDiff('${id}')">
+            <input class="diff-edit-input" type="text" placeholder="Descrição" value="${df.desc.replace(/"/g, '&quot;')}" oninput="markDirtyDiff('${id}')">
+          </div>
+        </div>
+        <button class="diff-del" onclick="delDiffRow('${id}', this)">×</button>
+      </div>`).join('');
+  }
 }
 function discardDiff(id) { resetInitialized(id); renderPanel(id); }
 function addDiffRow(id) {

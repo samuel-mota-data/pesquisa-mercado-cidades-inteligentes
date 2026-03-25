@@ -840,6 +840,11 @@
     .nb-img-preview { margin-top: 10px; max-width: 100%; border-radius: 8px; display: block; }
     .nb-video-preview { margin-top: 10px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
     .nb-video-file { margin-top: 10px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
+    /* Bloco HTML */
+    .nb-html-block { width: 100%; }
+    .nb-html-textarea { width: 100%; min-height: 120px; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
+    .nb-html-textarea:focus { border-color: var(--teal); }
+    .nb-html-render { padding: 4px 0; }
     /* Embedded state */
     .nb-media-embedded { position: relative; cursor: default; }
     .nb-media-embedded .nb-media-edit-overlay {
@@ -4189,6 +4194,7 @@ const NB_TYPES = [
   { type: 'divider', icon: '—',  label: 'Separador'  },
   { type: 'image',   icon: '🖼',  label: 'Imagem'     },
   { type: 'video',   icon: '▶',  label: 'Vídeo'      },
+  { type: 'html',    icon: '<>', label: 'HTML'       },
 ];
 const NB_TEXT_TYPES = new Set(['p','h1','h2','h3','quote','bullet']);
 const NB_PH = { p:'Escreva algo…', h1:'Título', h2:'Subtítulo', h3:'Cabeçalho', quote:'Citação…', bullet:'Item de lista' };
@@ -4330,6 +4336,26 @@ function _nbBlockHtml(block, tabId) {
         : ''}
     </div>`;
   }
+  if (t === 'html') {
+    const content = block.content || '';
+    const editing = !content || _nbEditingMedia.has(block.id);
+    if (!editing) {
+      return `<div class="nb-html-block nb-media-embedded">
+        <div class="nb-html-render">${content}</div>
+        <div class="nb-media-edit-overlay">
+          <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
+          <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="nb-html-block">
+      <textarea class="nb-html-textarea" placeholder="Cole ou escreva HTML aqui…">${content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+      <div class="nb-media-actions" style="margin-top:8px">
+        <button class="nb-save-media-btn" onclick="_nbSaveHtml('${tabId}','${block.id}')">Aplicar</button>
+        ${content ? `<button class="nb-del-media-btn" onclick="_nbMediaClear('${tabId}','${block.id}')">Limpar</button>` : ''}
+      </div>
+    </div>`;
+  }
   const cls = 'nb-' + t;
   const ph  = NB_PH[t] || '';
   return `<div class="nb-content ${cls}" contenteditable="true" data-ph="${ph}"
@@ -4379,7 +4405,7 @@ function _nbSetType(tabId, bid, newType) {
     b.type = newType;
     if (!NB_TEXT_TYPES.has(newType)) b.content = '';
   }
-  if (newType === 'image' || newType === 'video') _nbEditingMedia.add(b.id);
+  if (newType === 'image' || newType === 'video' || newType === 'html') _nbEditingMedia.add(b.id);
   _nbRenderBlocks(tabId);
   _nbScheduleSave(tabId);
   // foca no bloco se for texto
@@ -4407,6 +4433,17 @@ function _nbMediaStage(tabId, bid, val) {
 
 // Confirma e salva no DB, sai do modo edição
 function _nbSaveMedia(tabId, bid) {
+  _nbEditingMedia.delete(bid);
+  _nbScheduleSave(tabId);
+  _nbRenderBlocks(tabId);
+}
+
+function _nbSaveHtml(tabId, bid) {
+  const blocks = _nbBlocks(tabId);
+  const b = blocks.find(x => x.id === bid);
+  if (!b) return;
+  const textarea = document.querySelector(`.nb-block[data-bid="${bid}"] .nb-html-textarea`);
+  if (textarea) b.content = textarea.value;
   _nbEditingMedia.delete(bid);
   _nbScheduleSave(tabId);
   _nbRenderBlocks(tabId);

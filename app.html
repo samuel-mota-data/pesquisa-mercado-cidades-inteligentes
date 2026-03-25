@@ -656,8 +656,8 @@
 
     /* ---- VISÃO GERAL — estilo notebook/Notion ---- */
     .info-page {
-      max-width: 90%; margin: 0 auto; padding: 36px 28px 64px;
-      background: var(--white); min-height: 100%;
+      width: 90vw; max-width: 90vw; margin: 0 auto; padding: 36px 28px 64px;
+      background: var(--white);
     }
     /* Título da página */
     .info-page-title {
@@ -842,9 +842,9 @@
     .nb-video-file { margin-top: 10px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
     /* Bloco HTML */
     .nb-html-block { width: 100%; }
-    .nb-html-textarea { width: 100%; min-height: 120px; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
+    .nb-html-textarea { width: 100%; min-height: 240px; max-height: none; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
     .nb-html-textarea:focus { border-color: var(--teal); }
-    .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; min-height:120px; }
+    .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; min-height:200px; overflow:hidden; }
     /* Embedded state */
     .nb-media-embedded { position: relative; cursor: default; }
     .nb-media-embedded .nb-media-edit-overlay {

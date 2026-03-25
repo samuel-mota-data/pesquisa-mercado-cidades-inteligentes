@@ -1112,6 +1112,8 @@
     .rdm-add-scenario { flex-shrink:0; width:32px; height:32px; border-radius:50%; border:2px dashed var(--gray-mid); background:none; color:var(--text-mid); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s, color .15s; }
     .rdm-add-scenario:hover { border-color:var(--teal); color:var(--teal); }
     .rdm-scenario-name-edit { display:inline; font-size:.75rem; font-weight:600; background:transparent; border:none; outline:none; font-family:inherit; color:inherit; min-width:20px; max-width:160px; }
+    .rdm-scenario-btn.active .rdm-scenario-name-edit { cursor:text; }
+    .rdm-scenario-btn.active .rdm-scenario-name-edit:empty::before { content:'Clique para nomear…'; opacity:.55; font-style:italic; }
     .rdm-scenario-body { background:var(--gray-light); border-radius:12px; padding:18px 18px 12px; }
     .rdm-scenario-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--teal); margin-bottom:10px; }
     .rdm-empty { color:var(--text-mid); font-size:.78rem; padding:24px 0; text-align:center; }
@@ -4197,6 +4199,8 @@ const arqActiveLayer = {}; // active layer index per tabId
 const _rdmLayerMap = {}; // maps virtual ID → { realTabId, si, ei }
 const rdmActiveScenario = {}; // active scenario index per tabId
 const rdmActiveEtapa = {}; // active etapa per tabId_si → ei | null
+const _infoArtMap = {}; // maps virtual ID → { realTabId, ai }
+const infoActiveArtigo = {}; // active artigo index per tabId
 
 function _nbId() { return Math.random().toString(36).slice(2,9); }
 
@@ -4217,20 +4221,27 @@ function _nbBlocks(id) {
     if (!layer.blocks) layer.blocks = [{ id: _nbId(), type: 'p', content: '' }];
     return layer.blocks;
   }
+  // Artigo de visão geral (ID virtual)
+  if (_infoArtMap[id]) {
+    const { realTabId, ai } = _infoArtMap[id];
+    const art = _infoArtigos(realTabId)[ai];
+    if (!art) return [];
+    if (!art.blocks) art.blocks = [];
+    return art.blocks;
+  }
+  // fallback legacy (não deve ser chamado diretamente para informativo)
   if (!DATA[id]) DATA[id] = {};
   if (!DATA[id].informativo) DATA[id].informativo = {};
   if (!DATA[id].informativo.blocks) {
     const pitch = DATA[id].informativo.pitch || '';
-    DATA[id].informativo.blocks = pitch
-      ? [{ id: _nbId(), type: 'p', content: pitch }]
-      : [];
+    DATA[id].informativo.blocks = pitch ? [{ id: _nbId(), type: 'p', content: pitch }] : [];
   }
   return DATA[id].informativo.blocks;
 }
 
 function _nbScheduleSave(tabId) {
   clearTimeout(_nbSaveTimer[tabId]);
-  const realTabId = _rdmLayerMap[tabId]?.realTabId || _arqLayerMap[tabId]?.realTabId || tabId;
+  const realTabId = _rdmLayerMap[tabId]?.realTabId || _arqLayerMap[tabId]?.realTabId || _infoArtMap[tabId]?.realTabId || tabId;
   _nbSaveTimer[tabId] = setTimeout(() => persistData(realTabId), 900);
 }
 
@@ -4472,24 +4483,95 @@ function _nbDel(tabId, bid, focusPrev) {
   }
 }
 
+/* ---- helpers de artigos ---- */
+function _infoVid(tabId, ai) {
+  const vid = `__info_${tabId}_${ai}`;
+  _infoArtMap[vid] = { realTabId: tabId, ai };
+  return vid;
+}
+function _infoArtigos(id) {
+  if (!DATA[id]) DATA[id] = {};
+  if (!DATA[id].informativo) DATA[id].informativo = {};
+  const info = DATA[id].informativo;
+  if (!info.artigos) {
+    // migração: blocos antigos viram o primeiro artigo
+    const old = info.blocks || (info.pitch ? [{ id: _nbId(), type: 'p', content: info.pitch }] : []);
+    info.artigos = [{ id: _nbId(), nome: 'Visão Geral', blocks: old }];
+    delete info.blocks;
+    delete info.pitch;
+  }
+  if (!info.artigos.length) info.artigos.push({ id: _nbId(), nome: 'Artigo 1', blocks: [] });
+  return info.artigos;
+}
+
 function renderInfoPanel(id) {
   const el = document.getElementById('informativo-panel-' + id);
   if (!el) return;
-  const d   = DATA[id] || {};
-  const tab = TABS.find(t => t.id === id) || {};
-  const m   = d.mercado || {};
-  const b   = d.brasil  || {};
-  const proj  = m.proj || [];
-  const proj0 = proj[0] || {};
-  const projN = proj[proj.length - 1] || {};
+  const artigos = _infoArtigos(id);
+  artigos.forEach((_, ai) => _infoVid(id, ai)); // registra IDs virtuais
 
+  const ai = Math.min(infoActiveArtigo[id] ?? 0, artigos.length - 1);
+  infoActiveArtigo[id] = ai;
+
+  const barHtml = artigos.map((art, i) => {
+    const isActive = i === ai;
+    return `<button class="rdm-scenario-btn${isActive ? ' active' : ''}" onclick="selectInfoArtigo('${id}',${i})">
+      <span contenteditable="${isActive}" class="rdm-scenario-name-edit"
+        title="${isActive ? 'Clique no nome para editar' : ''}"
+        onblur="renameInfoArtigo('${id}',${i},this.innerText)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+        onclick="event.stopPropagation()"
+      >${_esc(art.nome || 'Artigo')}</span>
+      ${artigos.length > 1 ? `<span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelInfoArtigo('${id}',${i})">×</span>` : ''}
+    </button>`;
+  }).join('');
+
+  const vid = _infoVid(id, ai);
   el.innerHTML = `
-  <div class="info-page">
-    <div class="nb-editor" id="nb-editor-${id}"></div>
-    <button class="nb-add-btn" onclick="_nbAdd('${id}', null)">+ Adicionar bloco</button>
+  <div class="rdm-wrap">
+    <div class="rdm-scenarios-bar">
+      ${barHtml}
+      <button class="rdm-add-scenario" onclick="addInfoArtigo('${id}')" title="Novo artigo">+</button>
+    </div>
+    <div class="info-page">
+      <div class="nb-editor" id="nb-editor-${vid}"></div>
+      <button class="nb-add-btn" onclick="_nbAdd('${vid}',null)">+ Adicionar bloco</button>
+    </div>
   </div>`;
 
-  _nbRenderBlocks(id);
+  _nbRenderBlocks(vid);
+}
+
+function selectInfoArtigo(id, ai) {
+  infoActiveArtigo[id] = ai;
+  renderInfoPanel(id);
+}
+function addInfoArtigo(id) {
+  const artigos = _infoArtigos(id);
+  artigos.push({ id: _nbId(), nome: 'Artigo ' + (artigos.length + 1), blocks: [] });
+  infoActiveArtigo[id] = artigos.length - 1;
+  persistData(id);
+  renderInfoPanel(id);
+  setTimeout(() => {
+    const span = document.querySelector('#informativo-panel-' + id + ' .rdm-scenario-btn.active .rdm-scenario-name-edit');
+    if (span) { span.focus(); document.execCommand('selectAll', false, null); }
+  }, 50);
+}
+function _askDelInfoArtigo(id, ai) {
+  const nome = DATA[id]?.informativo?.artigos?.[ai]?.nome || 'este artigo';
+  showConfirm('Excluir artigo?', `"${_esc(nome)}" será removido permanentemente.`, () => delInfoArtigo(id, ai));
+}
+function delInfoArtigo(id, ai) {
+  const artigos = _infoArtigos(id);
+  artigos.splice(ai, 1);
+  if (!artigos.length) artigos.push({ id: _nbId(), nome: 'Artigo 1', blocks: [] });
+  infoActiveArtigo[id] = Math.max(0, Math.min(infoActiveArtigo[id] ?? 0, artigos.length - 1));
+  persistData(id);
+  renderInfoPanel(id);
+}
+function renameInfoArtigo(id, ai, nome) {
+  const artigos = _infoArtigos(id);
+  if (artigos[ai]) { artigos[ai].nome = nome.trim() || 'Artigo'; persistData(id); }
 }
 
 function renderGestaoPanel(id) {
@@ -5100,6 +5182,7 @@ function renderRoadmapPanel(id) {
     const isActive = i === activeSi;
     return `<button class="rdm-scenario-btn${isActive ? ' active' : ''}" onclick="selectRdmScenario('${id}',${i})">
       <span contenteditable="${isActive}" class="rdm-scenario-name-edit"
+        title="${isActive ? 'Clique no nome para editar' : ''}"
         onblur="renameRdmScenario('${id}',${i},this.innerText)"
         onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
         onclick="event.stopPropagation()"

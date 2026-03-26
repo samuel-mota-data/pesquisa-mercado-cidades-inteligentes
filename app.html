@@ -1197,6 +1197,20 @@
     .cflow-card { height:260px; border-radius:8px 8px 0 0; margin-bottom:0; }
     .cflow-card .cflow-item img { width:320px; height:220px; }
 
+    /* Thumbnail grid de imagens no card de tecnologia */
+    .tec-imgs-section { border-bottom:1px solid var(--gray-mid); padding:12px 18px; }
+    .tec-imgs-grid { display:flex; flex-wrap:wrap; gap:7px; align-items:center; }
+    .tec-img-thumb { width:68px; height:68px; border-radius:7px; object-fit:cover; cursor:pointer; border:2px solid transparent; transition:border-color .15s, transform .12s; flex-shrink:0; }
+    .tec-img-thumb:hover { border-color:var(--teal); transform:scale(1.06); }
+    .tec-img-add { width:68px; height:68px; border-radius:7px; border:2px dashed var(--teal); background:rgba(0,200,212,.04); display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:var(--teal); cursor:pointer; flex-shrink:0; transition:background .15s; user-select:none; }
+    .tec-img-add:hover { background:rgba(0,200,212,.12); }
+    /* Modal coverflow */
+    .cflow-modal-ov { position:fixed; inset:0; background:rgba(0,0,0,.88); z-index:400; display:flex; align-items:center; justify-content:center; animation:cfmIn .18s ease; }
+    @keyframes cfmIn { from{opacity:0} to{opacity:1} }
+    .cflow-modal-box { position:relative; width:700px; max-width:95vw; }
+    .cflow-modal-close { position:absolute; top:-16px; right:-16px; background:rgba(255,255,255,.15); border:none; color:#fff; font-size:1.3rem; line-height:1; width:32px; height:32px; border-radius:50%; cursor:pointer; z-index:10; display:flex; align-items:center; justify-content:center; }
+    .cflow-modal-close:hover { background:rgba(255,255,255,.3); }
+
     .placeholder {
       max-width: 1100px; margin: 48px auto;
       text-align: center; padding: 20px;
@@ -4784,7 +4798,6 @@ function renderTecnologiaPanel(id) {
       ? (arr||[]).map(x => `<li class="tec-li ${cls}">${x}</li>`).join('')
       : `<li class="tec-li tec-li-empty">—</li>`;
     return `<div class="tec-card" id="tec-card-${id}-${i}" style="border-top-color:${accent}">
-      <div class="cflow-wrap cflow-card" id="cflow-${id}-${i}"></div>
       <div style="padding:14px 18px 18px">
         <div class="tec-card-head">
           <div class="tec-card-title">${item.titulo || '—'}</div>
@@ -4801,6 +4814,7 @@ function renderTecnologiaPanel(id) {
           <div class="tec-col"><div class="tec-col-head tec-usar-head">Quando Usar</div><ul class="tec-ul">${rl(item.quando_usar,'tec-li-usar')}</ul></div>
           <div class="tec-col"><div class="tec-col-head tec-evitar-head">Quando Evitar</div><ul class="tec-ul">${rl(item.quando_evitar,'tec-li-evitar')}</ul></div>
         </div>
+        <div class="tec-imgs-section" id="tec-imgs-${id}-${i}"></div>
         <div class="tec-fornec-section" id="tec-fornec-${id}-${i}"></div>
       </div>
     </div>`;
@@ -4812,7 +4826,7 @@ function renderTecnologiaPanel(id) {
       <button class="gestao-add-btn" onclick="addTecItem('${id}')">+ Adicionar Tecnologia</button>
     </div>
   </div>`;
-  items.forEach((_, i) => { renderCoverFlow(id, i); renderTecFornecedores(id, i); });
+  items.forEach((_, i) => { renderTecImgGrid(id, i); renderTecFornecedores(id, i); });
 }
 
 function _tecEditForm(id, i) {
@@ -5530,8 +5544,6 @@ function renderCoverFlow(tabId, tecIdx) {
   const idx  = Math.max(0, Math.min(tecCoverFlowIdx[key] || 0, imgs.length - 1));
   tecCoverFlowIdx[key] = idx;
 
-  const fileInput = `<input type="file" accept="image/*" id="cflow-input-${tabId}-${tecIdx}" style="display:none" onchange="onCoverFlowFile('${tabId}',${tecIdx},this)" multiple>`;
-
   if (!imgs.length) {
     wrap.innerHTML = `
       <div class="cflow-empty-state">
@@ -5540,8 +5552,7 @@ function renderCoverFlow(tabId, tecIdx) {
       </div>
       <div class="cflow-toolbar">
         <button class="cflow-tbtn" onclick="addCoverFlowImg('${tabId}',${tecIdx})">+ Imagem</button>
-      </div>
-      ${fileInput}`;
+      </div>`;
     return;
   }
 
@@ -5584,8 +5595,7 @@ function renderCoverFlow(tabId, tecIdx) {
     <div class="cflow-toolbar">
       <button class="cflow-tbtn del" onclick="delCoverFlowImg('${tabId}',${tecIdx},${idx})">× Remover</button>
       <button class="cflow-tbtn" onclick="addCoverFlowImg('${tabId}',${tecIdx})">+ Adicionar</button>
-    </div>
-    ${fileInput}`;
+    </div>`;
 }
 
 function setCoverFlowIdx(tabId, tecIdx, i) {
@@ -5619,7 +5629,8 @@ function onCoverFlowFile(tabId, tecIdx, input) {
         if (done === files.length) {
           tecCoverFlowIdx[`${tabId}-${tecIdx}`] = tec.imagens.length - 1;
           persistData(tabId);
-          renderCoverFlow(tabId, tecIdx);
+          if (document.querySelector('.cflow-modal-ov')) renderCoverFlow(tabId, tecIdx);
+          renderTecImgGrid(tabId, tecIdx);
         }
       };
       imgEl.src = e.target.result;
@@ -5631,10 +5642,45 @@ function onCoverFlowFile(tabId, tecIdx, input) {
 function delCoverFlowImg(tabId, tecIdx, imgIdx) {
   showConfirm('Remover imagem?', 'Esta ação não pode ser desfeita.', () => {
     DATA[tabId].tecnologia[tecIdx].imagens.splice(imgIdx, 1);
+    const remaining = DATA[tabId].tecnologia[tecIdx].imagens.length;
     tecCoverFlowIdx[`${tabId}-${tecIdx}`] = Math.max(0, imgIdx - 1);
     persistData(tabId);
-    renderCoverFlow(tabId, tecIdx);
+    if (remaining === 0) {
+      document.querySelector('.cflow-modal-ov')?.remove();
+    } else {
+      renderCoverFlow(tabId, tecIdx);
+    }
+    renderTecImgGrid(tabId, tecIdx);
   });
+}
+
+function renderTecImgGrid(id, i) {
+  const el = document.getElementById(`tec-imgs-${id}-${i}`);
+  if (!el) return;
+  const imgs = DATA[id]?.tecnologia?.[i]?.imagens || [];
+  const fileInput = `<input type="file" accept="image/*" id="cflow-input-${id}-${i}" style="display:none" onchange="onCoverFlowFile('${id}',${i},this)" multiple>`;
+  el.innerHTML = `<div class="tec-imgs-grid">
+    ${imgs.map((img, ii) => `<img class="tec-img-thumb" src="${img.src}" title="${img.caption||''}" onclick="openCoverFlowModal('${id}',${i},${ii})">`).join('')}
+    <div class="tec-img-add" onclick="addCoverFlowImg('${id}',${i})" title="Adicionar foto">+</div>
+    ${fileInput}
+  </div>`;
+}
+
+function openCoverFlowModal(tabId, tecIdx, startIdx) {
+  tecCoverFlowIdx[`${tabId}-${tecIdx}`] = startIdx ?? 0;
+  document.querySelector('.cflow-modal-ov')?.remove();
+  const modal = document.createElement('div');
+  modal.className = 'cflow-modal-ov';
+  modal.innerHTML = `
+    <div class="cflow-modal-box">
+      <button class="cflow-modal-close" onclick="this.closest('.cflow-modal-ov').remove()">×</button>
+      <div class="cflow-wrap" id="cflow-${tabId}-${tecIdx}"></div>
+    </div>`;
+  modal.onclick = e => { if (e.target === modal) modal.remove(); };
+  const onKey = e => { if (e.key === 'Escape') { modal.remove(); document.removeEventListener('keydown', onKey); } };
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(modal);
+  renderCoverFlow(tabId, tecIdx);
 }
 
 function showConfirm(title, message, onOk) {

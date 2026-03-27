@@ -4357,7 +4357,7 @@ function _nbBlockHtml(block, tabId) {
     if (!editing) {
       const srcdoc = content.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       return `<div class="nb-html-block nb-media-embedded">
-        <iframe class="nb-html-iframe" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin"
+        <iframe class="nb-html-iframe" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin allow-popups"
           onload="(function(f){function fit(){f.style.height='0';f.style.height=f.contentDocument.documentElement.scrollHeight+'px';}fit();new ResizeObserver(fit).observe(f.contentDocument.documentElement);})(this)"></iframe>
         <div class="nb-media-edit-overlay">
           <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>

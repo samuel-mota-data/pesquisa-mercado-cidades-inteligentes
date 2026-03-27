@@ -4366,9 +4366,11 @@ function _nbBlockHtml(block, tabId) {
       </div>`;
     }
     return `<div class="nb-html-block">
-      <textarea class="nb-html-textarea" placeholder="Cole ou escreva HTML aqui…">${content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+      <textarea class="nb-html-textarea" id="nb-html-ta-${block.id}" placeholder="Cole ou escreva HTML aqui…">${content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
       <div class="nb-media-actions" style="margin-top:8px">
         <button class="nb-save-media-btn" onclick="_nbSaveHtml('${tabId}','${block.id}')">Aplicar</button>
+        <button class="nb-del-media-btn" style="background:#eef2ff;color:var(--blue-mid);border-color:#c7d0f8" onclick="document.getElementById('nb-html-upload-${block.id}').click()">📂 Upload .html</button>
+        <input type="file" id="nb-html-upload-${block.id}" accept=".html,.htm" style="display:none" onchange="_nbHtmlUpload('${tabId}','${block.id}',this)">
         ${content ? `<button class="nb-del-media-btn" onclick="_nbMediaClear('${tabId}','${block.id}')">Limpar</button>` : ''}
       </div>
     </div>`;
@@ -4464,6 +4466,18 @@ function _nbSaveHtml(tabId, bid) {
   _nbEditingMedia.delete(bid);
   _nbScheduleSave(tabId);
   _nbRenderBlocks(tabId);
+}
+
+function _nbHtmlUpload(tabId, bid, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const ta = document.getElementById('nb-html-ta-' + bid);
+    if (ta) ta.value = e.target.result;
+  };
+  reader.readAsText(file);
+  input.value = '';
 }
 
 // Entra em modo edição para bloco já incorporado

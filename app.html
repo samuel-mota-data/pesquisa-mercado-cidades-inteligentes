@@ -1117,9 +1117,14 @@
     .rdm-scenario-x:hover { opacity:1 !important; }
     .rdm-add-scenario { flex-shrink:0; width:32px; height:32px; border-radius:50%; border:2px dashed var(--gray-mid); background:none; color:var(--text-mid); font-size:1.2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s, color .15s; }
     .rdm-add-scenario:hover { border-color:var(--teal); color:var(--teal); }
-    .rdm-scenario-name-edit { display:inline; font-size:.75rem; font-weight:600; background:transparent; border:none; outline:none; font-family:inherit; color:inherit; min-width:20px; max-width:160px; }
-    .rdm-scenario-btn.active .rdm-scenario-name-edit { cursor:text; }
-    .rdm-scenario-btn.active .rdm-scenario-name-edit:empty::before { content:'Clique para nomear…'; opacity:.55; font-style:italic; }
+    .rdm-tab-name { font-size:.75rem; font-weight:600; max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; pointer-events:none; }
+    .rdm-tab-edit-btn { background:none; border:none; padding:0 0 0 4px; font-size:.72rem; opacity:.6; color:inherit; line-height:1; cursor:pointer; flex-shrink:0; }
+    .rdm-tab-edit-btn:hover { opacity:1; }
+    .rdm-tab-save-btn { background:none; border:none; padding:0 0 0 3px; font-size:.8rem; font-weight:800; color:inherit; line-height:1; cursor:pointer; flex-shrink:0; opacity:.9; }
+    .rdm-tab-save-btn:hover { opacity:1; }
+    .rdm-tab-input { font-size:.75rem; font-weight:600; background:rgba(255,255,255,.22); border:none; border-bottom:1.5px solid rgba(255,255,255,.8); outline:none; font-family:inherit; color:inherit; width:80px; padding:1px 3px; min-width:0; }
+    .rdm-scenario-btn:not(.active) .rdm-tab-input { background:transparent; border-bottom-color:var(--gray-mid); }
+    .rdm-tab-editing { display:flex; align-items:center; gap:4px; padding:5px 10px; border-radius:20px; border:1.5px solid var(--teal); background:var(--teal); color:var(--white); cursor:default; }
     .rdm-scenario-body { background:var(--gray-light); border-radius:12px; padding:18px 18px 12px; }
     .rdm-scenario-label { font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--teal); margin-bottom:10px; }
     .rdm-empty { color:var(--text-mid); font-size:.78rem; padding:24px 0; text-align:center; }
@@ -4222,6 +4227,8 @@ const rdmActiveScenario = {}; // active scenario index per tabId
 const rdmActiveEtapa = {}; // active etapa per tabId_si → ei | null
 const _infoArtMap = {}; // maps virtual ID → { realTabId, ai }
 const infoActiveArtigo = {}; // active artigo index per tabId
+const _infoArtEditMode = {}; // id → index being edited (-1 = none)
+const _rdmScenEditMode = {}; // id → index being edited (-1 = none)
 
 function _nbId() { return Math.random().toString(36).slice(2,9); }
 
@@ -4586,14 +4593,21 @@ function renderInfoPanel(id) {
 
   const barHtml = artigos.map((art, i) => {
     const isActive = i === ai;
+    const isEditing = (_infoArtEditMode[id] ?? -1) === i;
+    const delBtn = artigos.length > 1 ? `<span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelInfoArtigo('${id}',${i})">×</span>` : '';
+    if (isEditing) {
+      return `<div class="rdm-tab-editing">
+        <input class="rdm-tab-input" id="rdm-tab-inp-ia-${id}-${i}" value="${_esc(art.nome || 'Artigo')}"
+          onkeydown="event.stopPropagation();if(event.key==='Enter'){event.preventDefault();_saveEditInfoArtigo('${id}',${i})}"
+          onclick="event.stopPropagation()">
+        <span class="rdm-tab-save-btn" onclick="_saveEditInfoArtigo('${id}',${i})" title="Salvar">✓</span>
+        ${delBtn}
+      </div>`;
+    }
     return `<button class="rdm-scenario-btn${isActive ? ' active' : ''}" onclick="selectInfoArtigo('${id}',${i})">
-      <span contenteditable="${isActive}" class="rdm-scenario-name-edit"
-        title="${isActive ? 'Clique no nome para editar' : ''}"
-        onblur="renameInfoArtigo('${id}',${i},this.innerText)"
-        onkeydown="event.stopPropagation();if(event.key==='Enter'){event.preventDefault();this.blur()}"
-        onclick="event.stopPropagation()"
-      >${_esc(art.nome || 'Artigo')}</span>
-      ${artigos.length > 1 ? `<span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelInfoArtigo('${id}',${i})">×</span>` : ''}
+      <span class="rdm-tab-name">${_esc(art.nome || 'Artigo')}</span>
+      ${isActive ? `<span class="rdm-tab-edit-btn" onclick="event.stopPropagation();_startEditInfoArtigo('${id}',${i})" title="Renomear">✏</span>` : ''}
+      ${delBtn}
     </button>`;
   }).join('');
 
@@ -4614,19 +4628,30 @@ function renderInfoPanel(id) {
 }
 
 function selectInfoArtigo(id, ai) {
+  _infoArtEditMode[id] = -1;
   infoActiveArtigo[id] = ai;
+  renderInfoPanel(id);
+}
+function _startEditInfoArtigo(id, ai) {
+  _infoArtEditMode[id] = ai;
+  renderInfoPanel(id);
+  setTimeout(() => { const el = document.getElementById('rdm-tab-inp-ia-' + id + '-' + ai); if (el) { el.focus(); el.select(); } }, 30);
+}
+function _saveEditInfoArtigo(id, ai) {
+  const el = document.getElementById('rdm-tab-inp-ia-' + id + '-' + ai);
+  if (el) renameInfoArtigo(id, ai, el.value);
+  _infoArtEditMode[id] = -1;
   renderInfoPanel(id);
 }
 function addInfoArtigo(id) {
   const artigos = _infoArtigos(id);
   artigos.push({ id: _nbId(), nome: 'Artigo ' + (artigos.length + 1), blocks: [] });
-  infoActiveArtigo[id] = artigos.length - 1;
+  const newIdx = artigos.length - 1;
+  infoActiveArtigo[id] = newIdx;
+  _infoArtEditMode[id] = newIdx;
   persistData(id);
   renderInfoPanel(id);
-  setTimeout(() => {
-    const span = document.querySelector('#informativo-panel-' + id + ' .rdm-scenario-btn.active .rdm-scenario-name-edit');
-    if (span) { span.focus(); document.execCommand('selectAll', false, null); }
-  }, 50);
+  setTimeout(() => { const el = document.getElementById('rdm-tab-inp-ia-' + id + '-' + newIdx); if (el) { el.focus(); el.select(); } }, 40);
 }
 function _askDelInfoArtigo(id, ai) {
   const nome = DATA[id]?.informativo?.artigos?.[ai]?.nome || 'este artigo';
@@ -5251,14 +5276,21 @@ function renderRoadmapPanel(id) {
   // Barra de cenários
   const scenariosBar = rdm.scenarios.map((s, i) => {
     const isActive = i === activeSi;
+    const isEditing = (_rdmScenEditMode[id] ?? -1) === i;
+    const delBtn = `<span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelRdmScenario('${id}',${i})">×</span>`;
+    if (isEditing) {
+      return `<div class="rdm-tab-editing">
+        <input class="rdm-tab-input" id="rdm-tab-inp-rdm-${id}-${i}" value="${_esc(s.nome)}"
+          onkeydown="event.stopPropagation();if(event.key==='Enter'){event.preventDefault();_saveEditRdmScenario('${id}',${i})}"
+          onclick="event.stopPropagation()">
+        <span class="rdm-tab-save-btn" onclick="_saveEditRdmScenario('${id}',${i})" title="Salvar">✓</span>
+        ${delBtn}
+      </div>`;
+    }
     return `<button class="rdm-scenario-btn${isActive ? ' active' : ''}" onclick="selectRdmScenario('${id}',${i})">
-      <span contenteditable="${isActive}" class="rdm-scenario-name-edit"
-        title="${isActive ? 'Clique no nome para editar' : ''}"
-        onblur="renameRdmScenario('${id}',${i},this.innerText)"
-        onkeydown="event.stopPropagation();if(event.key==='Enter'){event.preventDefault();this.blur()}"
-        onclick="event.stopPropagation()"
-      >${_esc(s.nome)}</span>
-      <span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelRdmScenario('${id}',${i})">×</span>
+      <span class="rdm-tab-name">${_esc(s.nome)}</span>
+      ${isActive ? `<span class="rdm-tab-edit-btn" onclick="event.stopPropagation();_startEditRdmScenario('${id}',${i})" title="Renomear">✏</span>` : ''}
+      ${delBtn}
     </button>`;
   }).join('');
 
@@ -5336,7 +5368,19 @@ function renderRoadmapPanel(id) {
 }
 
 function selectRdmScenario(id, si) {
+  _rdmScenEditMode[id] = -1;
   rdmActiveScenario[id] = si;
+  renderRoadmapPanel(id);
+}
+function _startEditRdmScenario(id, si) {
+  _rdmScenEditMode[id] = si;
+  renderRoadmapPanel(id);
+  setTimeout(() => { const el = document.getElementById('rdm-tab-inp-rdm-' + id + '-' + si); if (el) { el.focus(); el.select(); } }, 30);
+}
+function _saveEditRdmScenario(id, si) {
+  const el = document.getElementById('rdm-tab-inp-rdm-' + id + '-' + si);
+  if (el) renameRdmScenario(id, si, el.value);
+  _rdmScenEditMode[id] = -1;
   renderRoadmapPanel(id);
 }
 
@@ -5358,14 +5402,12 @@ function delRdmScenario(id, si) {
 function addRdmScenario(id) {
   const n = DATA[id].roadmap.scenarios.length + 1;
   DATA[id].roadmap.scenarios.push({ nome: 'Cenário ' + n, etapas: [] });
-  rdmActiveScenario[id] = DATA[id].roadmap.scenarios.length - 1;
+  const newIdx = DATA[id].roadmap.scenarios.length - 1;
+  rdmActiveScenario[id] = newIdx;
+  _rdmScenEditMode[id] = newIdx;
   persistData(id);
   renderRoadmapPanel(id);
-  // Foca no nome para edição imediata
-  setTimeout(() => {
-    const btns = document.querySelectorAll('#roadmap-panel-' + id + ' .rdm-scenario-btn.active .rdm-scenario-name-edit');
-    if (btns[0]) { btns[0].focus(); const r = document.createRange(); r.selectNodeContents(btns[0]); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
-  }, 40);
+  setTimeout(() => { const el = document.getElementById('rdm-tab-inp-rdm-' + id + '-' + newIdx); if (el) { el.focus(); el.select(); } }, 40);
 }
 
 function renameRdmScenario(id, si, nome) {

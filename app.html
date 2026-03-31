@@ -84,6 +84,9 @@
     .kanban-card-price { font-size:.68rem; font-weight:700; color:var(--teal); }
     .kanban-card-device { font-size:.63rem; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
     .kanban-card-solution { font-size:.58rem; font-weight:700; text-transform:uppercase; letter-spacing:.4px; padding:2px 6px; border-radius:4px; background:rgba(37,64,192,.08); color:var(--blue-mid); display:inline-block; }
+    .kanban-card-date { font-size:.6rem; color:var(--text-mid); }
+    .kanban-card-entrega { font-size:.6rem; color:var(--text-mid); }
+    .kanban-card-stars { font-size:.65rem; color:#f59e0b; letter-spacing:1px; }
     .kanban-empty-col { font-size:.65rem; color:var(--text-mid); text-align:center; padding:16px 8px; }
 
     /* ---- LAYOUT ---- */
@@ -2902,9 +2905,12 @@ function renderKanban() {
         const stKey = f.status || 'sem_obs';
         if (!cols[stKey]) cols[stKey] = [];
         cols[stKey].push({
-          forn:     f.nome  || '—',
-          tag:      f.tag   || '',
-          preco:    f.preco || '',
+          forn:     f.nome    || '—',
+          tag:      f.tag     || '',
+          preco:    f.preco   || '',
+          data:     f.data    || '',
+          entrega:  f.entrega || '',
+          nota:     f.nota    || 0,
           device:   item.titulo || '—',
           solution: tab.label,
           tabId:    tab.id,
@@ -2919,9 +2925,13 @@ function renderKanban() {
     const cards = cols[s.key].map(c => {
       const tagBadge = c.tag ? `<span class="acomp-entry-tag" style="font-size:.58rem">${_escForn(c.tag)}</span>` : '';
       const precoTxt = c.preco ? `<span class="kanban-card-price">R$ ${_escForn(c.preco)}</span>` : '';
+      const dateTxt  = c.data ? `<span class="kanban-card-date">${_escForn(new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR'))}</span>` : '';
+      const entregaTxt = c.entrega ? `<span class="kanban-card-entrega">⏱ ${_escForn(c.entrega)}</span>` : '';
+      const starsTxt = c.nota ? `<span class="kanban-card-stars">${'★'.repeat(c.nota)}${'☆'.repeat(5-c.nota)}</span>` : '';
       return `<div class="kanban-card">
         <div class="kanban-card-forn">${_escForn(c.forn)}</div>
-        <div class="kanban-card-meta">${tagBadge}${precoTxt}</div>
+        <div class="kanban-card-meta">${tagBadge}${precoTxt}${starsTxt}</div>
+        ${dateTxt || entregaTxt ? `<div class="kanban-card-meta" style="margin-top:2px">${dateTxt}${entregaTxt}</div>` : ''}
         <div class="kanban-card-device" title="${_escForn(c.device)}">${_escForn(c.device)}</div>
         <span class="kanban-card-solution">${_escForn(c.solution)}</span>
       </div>`;
@@ -5011,7 +5021,6 @@ function renderTecFornecedores(id, i) {
         <button class="tec-fornec-cancel-btn" onclick="cancelTecFornecedor('${id}',${i},${fi})">Cancelar</button>
         <div class="tec-fornec-edit-meta">
           <span style="font-size:.6rem;color:#9ca3af;margin-right:1px;">Nota:</span>${starsEdit}
-          <input type="date" class="tec-fornec-date-inp" id="tfn-data-${id}-${i}-${fi}" value="${_escFornAttr(f.data||'')}" title="Data de referência">
           <input class="tec-fornec-entrega-inp" id="tfn-entrega-${id}-${i}-${fi}" placeholder="Prazo entrega (ex: 30 dias)" value="${_escFornAttr(f.entrega||'')}">
         </div>
       </div>`;
@@ -5031,7 +5040,10 @@ function renderTecFornecedores(id, i) {
         ).join('');
         metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-stars-view">${starsHtml}</span></span>`);
       }
-      if (f.data) metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-meta-lbl">Data:</span> ${_escForn(f.data)}</span>`);
+      if (f.data) {
+        const dateFmt = new Date(f.data + 'T12:00:00').toLocaleDateString('pt-BR');
+        metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-meta-lbl">Data status:</span> ${_escForn(dateFmt)}</span>`);
+      }
       if (f.entrega) metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-meta-lbl">Entrega:</span> ${_escForn(f.entrega)}</span>`);
       const metaRow = metaItems.length ? `<div class="tec-fornec-meta">${metaItems.join('')}</div>` : '';
       return `<div class="tec-fornec-row-wrap" id="tec-fornec-row-${id}-${i}-${fi}">
@@ -5083,7 +5095,6 @@ function saveTecFornecedor(id, i, fi) {
   f.nome    = document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.value.trim() || '';
   f.tag     = document.getElementById(`tfn-tag-${id}-${i}-${fi}`)?.value.trim()  || '';
   f.preco   = document.getElementById(`tfn-preco-${id}-${i}-${fi}`)?.value.trim() || '';
-  f.data    = document.getElementById(`tfn-data-${id}-${i}-${fi}`)?.value || '';
   f.entrega = document.getElementById(`tfn-entrega-${id}-${i}-${fi}`)?.value.trim() || '';
   // nota já é salvo em tempo real pelo setTfNota, mas garantir que persiste
   _tecFornEditing.delete(`${id}_${i}_${fi}`);
@@ -5149,11 +5160,11 @@ function cycleTecFornStatus(id, i, fi) {
     const isActive = s.key === currentKey;
     return `<button class="status-modal-opt${isActive ? ' status-modal-opt-active' : ''}"
       style="background:${s.bg};color:${s.color};border-color:${isActive ? s.color : 'transparent'}"
-      onclick="_applyTecFornStatus('${id}',${i},${fi},'${s.key}')">${_escForn(s.label)}</button>`;
+      onclick="_showStatusDateStep('${id}',${i},${fi},'${s.key}')">${_escForn(s.label)}</button>`;
   }).join('');
 
   ov.innerHTML = `
-    <div class="confirm-box" style="max-width:340px">
+    <div class="confirm-box" style="max-width:340px" id="status-modal-box-${id}-${i}-${fi}">
       <h4 style="margin-bottom:6px">Alterar status</h4>
       <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
         ${_escForn(f.nome || '—')} &nbsp;·&nbsp; atual: <strong style="color:${cur.color}">${_escForn(cur.label)}</strong>
@@ -5166,21 +5177,46 @@ function cycleTecFornStatus(id, i, fi) {
   ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
   document.body.appendChild(ov);
-  // guarda referência para fechar depois
   ov.id = `status-modal-${id}-${i}-${fi}`;
 }
 
-function _applyTecFornStatus(id, i, fi, newKey) {
+function _showStatusDateStep(id, i, fi, newKey) {
+  const ov = document.getElementById(`status-modal-${id}-${i}-${fi}`);
+  if (!ov) return;
+  const f = DATA[id]?.tecnologia?.[i]?.fornecedores?.[fi];
+  const newSt = _tfStatus(newKey);
+  const today = new Date().toISOString().slice(0, 10);
+  const box = document.getElementById(`status-modal-box-${id}-${i}-${fi}`);
+  box.innerHTML = `
+    <h4 style="margin-bottom:8px">Confirmar alteração</h4>
+    <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+      ${_escForn(f?.nome || '—')} &nbsp;→&nbsp;
+      <strong style="color:${newSt.color};background:${newSt.bg};padding:2px 8px;border-radius:4px">${_escForn(newSt.label)}</strong>
+    </p>
+    <label style="display:block;font-size:.68rem;color:var(--text-mid);margin-bottom:4px">Data da mudança de status</label>
+    <input type="date" id="status-date-inp-${id}-${i}-${fi}" value="${today}"
+      style="font-family:inherit;font-size:.78rem;border:1.5px solid var(--gray-mid);border-radius:6px;padding:5px 9px;background:var(--white);outline:none;color:var(--text-dark);width:100%">
+    <div class="confirm-actions" style="margin-top:16px">
+      <button class="confirm-ok" style="background:${newSt.color}"
+        onclick="_applyTecFornStatus('${id}',${i},${fi},'${newKey}',document.getElementById('status-date-inp-${id}-${i}-${fi}').value)">Confirmar</button>
+      <button class="confirm-cancel" onclick="cycleTecFornStatus('${id}',${i},${fi});document.getElementById('status-modal-${id}-${i}-${fi}').remove()">← Voltar</button>
+    </div>`;
+}
+
+function _applyTecFornStatus(id, i, fi, newKey, dateVal) {
   const ov = document.getElementById(`status-modal-${id}-${i}-${fi}`);
   if (ov) ov.remove();
   const f = DATA[id]?.tecnologia?.[i]?.fornecedores?.[fi];
   if (!f || f.status === newKey) return;
   const oldSt = _tfStatus(f.status);
   f.status = newKey;
+  // Salva a data manual da mudança de status
+  const isoDate = dateVal ? (new Date(dateVal + 'T12:00:00').toISOString()) : new Date().toISOString();
+  f.data = dateVal || new Date().toISOString().slice(0, 10);
   if (!DATA[id].statusLog) DATA[id].statusLog = [];
   const item = DATA[id].tecnologia[i];
   DATA[id].statusLog.unshift({
-    date:       new Date().toISOString(),
+    date:       isoDate,
     tecIdx:     i,
     tecTitulo:  item?.titulo || '—',
     fi,
@@ -5192,6 +5228,8 @@ function _applyTecFornStatus(id, i, fi, newKey) {
   persistData(id);
   renderTecFornecedores(id, i);
   renderAcompanhamentoPanel(id);
+  renderKanban();
+  if (typeof renderCiKanban === 'function') renderCiKanban();
 }
 
 /* ---- Acompanhamento ---- */

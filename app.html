@@ -1135,7 +1135,8 @@
     .tec-fornec-label { font-size:.6rem; font-weight:800; text-transform:uppercase; letter-spacing:.7px; color:var(--teal); }
     .tec-fornec-add { background:none; border:1.5px dashed var(--teal); color:var(--teal); font-family:inherit; font-size:.68rem; font-weight:700; padding:3px 10px; border-radius:6px; cursor:pointer; }
     .tec-fornec-add:hover { background:rgba(0,200,212,.07); }
-    .tec-fornec-row { display:flex; align-items:center; gap:6px; margin-bottom:5px; }
+    .tec-fornec-row-wrap { margin-bottom:5px; }
+    .tec-fornec-row { display:flex; align-items:center; gap:6px; }
     .tec-fornec-nome { flex:2; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
     .tec-fornec-tag { flex:1; font-family:inherit; font-size:.72rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:4px 7px; background:var(--white); color:var(--text-dark); outline:none; min-width:0; }
     .tec-fornec-preco-wrap { display:flex; align-items:center; flex:1; border:1.5px solid var(--gray-mid); border-radius:5px; background:var(--white); min-width:0; transition:border-color .15s; }
@@ -1158,14 +1159,29 @@
     .tec-fornec-doc-badge { font-size:.62rem; font-weight:600; color:var(--teal); text-decoration:none; flex-shrink:0; border:1px solid var(--teal); border-radius:4px; padding:2px 6px; background:rgba(0,200,212,.06); max-width:100px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .tec-fornec-doc-badge:hover { background:rgba(0,200,212,.14); }
     .tec-fornec-view-actions { display:flex; gap:4px; flex-shrink:0; margin-left:auto; opacity:0; transition:opacity .15s; }
-    .tec-fornec-row:hover .tec-fornec-view-actions { opacity:1; }
+    .tec-fornec-row-wrap:hover .tec-fornec-view-actions { opacity:1; }
     .tec-fornec-edit-btn { font-family:inherit; font-size:.65rem; font-weight:700; padding:3px 9px; border-radius:5px; border:1.5px solid var(--blue-mid); color:var(--blue-mid); background:none; cursor:pointer; }
     .tec-fornec-edit-btn:hover { background:rgba(37,64,192,.07); }
     /* Edit mode */
-    .tec-fornec-row-edit { background:var(--gray-light); border-radius:7px; padding:6px 8px; }
+    .tec-fornec-row-edit { background:var(--gray-light); border-radius:7px; padding:6px 8px; flex-wrap:wrap; }
+    .tec-fornec-edit-meta { flex-basis:100%; }
     .tec-fornec-save-btn { flex-shrink:0; font-family:inherit; font-size:.65rem; font-weight:700; padding:4px 10px; border-radius:5px; border:none; background:var(--teal); color:var(--white); cursor:pointer; }
     .tec-fornec-save-btn:hover { opacity:.85; }
     .tec-fornec-cancel-btn { flex-shrink:0; font-family:inherit; font-size:.65rem; font-weight:600; padding:4px 8px; border-radius:5px; border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; }
+    /* Meta linha extra */
+    .tec-fornec-meta { display:flex; align-items:center; gap:12px; padding:2px 2px 5px; }
+    .tec-fornec-meta-item { display:flex; align-items:center; gap:3px; font-size:.65rem; color:var(--text-mid); }
+    .tec-fornec-meta-lbl { font-size:.6rem; color:#9ca3af; }
+    .tec-fornec-stars-view { display:flex; gap:1px; }
+    .tec-fornec-star-v { font-size:.7rem; color:#f59e0b; line-height:1; }
+    .tec-fornec-star-v.empty { color:#d1d5db; }
+    /* Stars edit */
+    .tec-fornec-edit-meta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:5px; }
+    .tec-fornec-star-e { font-size:1.1rem; cursor:pointer; color:#d1d5db; line-height:1; transition:color .1s, transform .08s; user-select:none; }
+    .tec-fornec-star-e.on { color:#f59e0b; }
+    .tec-fornec-star-e:hover { transform:scale(1.15); }
+    .tec-fornec-date-inp { font-family:inherit; font-size:.68rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:3px 6px; background:var(--white); outline:none; color:var(--text-dark); }
+    .tec-fornec-entrega-inp { font-family:inherit; font-size:.68rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:3px 7px; background:var(--white); outline:none; color:var(--text-dark); width:110px; }
     .tec-fornec-cancel-btn:hover { border-color:var(--text-mid); color:var(--text-dark); }
 
     /* APIs table */
@@ -4974,6 +4990,11 @@ function renderTecFornecedores(id, i) {
       const docLabel = f.doc?.nome
         ? `<span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle">${_escForn(f.doc.nome)}</span>`
         : '📎 Orçamento';
+      const notaAtual = f.nota || 0;
+      const starsEdit = [1,2,3,4,5].map(n =>
+        `<span class="tec-fornec-star-e${n <= notaAtual ? ' on' : ''}" id="tfn-star-${id}-${i}-${fi}-${n}"
+          onclick="setTfNota('${id}',${i},${fi},${n})" title="${n} estrela${n>1?'s':''}">★</span>`
+      ).join('');
       return `<div class="tec-fornec-row tec-fornec-row-edit" id="tec-fornec-row-${id}-${i}-${fi}">
         <input class="tec-fornec-nome" id="tfn-nome-${id}-${i}-${fi}" placeholder="Fornecedor" value="${_escFornAttr(f.nome)}">
         <input class="tec-fornec-tag" id="tfn-tag-${id}-${i}-${fi}" placeholder="Tag" value="${_escFornAttr(f.tag)}">
@@ -4988,6 +5009,11 @@ function renderTecFornecedores(id, i) {
           onchange="_tecFornDocUpload('${id}',${i},${fi},this)">
         <button class="tec-fornec-save-btn" onclick="saveTecFornecedor('${id}',${i},${fi})">Salvar</button>
         <button class="tec-fornec-cancel-btn" onclick="cancelTecFornecedor('${id}',${i},${fi})">Cancelar</button>
+        <div class="tec-fornec-edit-meta">
+          <span style="font-size:.6rem;color:#9ca3af;margin-right:1px;">Nota:</span>${starsEdit}
+          <input type="date" class="tec-fornec-date-inp" id="tfn-data-${id}-${i}-${fi}" value="${_escFornAttr(f.data||'')}" title="Data de referência">
+          <input class="tec-fornec-entrega-inp" id="tfn-entrega-${id}-${i}-${fi}" placeholder="Prazo entrega (ex: 30 dias)" value="${_escFornAttr(f.entrega||'')}">
+        </div>
       </div>`;
     } else {
       // Modo visualização
@@ -4998,16 +5024,29 @@ function renderTecFornecedores(id, i) {
       const nomeDisp  = f.nome  ? `<span class="tec-fornec-view-nome">${_escForn(f.nome)}</span>` : `<span class="tec-fornec-view-empty">—</span>`;
       const tagDisp   = f.tag   ? `<span class="tec-fornec-view-tag">${_escForn(f.tag)}</span>`   : '';
       const precoDisp = f.preco ? `<span class="tec-fornec-view-preco">R$ ${_escForn(f.preco)}</span>` : '';
-      return `<div class="tec-fornec-row" id="tec-fornec-row-${id}-${i}-${fi}">
-        <div class="tec-fornec-view-left">${nomeDisp}${tagDisp}</div>
-        ${precoDisp}
-        ${docBadge}
-        <button class="tec-fornec-status" style="background:${st.bg};color:${st.color}"
-          onclick="cycleTecFornStatus('${id}',${i},${fi})" title="Clique para avançar status">${_escForn(st.label)}</button>
-        <div class="tec-fornec-view-actions">
-          <button class="tec-fornec-edit-btn" onclick="editTecFornecedor('${id}',${i},${fi})">Editar</button>
-          <button class="tec-fornec-del" onclick="_askDelTecFornecedor('${id}',${i},${fi})">×</button>
+      const metaItems = [];
+      if (f.nota) {
+        const starsHtml = [1,2,3,4,5].map(n =>
+          `<span class="tec-fornec-star-v${n <= f.nota ? '' : ' empty'}">★</span>`
+        ).join('');
+        metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-stars-view">${starsHtml}</span></span>`);
+      }
+      if (f.data) metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-meta-lbl">Data:</span> ${_escForn(f.data)}</span>`);
+      if (f.entrega) metaItems.push(`<span class="tec-fornec-meta-item"><span class="tec-fornec-meta-lbl">Entrega:</span> ${_escForn(f.entrega)}</span>`);
+      const metaRow = metaItems.length ? `<div class="tec-fornec-meta">${metaItems.join('')}</div>` : '';
+      return `<div class="tec-fornec-row-wrap" id="tec-fornec-row-${id}-${i}-${fi}">
+        <div class="tec-fornec-row">
+          <div class="tec-fornec-view-left">${nomeDisp}${tagDisp}</div>
+          ${precoDisp}
+          ${docBadge}
+          <button class="tec-fornec-status" style="background:${st.bg};color:${st.color}"
+            onclick="cycleTecFornStatus('${id}',${i},${fi})" title="Clique para avançar status">${_escForn(st.label)}</button>
+          <div class="tec-fornec-view-actions">
+            <button class="tec-fornec-edit-btn" onclick="editTecFornecedor('${id}',${i},${fi})">Editar</button>
+            <button class="tec-fornec-del" onclick="_askDelTecFornecedor('${id}',${i},${fi})">×</button>
+          </div>
         </div>
+        ${metaRow}
       </div>`;
     }
   }).join('');
@@ -5040,21 +5079,34 @@ function cancelTecFornecedor(id, i, fi) {
 
 function saveTecFornecedor(id, i, fi) {
   if (!DATA[id].tecnologia[i].fornecedores) DATA[id].tecnologia[i].fornecedores = [];
-  const nome  = document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.value.trim() || '';
-  const tag   = document.getElementById(`tfn-tag-${id}-${i}-${fi}`)?.value.trim()  || '';
-  const preco = document.getElementById(`tfn-preco-${id}-${i}-${fi}`)?.value.trim() || '';
-  DATA[id].tecnologia[i].fornecedores[fi].nome  = nome;
-  DATA[id].tecnologia[i].fornecedores[fi].tag   = tag;
-  DATA[id].tecnologia[i].fornecedores[fi].preco = preco;
+  const f = DATA[id].tecnologia[i].fornecedores[fi];
+  f.nome    = document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.value.trim() || '';
+  f.tag     = document.getElementById(`tfn-tag-${id}-${i}-${fi}`)?.value.trim()  || '';
+  f.preco   = document.getElementById(`tfn-preco-${id}-${i}-${fi}`)?.value.trim() || '';
+  f.data    = document.getElementById(`tfn-data-${id}-${i}-${fi}`)?.value || '';
+  f.entrega = document.getElementById(`tfn-entrega-${id}-${i}-${fi}`)?.value.trim() || '';
+  // nota já é salvo em tempo real pelo setTfNota, mas garantir que persiste
   _tecFornEditing.delete(`${id}_${i}_${fi}`);
   persistData(id);
   renderTecFornecedores(id, i);
 }
 
+function setTfNota(id, i, fi, n) {
+  if (!DATA[id].tecnologia[i].fornecedores) return;
+  const f = DATA[id].tecnologia[i].fornecedores[fi];
+  // Toggle: clicar na mesma nota remove
+  f.nota = (f.nota === n) ? 0 : n;
+  // Atualizar visual das estrelas sem re-render completo
+  for (let s = 1; s <= 5; s++) {
+    const el = document.getElementById(`tfn-star-${id}-${i}-${fi}-${s}`);
+    if (el) el.className = 'tec-fornec-star-e' + (s <= f.nota ? ' on' : '');
+  }
+}
+
 function addTecFornecedor(id, i) {
   if (!DATA[id].tecnologia[i].fornecedores) DATA[id].tecnologia[i].fornecedores = [];
   const fi = DATA[id].tecnologia[i].fornecedores.length;
-  DATA[id].tecnologia[i].fornecedores.push({ nome: '', tag: '', preco: '', doc: null });
+  DATA[id].tecnologia[i].fornecedores.push({ nome: '', tag: '', preco: '', doc: null, nota: 0, data: '', entrega: '' });
   _tecFornEditing.add(`${id}_${i}_${fi}`);
   renderTecFornecedores(id, i);
   setTimeout(() => document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.focus(), 30);

@@ -1277,9 +1277,12 @@
     .faq-search:focus { border-color:var(--teal); }
     .faq-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:.85rem; color:var(--text-mid); pointer-events:none; }
     .faq-no-results { text-align:center; color:var(--text-mid); font-size:.8rem; padding:32px 0; display:none; }
+    .faq-shortcuts { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:22px; }
+    .faq-chip { display:inline-flex; align-items:center; gap:5px; font-family:inherit; font-size:.67rem; font-weight:700; padding:5px 12px; border-radius:20px; border:1.5px solid #dde3f4; background:var(--white); color:var(--text-mid); cursor:pointer; transition:background .12s, border-color .12s, color .12s; white-space:nowrap; }
+    .faq-chip:hover { border-color:var(--blue-mid); color:var(--blue-mid); background:#f0f3ff; }
+    .faq-chip.active { background:var(--blue-dark); border-color:var(--blue-dark); color:var(--white); }
     .faq-category { margin-bottom:18px; border:1.5px solid #e2e7f4; border-radius:10px; overflow:hidden; }
     .faq-cat-header { display:flex; align-items:center; gap:10px; padding:13px 18px; background:#f4f6fc; cursor:pointer; user-select:none; }
-    .faq-cat-icon { font-size:1rem; flex-shrink:0; }
     .faq-cat-title { font-size:.78rem; font-weight:800; color:var(--blue-dark); text-transform:uppercase; letter-spacing:.5px; flex:1; }
     .faq-cat-count { font-size:.65rem; color:var(--text-mid); background:#e2e7f4; border-radius:20px; padding:2px 8px; flex-shrink:0; }
     .faq-cat-toggle { font-size:.7rem; color:var(--text-mid); flex-shrink:0; transition:transform .2s; }
@@ -2869,12 +2872,23 @@ let DATA = {
     <span class="faq-search-icon">🔍</span>
     <input class="faq-search" id="faq-search-inp" placeholder="Buscar pergunta..." oninput="filterFaq(this.value)">
   </div>
+  <div class="faq-shortcuts">
+    <button class="faq-chip active" id="faq-chip-all" onclick="setFaqCatFilter(null)">Todas</button>
+    <button class="faq-chip" id="faq-chip-0" onclick="setFaqCatFilter(0)">Sobre o produto</button>
+    <button class="faq-chip" id="faq-chip-1" onclick="setFaqCatFilter(1)">Primeiros passos</button>
+    <button class="faq-chip" id="faq-chip-2" onclick="setFaqCatFilter(2)">Erros na consulta</button>
+    <button class="faq-chip" id="faq-chip-3" onclick="setFaqCatFilter(3)">Pós-consulta</button>
+    <button class="faq-chip" id="faq-chip-4" onclick="setFaqCatFilter(4)">Farmácias e Receitas</button>
+    <button class="faq-chip" id="faq-chip-5" onclick="setFaqCatFilter(5)">Problemas técnicos</button>
+    <button class="faq-chip" id="faq-chip-6" onclick="setFaqCatFilter(6)">Financeiro</button>
+    <button class="faq-chip" id="faq-chip-7" onclick="setFaqCatFilter(7)">Comercial</button>
+    <button class="faq-chip" id="faq-chip-8" onclick="setFaqCatFilter(8)">Dependentes</button>
+  </div>
   <div id="faq-no-results" class="faq-no-results">Nenhuma pergunta encontrada.</div>
 
   <!-- ── Sobre o produto ── -->
   <div class="faq-category open" id="faq-cat-0">
     <div class="faq-cat-header" onclick="toggleFaqCat(0)">
-      <span class="faq-cat-icon">🏥</span>
       <span class="faq-cat-title">Sobre o produto</span>
       <span class="faq-cat-count">12</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2898,7 +2912,6 @@ let DATA = {
   <!-- ── Primeiros passos ── -->
   <div class="faq-category" id="faq-cat-1">
     <div class="faq-cat-header" onclick="toggleFaqCat(1)">
-      <span class="faq-cat-icon">🚀</span>
       <span class="faq-cat-title">Primeiros passos</span>
       <span class="faq-cat-count">2</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2912,7 +2925,6 @@ let DATA = {
   <!-- ── Erros na consulta ── -->
   <div class="faq-category" id="faq-cat-2">
     <div class="faq-cat-header" onclick="toggleFaqCat(2)">
-      <span class="faq-cat-icon">⚠️</span>
       <span class="faq-cat-title">Erros na consulta</span>
       <span class="faq-cat-count">4</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2928,7 +2940,6 @@ let DATA = {
   <!-- ── Pós-consulta ── -->
   <div class="faq-category" id="faq-cat-3">
     <div class="faq-cat-header" onclick="toggleFaqCat(3)">
-      <span class="faq-cat-icon">📋</span>
       <span class="faq-cat-title">Pós-consulta</span>
       <span class="faq-cat-count">6</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2946,7 +2957,6 @@ let DATA = {
   <!-- ── Farmácias e Receitas ── -->
   <div class="faq-category" id="faq-cat-4">
     <div class="faq-cat-header" onclick="toggleFaqCat(4)">
-      <span class="faq-cat-icon">💊</span>
       <span class="faq-cat-title">Farmácias e Receitas de Medicamentos</span>
       <span class="faq-cat-count">3</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2961,7 +2971,6 @@ let DATA = {
   <!-- ── Problemas técnicos ── -->
   <div class="faq-category" id="faq-cat-5">
     <div class="faq-cat-header" onclick="toggleFaqCat(5)">
-      <span class="faq-cat-icon">🔧</span>
       <span class="faq-cat-title">Problemas técnicos</span>
       <span class="faq-cat-count">5</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2978,7 +2987,6 @@ let DATA = {
   <!-- ── Financeiro e contratos ── -->
   <div class="faq-category" id="faq-cat-6">
     <div class="faq-cat-header" onclick="toggleFaqCat(6)">
-      <span class="faq-cat-icon">💰</span>
       <span class="faq-cat-title">Financeiro e contratos</span>
       <span class="faq-cat-count">1</span>
       <span class="faq-cat-toggle">▼</span>
@@ -2991,7 +2999,6 @@ let DATA = {
   <!-- ── Comercial ── -->
   <div class="faq-category" id="faq-cat-7">
     <div class="faq-cat-header" onclick="toggleFaqCat(7)">
-      <span class="faq-cat-icon">📦</span>
       <span class="faq-cat-title">Comercial</span>
       <span class="faq-cat-count">2</span>
       <span class="faq-cat-toggle">▼</span>
@@ -3005,7 +3012,6 @@ let DATA = {
   <!-- ── Dependentes e titulares ── -->
   <div class="faq-category" id="faq-cat-8">
     <div class="faq-cat-header" onclick="toggleFaqCat(8)">
-      <span class="faq-cat-icon">👨‍👩‍👧</span>
       <span class="faq-cat-title">Dependentes e titulares</span>
       <span class="faq-cat-count">5</span>
       <span class="faq-cat-toggle">▼</span>
@@ -3042,13 +3048,37 @@ let DATA = {
 document.getElementById('ano').textContent = new Date().getFullYear();
 
 /* ---- FAQ Telemedicina ---- */
+let _faqActiveCat = null;
+
 function toggleFaqCat(idx) {
   document.getElementById('faq-cat-' + idx)?.classList.toggle('open');
 }
 function toggleFaqItem(questionEl) {
   questionEl.closest('.faq-item').classList.toggle('open');
 }
+function setFaqCatFilter(idx) {
+  _faqActiveCat = idx;
+  // atualizar chips
+  document.querySelectorAll('.faq-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById(idx === null ? 'faq-chip-all' : 'faq-chip-' + idx)?.classList.add('active');
+  // limpar busca de texto
+  const inp = document.getElementById('faq-search-inp');
+  if (inp) inp.value = '';
+  // mostrar/ocultar categorias
+  document.querySelectorAll('.faq-category').forEach((cat, i) => {
+    const show = idx === null || i === idx;
+    cat.style.display = show ? '' : 'none';
+    if (show) cat.classList.add('open');
+    // mostrar todos os itens da categoria
+    cat.querySelectorAll('.faq-item').forEach(item => item.classList.remove('hidden'));
+  });
+  document.getElementById('faq-no-results').style.display = 'none';
+  if (idx !== null) document.getElementById('faq-cat-' + idx)?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
 function filterFaq(q) {
+  _faqActiveCat = null;
+  document.querySelectorAll('.faq-chip').forEach(c => c.classList.remove('active'));
+  document.getElementById('faq-chip-all')?.classList.add('active');
   const term = q.trim().toLowerCase();
   let anyVisible = false;
   document.querySelectorAll('.faq-item').forEach(item => {
@@ -3059,7 +3089,6 @@ function filterFaq(q) {
     item.classList.toggle('hidden', !match);
     if (match) anyVisible = true;
   });
-  // abrir categorias com resultados, fechar as sem
   document.querySelectorAll('.faq-category').forEach(cat => {
     const hasVisible = [...cat.querySelectorAll('.faq-item')].some(i => !i.classList.contains('hidden'));
     cat.style.display = hasVisible ? '' : 'none';

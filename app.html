@@ -1266,6 +1266,44 @@
       .opex-grid { grid-template-columns: 1fr; }
       .header-meta { gap: 8px; }
     }
+
+    /* ---- FAQ Telemedicina ---- */
+    .faq-page { max-width:860px; margin:0 auto; padding:28px 24px 48px; }
+    .faq-page-header { margin-bottom:24px; }
+    .faq-page-title { font-size:1.2rem; font-weight:800; color:var(--blue-dark); margin-bottom:4px; }
+    .faq-page-sub { font-size:.75rem; color:var(--text-mid); }
+    .faq-search-wrap { position:relative; margin-bottom:28px; }
+    .faq-search { width:100%; font-family:inherit; font-size:.82rem; padding:10px 16px 10px 38px; border:1.5px solid var(--gray-mid); border-radius:8px; outline:none; background:var(--white); color:var(--text-dark); box-sizing:border-box; transition:border-color .15s; }
+    .faq-search:focus { border-color:var(--teal); }
+    .faq-search-icon { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:.85rem; color:var(--text-mid); pointer-events:none; }
+    .faq-no-results { text-align:center; color:var(--text-mid); font-size:.8rem; padding:32px 0; display:none; }
+    .faq-category { margin-bottom:18px; border:1.5px solid #e2e7f4; border-radius:10px; overflow:hidden; }
+    .faq-cat-header { display:flex; align-items:center; gap:10px; padding:13px 18px; background:#f4f6fc; cursor:pointer; user-select:none; }
+    .faq-cat-icon { font-size:1rem; flex-shrink:0; }
+    .faq-cat-title { font-size:.78rem; font-weight:800; color:var(--blue-dark); text-transform:uppercase; letter-spacing:.5px; flex:1; }
+    .faq-cat-count { font-size:.65rem; color:var(--text-mid); background:#e2e7f4; border-radius:20px; padding:2px 8px; flex-shrink:0; }
+    .faq-cat-toggle { font-size:.7rem; color:var(--text-mid); flex-shrink:0; transition:transform .2s; }
+    .faq-category.open .faq-cat-toggle { transform:rotate(180deg); }
+    .faq-cat-body { display:none; }
+    .faq-category.open .faq-cat-body { display:block; }
+    .faq-item { border-top:1px solid #eef0f7; }
+    .faq-item.hidden { display:none; }
+    .faq-question { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 18px; cursor:pointer; background:var(--white); transition:background .12s; }
+    .faq-question:hover { background:#f9faff; }
+    .faq-q-text { font-size:.78rem; font-weight:600; color:var(--text-dark); }
+    .faq-q-arrow { font-size:.65rem; color:var(--text-mid); flex-shrink:0; transition:transform .2s; }
+    .faq-item.open .faq-q-arrow { transform:rotate(180deg); }
+    .faq-answer { display:none; padding:0 18px 16px 18px; background:#fafbff; }
+    .faq-item.open .faq-answer { display:block; }
+    .faq-answer p { font-size:.75rem; color:var(--text-dark); line-height:1.65; margin:0 0 8px; }
+    .faq-answer p:last-child { margin-bottom:0; }
+    .faq-answer ol, .faq-answer ul { font-size:.75rem; color:var(--text-dark); line-height:1.65; margin:0 0 8px; padding-left:20px; }
+    .faq-answer strong { color:var(--blue-dark); }
+    .faq-answer .faq-tag { display:inline-block; font-size:.65rem; font-weight:700; padding:2px 8px; border-radius:4px; margin-right:4px; }
+    .faq-answer .faq-tag-blue { background:rgba(37,64,192,.1); color:var(--blue-mid); }
+    .faq-answer .faq-tag-teal { background:rgba(0,200,212,.1); color:#0e9aaa; }
+    .faq-answer .faq-tag-yellow { background:#fef9c3; color:#854d0e; }
+    .faq-answer-divider { border:none; border-top:1px dashed #dde3f0; margin:10px 0; }
   </style>
   <script>(function(){if(!localStorage.getItem('uscToken'))window.location.replace('/login');})()</script>
 </head>
@@ -2695,6 +2733,9 @@ let DATA = {
     <button class="site-page-btn active" id="ci-site-btn-solucoes" onclick="switchCiSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="ci-site-btn-kanban" onclick="switchCiSitePage('kanban')">Kanban de Compras</button>
   </nav>
+  <nav class="site-page-nav" id="site-page-nav-telemed" style="display:none">
+    <button class="site-page-btn active" id="telemed-btn-faq">Perguntas Frequentes</button>
+  </nav>
 </header>
 
 <div id="page-solucoes">
@@ -2818,6 +2859,169 @@ let DATA = {
   <div class="kanban-board" id="ci-kanban-board"></div>
 </div>
 
+<div id="page-telemed-faq" style="display:none">
+<div class="faq-page">
+  <div class="faq-page-header">
+    <div class="faq-page-title">Perguntas Frequentes — Telemedicina</div>
+    <div class="faq-page-sub">Base de conhecimento para suporte ao cliente · Unifique Telemedicina</div>
+  </div>
+  <div class="faq-search-wrap">
+    <span class="faq-search-icon">🔍</span>
+    <input class="faq-search" id="faq-search-inp" placeholder="Buscar pergunta..." oninput="filterFaq(this.value)">
+  </div>
+  <div id="faq-no-results" class="faq-no-results">Nenhuma pergunta encontrada.</div>
+
+  <!-- ── Sobre o produto ── -->
+  <div class="faq-category open" id="faq-cat-0">
+    <div class="faq-cat-header" onclick="toggleFaqCat(0)">
+      <span class="faq-cat-icon">🏥</span>
+      <span class="faq-cat-title">Sobre o produto</span>
+      <span class="faq-cat-count">12</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">O que é a Unifique Telemedicina?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>A Unifique Telemedicina é uma plataforma de atendimento de saúde online que utiliza tecnologias de comunicação e informação, disponível 24 horas por dia, 7 dias por semana, com atendimento ilimitado e sem necessidade de encontro físico entre médico e paciente.</p><p>Você acessa pelo app <strong>Unifique Telemedicina</strong>, disponível na App Store e no Google Play, usando o e-mail e CPF cadastrados no seu contrato.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Como funciona a Unifique Telemedicina?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>O atendimento ocorre por videochamada diretamente no aplicativo. O médico e o paciente interagem remotamente para discutir sintomas, histórico médico, avaliar exames e, quando necessário, prescrever medicamentos e atestados.</p><p>Tudo acontece diretamente pelo app — sem necessidade de entrar em contato com a Unifique para agendar.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quem são os profissionais que irão me atender?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>A equipe é composta por médicos generalistas e especialistas, enfermeiros e técnicos de enfermagem altamente qualificados, garantindo segurança e ética no atendimento. Todos os médicos possuem registro no Conselho Regional de Medicina.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Posso usar em caso de emergência médica?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>A Unifique Telemedicina é recomendada para casos de <strong>baixa complexidade</strong> e não é apropriada para situações de emergência. Em uma emergência, acione o <strong>SAMU (192)</strong> ou vá ao pronto-socorro mais próximo.</p><p>O serviço é ideal para: sintomas leves, dúvidas, renovação de receitas, solicitação de exames, acompanhamento de condições crônicas e atendimento fora do horário comercial.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Além da mensalidade, há custos adicionais?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Não. Além da mensalidade, não há custos adicionais. O plano tem preço único para todas as idades e sem coparticipação.</p><p>Você ainda pode aproveitar descontos em farmácias credenciadas, complementando a experiência sem preocupações financeiras.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quanto tempo leva para ser atendido?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Para o <strong>Pronto Atendimento</strong>, a fila costuma ser curta: em média cerca de 5 minutos. Esse é um dos principais diferenciais do serviço — sem longas esperas como em UPAs ou consultórios.</p><p>Para consultas com <strong>especialistas</strong> (plano Especialidades), o tempo depende da agenda do médico escolhido. Você visualiza os horários disponíveis diretamente no app no momento do agendamento.</p><p>O <strong>Assistente Digital (IA)</strong> responde imediatamente, sem fila.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Posso usar a qualquer hora? Tem atendimento 24h?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Sim! O <strong>Pronto Atendimento Virtual</strong> e o <strong>Assistente Digital</strong> estão disponíveis 24 horas por dia, 7 dias por semana, incluindo feriados.</p><p>Para especialistas (plano Especialidades), o atendimento segue a agenda do médico, que pode ser visualizada no app.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Meu plano cobre consulta para meu filho / cônjuge?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Todos os planos — exceto o Assistente Digital — têm versão familiar, que cobre o titular e mais até 3 dependentes. Os dependentes precisam estar cadastrados previamente no plano para conseguir acessar o app com login próprio.</p><p>Para verificar se seus dependentes já estão cadastrados ou incluir alguém novo, informe os dados: nome completo, CPF, data de nascimento, e-mail e telefone.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Precisa de encaminhamento médico para usar?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Não precisa de nenhum encaminhamento. Você acessa diretamente pelo app, sem burocracia. Essa é uma das grandes vantagens do serviço — baixa fila e acesso direto.</p><p>A única exceção é no plano <strong>Especialidades</strong>: quando a consulta é indicada por um clínico geral, o próprio médico, durante o atendimento, pode encaminhar para um especialista dentro da plataforma.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quais as especialidades disponíveis?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Alergia e Imunologia · Anestesiologia · Angiologia · Cardiologia · Cirurgia Cardiovascular · Cirurgia Geral · Clínica Geral · Dermatologia · Endocrinologia · Fonoaudiologia · Gastroenterologia · Geriatria · Ginecologia e Obstetrícia · Hematologia · Infectologia · Médico da Família · Nefrologia · Neurologia · Nutrologia · Oftalmologia · Ortopedia · Otorrinolaringologia · Pediatria · Pneumologia · Psiquiatria · Reumatologia · Urologia.</p><hr class="faq-answer-divider"><p><span class="faq-tag faq-tag-blue">Pronto Atendimento</span> acesso via indicação do clínico geral durante o atendimento</p><p><span class="faq-tag faq-tag-teal">Especialidades</span> agendamento direto com o especialista de sua escolha pelo app</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Atende paciente menor de idade?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Sim, menores de idade podem ser atendidos desde que estejam cadastrados como dependentes no plano familiar. O acesso é feito pelo app com o login do próprio dependente.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Ainda estou no período de carência? / Há carência?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Não há período de carência no Unifique Telemedicina, diferente dos planos de saúde comuns.</p><p>Porém, ao contratar, após a assinatura do contrato, temos até 24h para que você possa acessar o aplicativo com todas as funcionalidades do seu plano ativas.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Primeiros passos ── -->
+  <div class="faq-category" id="faq-cat-1">
+    <div class="faq-cat-header" onclick="toggleFaqCat(1)">
+      <span class="faq-cat-icon">🚀</span>
+      <span class="faq-cat-title">Primeiros passos</span>
+      <span class="faq-cat-count">2</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quero agendar uma consulta</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>As consultas são realizadas diretamente pelo aplicativo <strong>Unifique Telemedicina</strong>. O processo todo acontece dentro do app:</p><ol><li>Abra o app e faça login com seu e-mail e CPF</li><li>Na tela inicial, escolha o tipo de atendimento</li><li>Confirme na fila de espera ou escolha o horário disponível (dependendo do plano)</li></ol><hr class="faq-answer-divider"><p>O tipo de atendimento disponível depende do seu plano:</p><p><span class="faq-tag faq-tag-yellow">Assistente Digital</span> atendimento via IA 24h, com encaminhamento para enfermagem se necessário</p><p><span class="faq-tag faq-tag-blue">Pronto Atendimento</span> acesso imediato ao clínico geral ou médico de família, 24h</p><p><span class="faq-tag faq-tag-teal">Especialidades</span> tudo do Pronto Atendimento + agendamento direto com especialistas</p><p>Se ainda não baixou o app, está disponível na App Store e no Google Play.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Nunca usei, como funciona? Por onde começo?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>É mais simples do que parece! O serviço funciona 100% pelo aplicativo Unifique Telemedicina — você não precisa ligar, enviar e-mail ou ir a nenhum lugar. Veja o passo a passo:</p><ol><li>Baixe o app na App Store (iPhone) ou Google Play (Android) — pesquise por "Unifique Telemedicina"</li><li>Faça o primeiro acesso usando o e-mail e CPF cadastrados no seu contrato com a Unifique</li><li>Na tela inicial, você verá as opções disponíveis conforme seu plano</li><li>Escolha o tipo de atendimento, entre na fila e aguarde — em média 5 minutos para o Pronto Atendimento</li><li>Você receberá um link por e-mail ou SMS para entrar na consulta</li><li>A consulta acontece por videochamada diretamente no app</li><li>Ao final, receberá receita e/ou atestado por e-mail ou SMS, se necessário</li></ol></div></div>
+    </div>
+  </div>
+
+  <!-- ── Erros na consulta ── -->
+  <div class="faq-category" id="faq-cat-2">
+    <div class="faq-cat-header" onclick="toggleFaqCat(2)">
+      <span class="faq-cat-icon">⚠️</span>
+      <span class="faq-cat-title">Erros na consulta</span>
+      <span class="faq-cat-count">4</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">A chamada caiu no meio da consulta</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Pedimos desculpas pelo ocorrido. Esse erro pode ter ocorrido por falha na conexão do médico ou na sua conexão.</p><p>É necessário novo agendamento / entrada na fila, direto pelo aplicativo Unifique Telemedicina.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">O médico não apareceu / entrou na consulta</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Lamentamos que isso tenha acontecido. Pode ter ocorrido uma falha de conexão ou algum outro problema.</p><p>Você deverá solicitar novo atendimento / entrada na fila. Vamos registrar essa ocorrência para entender o que houve e corrigir o erro.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Não consegui ouvir / me ouvir na chamada</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Problemas de áudio geralmente têm origem nas permissões do celular. Veja o que verificar:</p><ol><li>Acesse as configurações do celular &gt; Aplicativos &gt; Unifique Telemedicina &gt; Permissões &gt; confirme que o <strong>microfone está ativado</strong></li><li>Verifique se o volume do celular está no mínimo ou no mudo</li><li>Se estiver usando fone de ouvido, tente sem ele</li></ol><p>Se o problema ocorreu durante toda a consulta e você não foi atendido adequadamente, sugerimos que agende nova consulta pelo aplicativo.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">A câmera não funcionou</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Verifique se o app tem permissão de câmera: configurações do celular &gt; Aplicativos &gt; Unifique Telemedicina &gt; Permissões &gt; <strong>câmera ativada</strong>.</p><p>Se a permissão estiver correta e ainda não funcionou, o problema pode ser técnico no app ou no dispositivo. Sugerimos agendar nova consulta pelo aplicativo para ter um atendimento de qualidade.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Pós-consulta ── -->
+  <div class="faq-category" id="faq-cat-3">
+    <div class="faq-cat-header" onclick="toggleFaqCat(3)">
+      <span class="faq-cat-icon">📋</span>
+      <span class="faq-cat-title">Pós-consulta</span>
+      <span class="faq-cat-count">6</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Preciso do histórico das minhas consultas</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>O histórico completo de consultas fica disponível dentro do próprio app Unifique Telemedicina, na aba <strong>"Minhas Consultas"</strong>. Lá você encontra data, médico, especialidade e os documentos emitidos em cada atendimento (receitas, atestados).</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Onde está minha receita médica?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>A receita é enviada automaticamente por e-mail e/ou SMS logo após o encerramento da consulta. Verifique também a caixa de spam, pois é comum o e-mail cair lá.</p><p>Você também pode acessar a receita diretamente no app em <strong>"Minhas Consultas"</strong> &gt; selecione a consulta desejada &gt; documentos emitidos.</p><p>Se não encontrou em nenhum dos dois lugares, confirme o e-mail e telefone cadastrados para solicitar reenvio.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Preciso de atestado médico da consulta de hoje</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>O atestado também é enviado por e-mail após a consulta, assim como a receita. Por favor, consulte a caixa de spam.</p><p>Se não chegou, podemos solicitar novo envio. Confirme o e-mail que possui acesso para receber o atestado.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Preciso de laudo para o plano de saúde / seguro</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Os documentos emitidos após a consulta são receita e atestado médico. Para laudos específicos, entre em contato com o suporte da TopMed, que pode verificar o que o médico pode emitir no seu caso.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">A receita não chegou no e-mail / SMS</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Os links e documentos às vezes caem no spam ou não chegam pelo canal cadastrado. Você pode acessar os documentos diretamente pelo aplicativo em <strong>"Minhas Consultas"</strong>.</p><p>Se mesmo após seguir o processo ainda não localizar a receita, entre em contato com o suporte.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Preciso de comprovante para declaração de IR</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Posso verificar o histórico de pagamentos do seu plano para uso na declaração. Informe o CPF ou CNPJ para emissão e o período de referência (mês/ano) que precisa.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Farmácias e Receitas ── -->
+  <div class="faq-category" id="faq-cat-4">
+    <div class="faq-cat-header" onclick="toggleFaqCat(4)">
+      <span class="faq-cat-icon">💊</span>
+      <span class="faq-cat-title">Farmácias e Receitas de Medicamentos</span>
+      <span class="faq-cat-count">3</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">O médico pode passar receita digital?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Sim. Os médicos da plataforma são habilitados a emitir receitas digitais com validade legal em todo o território nacional, conforme regulamentação do Conselho Federal de Medicina (CFM). A receita é enviada por e-mail e/ou SMS logo após a consulta e tem a mesma validade de uma receita física.</p><p>Medicamentos de uso contínuo também podem ter receita renovada pela plataforma, sem necessidade de consulta presencial para isso.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quais tipos de receita os médicos podem prescrever?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Os médicos da plataforma podem emitir receitas digitais <strong>comuns</strong> e de <strong>controle especial (tarja vermelha)</strong>, com validade legal conforme regulamentação do CFM.</p><p>Receitas de substâncias sujeitas a controle especial (tarja preta) têm restrições para emissão digital.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Como encontro farmácias credenciadas?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Você pode consultar as farmácias credenciadas diretamente no aplicativo Unifique Telemedicina ou no site de consulta disponibilizado pela Unifique.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Problemas técnicos ── -->
+  <div class="faq-category" id="faq-cat-5">
+    <div class="faq-cat-header" onclick="toggleFaqCat(5)">
+      <span class="faq-cat-icon">🔧</span>
+      <span class="faq-cat-title">Problemas técnicos</span>
+      <span class="faq-cat-count">5</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Esqueci minha senha e não consigo redefinir</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Na tela de login do app, toque em <strong>"Primeiro acesso"</strong> ou <strong>"Esqueci minha senha"</strong> e siga as instruções. O código de redefinição é enviado por e-mail ou SMS. Se não chegou, verifique o spam.</p><p>Caso ainda não tenha recebido mesmo seguindo o processo, informe para que possamos conferir seus dados e verificar se está tudo correto.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Meu cadastro está com dado errado (nome, CPF, data)</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Dados cadastrais incorretos precisam ser corrigidos. Informe qual dado está errado e envie o dado correto. Vamos verificar os dados e realizar a correção.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">O aplicativo trava na tela de carregamento</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Tente estas etapas:</p><ol><li>Feche o app completamente e abra novamente</li><li>Verifique se há atualização disponível na loja</li><li>Limpe o cache do app nas configurações do celular</li><li>Se persistir, desinstale e reinstale o app</li></ol><p>Se não resolver, acione o suporte com o relato técnico.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Não consigo entrar no aplicativo</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Verifique se o seu cadastro está 100% correto. Informe o CPF, telefone e e-mail cadastrado na conta que está tentando acessar.</p><hr class="faq-answer-divider"><p><strong>Possíveis causas:</strong></p><ul><li>API pode ter bloqueado incorretamente — se as faturas estiverem em dia, executar ativação manual no SGV</li><li>Telefone e e-mail cadastrado errado — sendo o primeiro acesso, isso gerará erro. Ajustar manualmente no SGV</li><li>CPF "travado" por estar vinculado em outra família — nesse caso entrar em contato com a TopMed para deletar o CPF do sistema e recadastrar o cliente</li></ul></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Não consigo realizar o primeiro acesso</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Verifique se o cadastro está 100% e os dados corretos. Informe CPF, telefone e e-mail cadastrado.</p><p>Lembramos que após a assinatura do contrato temos até 24h para estabelecer o acesso no app.</p><p>Atenção: se optou por receber SMS, você deve estar em área com cobertura de sinal. Se optou por e-mail, não esqueça de checar o spam.</p><hr class="faq-answer-divider"><p>O cliente pode receber o código do primeiro acesso por WhatsApp, e-mail ou SMS. Se for o primeiro acesso ao app e o CPF estiver vinculado em outra família, será necessário contato com a TopMed para deletar e recadastrar.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Financeiro e contratos ── -->
+  <div class="faq-category" id="faq-cat-6">
+    <div class="faq-cat-header" onclick="toggleFaqCat(6)">
+      <span class="faq-cat-icon">💰</span>
+      <span class="faq-cat-title">Financeiro e contratos</span>
+      <span class="faq-cat-count">1</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Preciso de nota fiscal do serviço</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Posso verificar a emissão da nota fiscal do seu plano. Informe o CPF ou CNPJ para emissão e o período de referência (mês/ano) que precisa.</p><p>Encaminhar para a fila de faturamento se necessário.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Comercial ── -->
+  <div class="faq-category" id="faq-cat-7">
+    <div class="faq-cat-header" onclick="toggleFaqCat(7)">
+      <span class="faq-cat-icon">📦</span>
+      <span class="faq-cat-title">Comercial</span>
+      <span class="faq-cat-count">2</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quero fazer upgrade / downgrade / mudança de plano</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Solicitações de upgrade de plano, downgrade, troca de familiar para individual, troca de individual para familiar ou alteração no número de dependentes são feitas pelo nosso time comercial.</p><p>Encaminhar para o time comercial.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Posso transferir a titularidade do plano?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Vamos verificar essa possibilidade para o seu caso. Informe o motivo da transferência, seus dados e os dados de quem assumiria a titularidade para encaminhar para a equipe responsável.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ── Dependentes e titulares ── -->
+  <div class="faq-category" id="faq-cat-8">
+    <div class="faq-cat-header" onclick="toggleFaqCat(8)">
+      <span class="faq-cat-icon">👨‍👩‍👧</span>
+      <span class="faq-cat-title">Dependentes e titulares</span>
+      <span class="faq-cat-count">5</span>
+      <span class="faq-cat-toggle">▼</span>
+    </div>
+    <div class="faq-cat-body">
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quero incluir um dependente / Não consigo incluir dependentes</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Os planos familiares permitem incluir até 3 dependentes, sem custo adicional além da mensalidade do plano familiar. O dependente precisará criar o próprio acesso no app após o cadastro.</p><p>Você pode incluir e inativar dependentes diretamente no aplicativo. Caso não consiga, informe os dados do dependente para realizar o cadastro:</p><ul><li>Nome completo</li><li>CPF</li><li>Data de nascimento</li><li>E-mail</li><li>Telefone celular</li></ul></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quero remover / inativar um dependente</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>A remoção pode ser feita pelo titular diretamente pelo aplicativo. Caso não consiga realizar a remoção, informe o nome completo e CPF do dependente que deseja remover/inativar.</p><p>Após a remoção, o acesso dele ao app será encerrado.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Meu dependente não consegue acessar com o próprio telefone</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Cada dependente acessa o app com o <strong>e-mail e CPF dele</strong>, cadastrados no momento da inclusão no plano — não com os dados do titular.</p><ul><li>Se o dependente nunca acessou: use a opção <strong>"Primeiro acesso"</strong> na tela de login</li><li>Se já acessou antes e perdeu a senha: use <strong>"Esqueci minha senha"</strong></li></ul><p>Se mesmo assim não conseguir entrar, pode ser que o e-mail cadastrado esteja desatualizado ou haja algum problema no cadastro. Informe o nome completo e CPF do dependente para verificar.</p><p>Não é necessário outro celular para acessar, mas é necessário fazer login com as credenciais próprias do dependente.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Meu dependente pode consultar com a minha conta?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Não é recomendado e pode gerar problemas. Cada pessoa deve acessar com seu próprio login porque o histórico de consultas, receitas e atestados ficam vinculados ao usuário logado — se o dependente usar sua conta, os documentos ficarão registrados no seu nome, o que pode causar confusão médica e baixa privacidade de dados.</p><p>Se seu dependente está com dificuldade de acesso, informe o nome e CPF dele para verificar o cadastro.</p></div></div>
+      <div class="faq-item"><div class="faq-question" onclick="toggleFaqItem(this)"><span class="faq-q-text">Quem posso indicar como dependente?</span><span class="faq-q-arrow">▼</span></div><div class="faq-answer"><p>Qualquer pessoa, independente de vínculo familiar, pode ser adicionada como dependente nos planos familiares, com limite de até 3 dependentes. Isso significa que você poderá adicionar amigos, parceiros e outras pessoas.</p><p>Caso precise adicionar mais dependentes, é possível contratar os dependentes adicionais com o setor comercial.</p></div></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
 <div id="page-other-project" style="display:none">
   <div class="other-proj-placeholder">
     <div class="other-proj-icon">🚧</div>
@@ -2837,6 +3041,32 @@ let DATA = {
 <script>
 document.getElementById('ano').textContent = new Date().getFullYear();
 
+/* ---- FAQ Telemedicina ---- */
+function toggleFaqCat(idx) {
+  document.getElementById('faq-cat-' + idx)?.classList.toggle('open');
+}
+function toggleFaqItem(questionEl) {
+  questionEl.closest('.faq-item').classList.toggle('open');
+}
+function filterFaq(q) {
+  const term = q.trim().toLowerCase();
+  let anyVisible = false;
+  document.querySelectorAll('.faq-item').forEach(item => {
+    const text = item.querySelector('.faq-q-text')?.textContent.toLowerCase() + ' ' +
+                 (item.querySelector('.faq-answer')?.textContent.toLowerCase() || '');
+    const match = !term || text.includes(term);
+    item.classList.toggle('hidden', !match);
+    if (match) anyVisible = true;
+  });
+  // abrir categorias com resultados, fechar as sem
+  document.querySelectorAll('.faq-category').forEach(cat => {
+    const hasVisible = [...cat.querySelectorAll('.faq-item')].some(i => !i.classList.contains('hidden'));
+    cat.style.display = hasVisible ? '' : 'none';
+    if (term && hasVisible) cat.classList.add('open');
+  });
+  document.getElementById('faq-no-results').style.display = anyVisible ? 'none' : 'block';
+}
+
 /* ---- Projetos ---- */
 const PROJECT_LABELS = {
   cidades:  'Cidades Inteligentes',
@@ -2851,10 +3081,10 @@ function switchProject(proj) {
     document.getElementById('proj-btn-' + p).classList.toggle('active', p === proj);
   });
   // oculta tudo
-  ['site-page-nav-cidades','site-page-nav-casainte'].forEach(id => {
+  ['site-page-nav-cidades','site-page-nav-casainte','site-page-nav-telemed'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
-  ['page-solucoes','page-kanban','page-ci-solucoes','page-ci-kanban','page-other-project'].forEach(id => {
+  ['page-solucoes','page-kanban','page-ci-solucoes','page-ci-kanban','page-telemed-faq','page-other-project'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
   if (proj === 'cidades') {
@@ -2873,6 +3103,9 @@ function switchProject(proj) {
         p.classList.toggle('active', p.id === 'panel-' + ciActiveTabId));
       if (!document.getElementById('panel-' + ciActiveTabId)?.innerHTML.trim()) renderPanel(ciActiveTabId);
     }
+  } else if (proj === 'telemed') {
+    document.getElementById('site-page-nav-telemed').style.display = '';
+    document.getElementById('page-telemed-faq').style.display = '';
   } else {
     document.getElementById('page-other-project').style.display = '';
     document.getElementById('other-proj-title').textContent = PROJECT_LABELS[proj] || proj;

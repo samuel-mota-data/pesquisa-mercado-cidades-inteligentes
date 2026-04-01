@@ -32,14 +32,14 @@
       background: var(--gray-light);
       color: var(--text-dark);
       line-height: 1.5;
-      font-size: 13px;
+      font-size: clamp(12px, 1.3vw, 14px);
     }
 
     /* ---- HEADER ---- */
     header {
       background: linear-gradient(135deg, var(--blue-dark) 60%, var(--blue-mid));
       color: var(--white);
-      padding: 18px 24px 16px;
+      padding: clamp(10px, 2vw, 18px) clamp(12px, 2.5vw, 24px) clamp(10px, 1.8vw, 16px);
       position: relative;
       overflow: hidden;
     }
@@ -52,8 +52,8 @@
     }
     .header-inner { max-width: 1100px; margin: 0 auto; }
     .brand { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 4px; }
-    header h1 { font-size: 1.1rem; font-weight: 700; line-height: 1.2; }
-    header p  { margin-top: 4px; opacity: .75; font-size: .75rem; }
+    header h1 { font-size: clamp(.88rem, 2vw, 1.1rem); font-weight: 700; line-height: 1.2; }
+    header p  { margin-top: 4px; opacity: .75; font-size: clamp(.68rem, 1.2vw, .75rem); }
     /* Project nav */
     .project-nav { max-width:1100px; margin:14px auto 0; display:flex; gap:6px; border-bottom:1px solid rgba(255,255,255,.15); padding-bottom:0; flex-wrap:wrap; }
     .project-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:5px 16px; border-radius:8px 8px 0 0; border:1px solid rgba(255,255,255,.15); border-bottom:none; background:rgba(0,0,0,.18); color:rgba(255,255,255,.5); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.4px; text-transform:uppercase; }
@@ -76,7 +76,7 @@
     .kanban-refresh-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:4px 12px; border-radius:6px; border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; }
     .kanban-refresh-btn:hover { border-color:var(--teal); color:var(--teal); }
     .kanban-board { display:flex; gap:12px; padding:0 24px 32px; max-width:1400px; margin:0 auto; overflow-x:auto; align-items:flex-start; }
-    .kanban-col { flex:0 0 220px; min-width:0; background:var(--gray-light); border-radius:10px; overflow:hidden; }
+    .kanban-col { flex:0 0 clamp(150px, 18vw, 220px); min-width:0; background:var(--gray-light); border-radius:10px; overflow:hidden; }
     .kanban-col-head { padding:10px 14px 9px; font-size:.65rem; font-weight:800; text-transform:uppercase; letter-spacing:.6px; border-bottom:3px solid transparent; }
     .kanban-col-body { padding:8px; display:flex; flex-direction:column; gap:7px; min-height:80px; }
     .kanban-card { background:var(--white); border-radius:8px; border:1px solid var(--gray-mid); padding:11px 13px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -91,7 +91,7 @@
     .kanban-empty-col { font-size:.65rem; color:var(--text-mid); text-align:center; padding:16px 8px; }
 
     /* ---- LAYOUT ---- */
-    main { max-width: 1100px; margin: 0 auto; padding: 16px 14px 36px; }
+    main { max-width: 1100px; margin: 0 auto; padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 14px) clamp(24px, 4vw, 36px); }
 
     .section { margin-bottom: 22px; }
     .section-title {
@@ -539,7 +539,7 @@
     .modal-overlay.open { display: flex; }
     .modal-box {
       background: var(--white); border-radius: 12px;
-      padding: 24px 28px; width: 560px; max-width: 94vw;
+      padding: clamp(16px, 2.5vw, 24px) clamp(16px, 2.8vw, 28px); width: min(560px, 94vw); max-width: 94vw;
       box-shadow: 0 12px 48px rgba(10,20,60,.3);
       max-height: 88vh; overflow-y: auto;
     }
@@ -666,7 +666,7 @@
     }
     /* Título da página */
     .info-page-title {
-      font-size: 1.9rem; font-weight: 800; color: var(--text-dark);
+      font-size: clamp(1.25rem, 3.5vw, 1.9rem); font-weight: 800; color: var(--text-dark);
       line-height: 1.2; margin-bottom: 6px; letter-spacing: -.5px;
     }
     .info-page-sub {
@@ -851,7 +851,7 @@
     .nb-html-textarea { width: 100%; min-height: 240px; max-height: none; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
     .nb-html-textarea:focus { border-color: var(--teal); }
     .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; overflow:hidden; }
-    .nb-pdf-iframe  { width:100%; height:520px; border:none; border-radius:6px 6px 0 0; display:block; }
+    .nb-pdf-iframe  { width:100%; height:clamp(220px, 45vh, 520px); border:none; border-radius:6px 6px 0 0; display:block; }
     .nb-pdf-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px;
       background:#f1f3fb; border:1.5px solid var(--gray-mid); border-top:none;
       border-radius:0 0 6px 6px; padding:6px 10px; }
@@ -1016,7 +1016,7 @@
     .gestao-add-btn:hover { border-color: var(--teal); color: var(--blue-dark); }
 
     /* --- Tecnologia --- */
-    .tec-wrap  { max-width:1100px; margin:0 auto; padding:24px 16px 0; }
+    .tec-wrap  { max-width:1100px; margin:0 auto; padding:clamp(12px, 2.5vw, 24px) clamp(8px, 1.5vw, 16px) 0; }
     .tec-grid  { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; margin-bottom:16px; }
     @media(max-width:700px){ .tec-grid{ grid-template-columns:1fr; } }
     .tec-card  { background:var(--white); border-radius:10px; box-shadow:var(--card-shadow); border-top:4px solid var(--teal); padding:18px; }
@@ -1045,7 +1045,7 @@
     .tec-li-empty::before { display:none; }
 
     /* --- Arquitetura --- */
-    .arq-wrap { max-width:1100px; margin:0 auto; padding:24px 16px 32px; display:flex; flex-direction:column; gap:32px; }
+    .arq-wrap { max-width:1100px; margin:0 auto; padding:clamp(12px, 2.5vw, 24px) clamp(8px, 1.5vw, 16px) clamp(18px, 3vw, 32px); display:flex; flex-direction:column; gap:clamp(18px, 3vw, 32px); }
     .arq-section-title { font-size:.68rem; font-weight:800; text-transform:uppercase; letter-spacing:.8px; color:var(--blue-dark); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
     .arq-section-title::after { content:''; flex:1; height:1px; background:#dde3f0; }
 
@@ -1055,7 +1055,7 @@
     .arq-flow-row::-webkit-scrollbar-track { background:transparent; }
     .arq-flow-row::-webkit-scrollbar-thumb { background:var(--gray-mid); border-radius:4px; }
     .arq-flow-block {
-      flex-shrink:0; width:130px; min-height:94px;
+      flex-shrink:0; width:clamp(90px, 10vw, 130px); min-height:clamp(70px, 8vw, 94px);
       border-radius:10px; border:2px solid var(--gray-mid);
       background:var(--white); cursor:pointer;
       display:flex; flex-direction:column; overflow:hidden;
@@ -1215,11 +1215,11 @@
     .arq-row-actions { display:flex; gap:2px; }
 
     /* --- Coverflow --- */
-    .cflow-wrap  { position:relative; width:100%; height:270px; background:#0d1535; border-radius:12px; overflow:hidden; margin-bottom:22px; }
+    .cflow-wrap  { position:relative; width:100%; height:clamp(160px, 22vh, 270px); background:#0d1535; border-radius:12px; overflow:hidden; margin-bottom:22px; }
     .cflow-stage { position:absolute; inset:0; perspective:900px; }
     .cflow-empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:rgba(255,255,255,.25); gap:8px; font-size:.78rem; }
     .cflow-item  { position:absolute; left:50%; top:50%; transition:all .4s cubic-bezier(.4,0,.2,1); cursor:pointer; user-select:none; }
-    .cflow-item img { width:230px; height:155px; object-fit:cover; border-radius:8px; box-shadow:0 8px 36px rgba(0,0,0,.65); display:block; pointer-events:none; }
+    .cflow-item img { width:clamp(140px, 20vw, 230px); height:clamp(95px, 13vw, 155px); object-fit:cover; border-radius:8px; box-shadow:0 8px 36px rgba(0,0,0,.65); display:block; pointer-events:none; }
     .cflow-nav   { position:absolute; top:50%; transform:translateY(-50%); z-index:20; background:rgba(0,0,0,.45); border:none; color:rgba(255,255,255,.85); font-size:1.6rem; width:38px; height:38px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; line-height:1; }
     .cflow-nav:hover { background:rgba(0,0,0,.8); color:#fff; }
     .cflow-nav-l { left:12px; }
@@ -1232,8 +1232,8 @@
     .cflow-tbtn  { background:rgba(0,0,0,.5); border:1px solid rgba(255,255,255,.2); color:rgba(255,255,255,.8); font-size:.63rem; padding:4px 10px; border-radius:6px; cursor:pointer; font-family:inherit; transition:background .15s; }
     .cflow-tbtn:hover { background:rgba(0,0,0,.8); color:#fff; }
     .cflow-tbtn.del:hover { background:rgba(180,0,0,.7); border-color:transparent; }
-    .cflow-card { height:260px; border-radius:8px 8px 0 0; margin-bottom:0; }
-    .cflow-card .cflow-item img { width:320px; height:220px; }
+    .cflow-card { height:clamp(160px, 22vh, 260px); border-radius:8px 8px 0 0; margin-bottom:0; }
+    .cflow-card .cflow-item img { width:clamp(180px, 26vw, 320px); height:clamp(120px, 18vh, 220px); }
 
     /* Thumbnail grid de imagens no card de tecnologia */
     .tec-imgs-section { padding:10px 18px 0; }
@@ -1410,7 +1410,7 @@
     }
 
     /* ---- FAQ Telemedicina ---- */
-    .faq-page { max-width:860px; margin:0 auto; padding:28px 24px 48px; }
+    .faq-page { max-width:860px; margin:0 auto; padding:clamp(14px, 3vw, 28px) clamp(10px, 2.5vw, 24px) clamp(28px, 5vw, 48px); }
     .faq-page-header { margin-bottom:24px; }
     .faq-page-title { font-size:1.2rem; font-weight:800; color:var(--blue-dark); margin-bottom:4px; }
     .faq-page-sub { font-size:.75rem; color:var(--text-mid); }

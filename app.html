@@ -850,7 +850,15 @@
     .nb-html-textarea { width: 100%; min-height: 240px; max-height: none; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
     .nb-html-textarea:focus { border-color: var(--teal); }
     .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; overflow:hidden; }
-    .nb-pdf-iframe  { width:100%; height:520px; border:none; border-radius:6px; display:block; }
+    .nb-pdf-iframe  { width:100%; height:520px; border:none; border-radius:6px 6px 0 0; display:block; }
+    .nb-pdf-toolbar { display:flex; align-items:center; justify-content:space-between; gap:8px;
+      background:#f1f3fb; border:1.5px solid var(--gray-mid); border-top:none;
+      border-radius:0 0 6px 6px; padding:6px 10px; }
+    .nb-pdf-toolbar-name { font-size:.75rem; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; }
+    .nb-pdf-dl-btn { flex-shrink:0; display:flex; align-items:center; gap:5px; font-size:.75rem; font-weight:600;
+      padding:4px 12px; border-radius:5px; border:1.5px solid var(--teal); background:rgba(0,200,212,.08);
+      color:var(--teal); cursor:pointer; transition:background .15s; white-space:nowrap; }
+    .nb-pdf-dl-btn:hover { background:rgba(0,200,212,.18); }
     /* Embedded state */
     .nb-media-embedded { position: relative; cursor: default; }
     .nb-media-embedded .nb-media-edit-overlay {
@@ -4681,11 +4689,15 @@ function _nbBlockHtml(block, tabId) {
     const src = block.content || '';
     const editing = !src || _nbEditingMedia.has(block.id);
     if (!editing) {
-      return `<div class="nb-media-block nb-media-embedded">
+      const isDataPdf = src.startsWith('data:');
+      const pdfName = isDataPdf ? 'documento.pdf' : src.split('/').pop().split('?')[0] || 'documento.pdf';
+      return `<div class="nb-media-block nb-media-embedded" style="border-radius:8px">
         <iframe class="nb-pdf-iframe" src="${src}"></iframe>
-        <div class="nb-media-edit-overlay">
-          <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
-          <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>
+        <div class="nb-pdf-toolbar">
+          <span class="nb-pdf-toolbar-name">📄 ${pdfName}</span>
+          <button class="nb-pdf-dl-btn" onclick="_nbPdfDownload('${block.id}')">⬇ Download</button>
+          <button class="nb-pdf-dl-btn" onclick="_nbEditMedia('${tabId}','${block.id}')" style="border-color:var(--gray-mid);color:var(--text-mid);background:none">✏ Editar</button>
+          <button class="nb-pdf-dl-btn" onclick="_nbMediaClear('${tabId}','${block.id}')" style="border-color:#e8b4b0;color:#c0392b;background:#fdecea">× Remover</button>
         </div>
       </div>`;
     }
@@ -4814,6 +4826,29 @@ function _nbHtmlUpload(tabId, bid, input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+function _nbPdfDownload(bid) {
+  const allBlocks = Object.keys(_arqLayerMap).flatMap(k => _nbBlocks(k))
+    .concat(Object.keys(_rdmLayerMap).flatMap(k => _nbBlocks(k)));
+  let block = allBlocks.find(b => b.id === bid);
+  if (!block) {
+    for (const id of Object.keys(DATA)) {
+      const bs = DATA[id]?.informativo?.blocks || [];
+      block = bs.find(b => b.id === bid);
+      if (block) break;
+    }
+  }
+  if (!block?.content) return;
+  const src = block.content;
+  const name = src.startsWith('data:') ? 'documento.pdf' : src.split('/').pop().split('?')[0] || 'documento.pdf';
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = name;
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // Entra em modo edição para bloco já incorporado

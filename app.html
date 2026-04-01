@@ -65,7 +65,8 @@
     .other-proj-title { font-size:1.1rem; font-weight:800; color:var(--blue-dark); }
     .other-proj-msg { font-size:.82rem; text-align:center; line-height:1.6; color:var(--text-mid); }
     /* Page nav */
-    .site-page-nav { max-width:1100px; margin:6px auto 0; display:flex; gap:4px; }
+    .site-page-nav { max-width:1100px; margin:6px auto 0; display:flex; gap:4px; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; }
+    .site-page-nav::-webkit-scrollbar { display:none; }
     .site-page-btn { font-family:inherit; font-size:.72rem; font-weight:700; padding:6px 18px; border-radius:6px 6px 0 0; border:none; background:rgba(255,255,255,.12); color:rgba(255,255,255,.65); cursor:pointer; transition:background .15s, color .15s; letter-spacing:.3px; }
     .site-page-btn:hover { background:rgba(255,255,255,.2); color:var(--white); }
     .site-page-btn.active { background:var(--white); color:var(--blue-dark); }
@@ -1274,10 +1275,138 @@
     .confirm-ok { background:var(--red-risk); border:none; color:#fff; font-family:inherit; font-size:.78rem; font-weight:700; padding:9px 22px; border-radius:8px; cursor:pointer; }
     .confirm-ok:hover { background:#c42f2f; }
 
+    /* =====================================================
+       RESPONSIVE — breakpoints: 1024 / 768 / 480 / 360
+       ===================================================== */
+
+    /* --- 1024px: tablet largo --- */
+    @media (max-width: 1024px) {
+      .header-inner, .project-nav, .site-page-nav,
+      main, .kanban-toolbar, .kanban-board,
+      .info-wrap, .info-art-wrap-outer, .tec-wrap,
+      .arq-wrap, .rdm-wrap, .faq-page, .timeline-wrap { max-width: 100%; }
+    }
+
+    /* --- 768px: tablet --- */
+    @media (max-width: 768px) {
+      header { padding: 14px 16px 12px; }
+      main { padding: 12px 10px 28px; }
+      .kanban-toolbar { padding: 12px 12px 6px; flex-wrap: wrap; }
+      .kanban-board { padding: 0 12px 24px; }
+      .kanban-col { flex: 0 0 190px; }
+
+      .tec-grid { grid-template-columns: 1fr; }
+      .tec-lists { grid-template-columns: 1fr; gap: 6px; }
+
+      .arq-wrap { padding: 16px 10px 24px; gap: 20px; }
+      .arq-flow-block { width: 110px; min-height: 80px; }
+      .arq-detail-panel { max-width: 100%; }
+
+      .rdm-wrap { padding: 16px 10px 24px; }
+
+      .faq-page { padding: 18px 12px 32px; }
+      .faq-shortcuts { gap: 5px; }
+
+      .info-wrap { padding: 28px 12px 48px; }
+      .info-art-wrap-outer { padding: 0 12px; }
+
+      .tec-wrap { padding: 16px 10px 0; }
+
+      .calc-compare-left { width: 100%; }
+
+      .acomp-entry-card { flex-wrap: wrap; gap: 8px; }
+
+      .nb-pdf-iframe { height: 380px; }
+      .cflow-wrap { height: 220px; }
+      .cflow-card { height: 210px; }
+    }
+
+    /* --- 640px: mobile médio (mantém regras originais + expansão) --- */
     @media (max-width: 640px) {
       header h1 { font-size: 1rem; }
+      header p { font-size: .7rem; }
       .opex-grid { grid-template-columns: 1fr; }
-      .header-meta { gap: 8px; }
+      .header-meta { gap: 8px; flex-wrap: wrap; }
+
+      .project-btn { font-size: .66rem; padding: 4px 12px; }
+      .site-page-btn { font-size: .68rem; padding: 5px 12px; }
+
+      .section-title { font-size: .78rem; }
+
+      .kanban-col { flex: 0 0 170px; }
+      .kanban-board { gap: 8px; }
+
+      .info-risk-item { min-height: unset; }
+      .info-edit-actions { flex-wrap: wrap; gap: 6px; }
+      .modal-footer { flex-wrap: wrap; gap: 6px; }
+
+      .arq-flow-block { width: 100px; }
+      .arq-detail-body { padding: 12px 12px 6px; }
+      .arq-detail-proto-row input { width: 120px; }
+
+      .tec-card { padding: 14px; }
+      .tec-lists { grid-template-columns: 1fr; }
+
+      .faq-page { padding: 14px 10px 28px; }
+      .faq-chip { font-size: .65rem; padding: 4px 10px; }
+
+      .nb-pdf-iframe { height: 320px; }
+
+      .parc-row-main { flex-wrap: wrap; gap: 6px; }
+      .confirm-actions { flex-wrap: wrap; }
+
+      .rdm-scenarios-bar { gap: 4px; }
+      .rdm-scenario-btn { font-size: .68rem; padding: 5px 10px; }
+    }
+
+    /* --- 480px: mobile pequeno --- */
+    @media (max-width: 480px) {
+      header { padding: 10px 12px 10px; }
+      main { padding: 8px 8px 24px; }
+
+      .project-btn { font-size: .62rem; padding: 4px 10px; }
+      .site-page-btn { font-size: .64rem; padding: 4px 10px; }
+
+      .kanban-col { flex: 0 0 155px; }
+      .kanban-card { padding: 9px 10px; }
+      .kanban-card-forn { font-size: .72rem; }
+
+      .arq-flow-block { width: 90px; min-height: 70px; font-size: .72rem; }
+      .arq-flow-label { font-size: .68rem; }
+
+      .faq-page-title { font-size: 1rem; }
+      .faq-search { font-size: .76rem; }
+      .faq-chip { font-size: .62rem; padding: 3px 8px; }
+      .faq-cat-title { font-size: .72rem; }
+      .faq-item-q { font-size: .75rem; }
+      .faq-item-a { font-size: .73rem; }
+
+      .nb-pdf-iframe { height: 260px; }
+      .cflow-wrap { height: 180px; }
+      .cflow-item img { width: 150px; height: auto; }
+      .cflow-card { height: auto; min-height: 180px; }
+      .cflow-card .cflow-item img { width: 200px; height: auto; }
+
+      .tec-wrap { padding: 10px 8px 0; }
+      .tec-card { padding: 12px; }
+      .tec-card-title { font-size: .82rem; }
+
+      .modal-content { width: 94vw; }
+      .rdm-tab-name { max-width: 80px; }
+
+      .info-page { padding: 20px 14px 40px; }
+      .info-page-title { font-size: 1.5rem; }
+    }
+
+    /* --- 360px: mobile mínimo --- */
+    @media (max-width: 360px) {
+      header { padding: 8px 10px 8px; }
+      main { padding: 6px 6px 20px; }
+      .project-btn { padding: 3px 8px; font-size: .6rem; }
+      .site-page-btn { padding: 3px 8px; font-size: .62rem; }
+      .kanban-col { flex: 0 0 140px; }
+      .arq-flow-block { width: 80px; }
+      .faq-page { padding: 10px 6px 20px; }
     }
 
     /* ---- FAQ Telemedicina ---- */

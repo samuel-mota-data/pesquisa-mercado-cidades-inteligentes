@@ -1039,7 +1039,10 @@
     .arq-section-title::after { content:''; flex:1; height:1px; background:#dde3f0; }
 
     /* Fluxo horizontal de blocos */
-    .arq-flow-row { display:flex; align-items:center; gap:0; overflow-x:auto; padding-bottom:6px; }
+    .arq-flow-row { display:flex; align-items:center; gap:0; overflow-x:auto; padding-bottom:8px; scrollbar-width:thin; scrollbar-color:var(--gray-mid) transparent; }
+    .arq-flow-row::-webkit-scrollbar { height:4px; }
+    .arq-flow-row::-webkit-scrollbar-track { background:transparent; }
+    .arq-flow-row::-webkit-scrollbar-thumb { background:var(--gray-mid); border-radius:4px; }
     .arq-flow-block {
       flex-shrink:0; width:130px; min-height:94px;
       border-radius:10px; border:2px solid var(--gray-mid);
@@ -3304,8 +3307,8 @@ function renderPanel(id) {
       <button class="subtab-btn active" data-subtab="informativo" onclick="activateSubTab('${id}','informativo')">Visão Geral</button>
       <button class="subtab-btn"        data-subtab="mercado"     onclick="activateSubTab('${id}','mercado')">Mercado</button>
       <button class="subtab-btn"        data-subtab="tecnologia"  onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
-      <button class="subtab-btn"        data-subtab="roadmap"     onclick="activateSubTab('${id}','roadmap')">Road-Map</button>
-      <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura</button>
+      <button class="subtab-btn"        data-subtab="roadmap"     onclick="activateSubTab('${id}','roadmap')">Arquitetura de Cenários</button>
+      <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura de Dados</button>
       <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
       <button class="subtab-btn"        data-subtab="parceiros"      onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
       <button class="subtab-btn"        data-subtab="acompanhamento" onclick="activateSubTab('${id}','acompanhamento')">Processo de Compra</button>

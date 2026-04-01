@@ -755,7 +755,7 @@
     .nb-block {
       position: relative; display: flex; align-items: flex-start;
       gap: 0; padding: 1px 0; border-radius: 4px;
-      transition: background .1s;
+      transition: background .1s; width: 100%; min-width: 0;
     }
     .nb-block:hover { background: #f7f8fc; }
     .nb-block:hover .nb-handle { opacity: 1; }
@@ -810,7 +810,7 @@
     .nb-divider-wrap { padding: 10px 0; width: 100%; }
     .nb-divider-wrap hr { border: none; border-top: 2px solid var(--gray-mid); }
     /* Image & Video blocks */
-    .nb-media-block { width: 100%; }
+    .nb-media-block { width: 100%; min-width: 0; box-sizing: border-box; }
     .nb-media-url-row { display: flex; gap: 8px; align-items: center; }
     .nb-media-url-row input {
       flex: 1; padding: 8px 10px; border: 1.5px solid var(--gray-mid);
@@ -847,7 +847,7 @@
     .nb-video-preview { margin-top: 10px; width: 100%; aspect-ratio: 16/9; border-radius: 8px; border: none; }
     .nb-video-file { margin-top: 10px; width: 100%; border-radius: 8px; display: block; max-height: 400px; }
     /* Bloco HTML */
-    .nb-html-block { width: 100%; }
+    .nb-html-block { width: 100%; min-width: 0; box-sizing: border-box; }
     .nb-html-textarea { width: 100%; min-height: 240px; max-height: none; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
     .nb-html-textarea:focus { border-color: var(--teal); }
     .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; overflow:hidden; }
@@ -1085,7 +1085,7 @@
     .arq-detail-proto-row { display:flex; align-items:center; gap:8px; padding:7px 18px; border-bottom:1px solid var(--gray-light); font-size:.7rem; color:var(--text-mid); background:var(--gray-light); }
     .arq-detail-proto-row input { font-family:inherit; font-size:.7rem; border:1.5px solid var(--gray-mid); border-radius:5px; padding:3px 8px; background:var(--white); color:var(--text-dark); outline:none; width:160px; }
     .arq-detail-proto-row input:focus { border-color:var(--teal); }
-    .arq-detail-body { padding:16px 18px 8px; }
+    .arq-detail-body { padding:16px 18px 8px; width:100%; box-sizing:border-box; }
 
     /* Status badge nos fornecedores */
     .tec-fornec-status { flex-shrink:0; font-family:inherit; font-size:.6rem; font-weight:700; padding:3px 9px; border-radius:20px; border:none; cursor:pointer; transition:opacity .15s; white-space:nowrap; }

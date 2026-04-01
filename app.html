@@ -4796,7 +4796,9 @@ function _nbBlockHtml(block, tabId) {
     const content = block.content || '';
     const editing = !content || _nbEditingMedia.has(block.id);
     if (!editing) {
-      const srcdoc = content.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+      const _reset = `<meta name="viewport" content="width=device-width,initial-scale=1"><style>*{box-sizing:border-box}html,body{margin:0;padding:0;width:100%;overflow-x:hidden}body{font-family:system-ui,sans-serif;font-size:13px}table{width:100%;max-width:100%}img,iframe,video{max-width:100%;height:auto}</style>`;
+      const _wrapped = content.startsWith('<!') || content.startsWith('<html') ? content : _reset + content;
+      const srcdoc = _wrapped.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       return `<div class="nb-html-block nb-media-embedded">
         <iframe class="nb-html-iframe" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin allow-popups"
           onload="(function(f){function fit(){f.style.height='0';f.style.height=f.contentDocument.documentElement.scrollHeight+'px';}fit();new ResizeObserver(fit).observe(f.contentDocument.documentElement);})(this)"></iframe>

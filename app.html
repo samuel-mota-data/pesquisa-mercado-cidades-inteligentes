@@ -4882,6 +4882,18 @@ function _nbRenderBlocks(tabId) {
       </div>
       ${_nbBlockHtml(b, tabId)}
     </div>`).join('');
+  // Convert data: PDF URIs to Blob URLs (browsers block data: URIs in iframes)
+  editor.querySelectorAll('iframe.nb-pdf-iframe[src^="data:"]').forEach(iframe => {
+    try {
+      const src = iframe.getAttribute('src');
+      const b64 = src.split(',')[1];
+      const binary = atob(b64);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      iframe.src = URL.createObjectURL(blob);
+    } catch (e) { /* keep original src on error */ }
+  });
 }
 
 function _nbToggleMenu(tabId, bid, btn) {

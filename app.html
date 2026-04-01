@@ -850,6 +850,7 @@
     .nb-html-textarea { width: 100%; min-height: 240px; max-height: none; font-family: 'Courier New', monospace; font-size: .75rem; line-height: 1.5; border: 1.5px solid var(--gray-mid); border-radius: 6px; padding: 10px 12px; resize: vertical; color: var(--text-dark); background: #f8f9ff; outline: none; box-sizing: border-box; }
     .nb-html-textarea:focus { border-color: var(--teal); }
     .nb-html-iframe { width:100%; border:none; border-radius:6px; display:block; overflow:hidden; }
+    .nb-pdf-iframe  { width:100%; height:520px; border:none; border-radius:6px; display:block; }
     /* Embedded state */
     .nb-media-embedded { position: relative; cursor: default; }
     .nb-media-embedded .nb-media-edit-overlay {
@@ -4508,6 +4509,7 @@ const NB_TYPES = [
   { type: 'image',   icon: '🖼',  label: 'Imagem'     },
   { type: 'video',   icon: '▶',  label: 'Vídeo'      },
   { type: 'html',    icon: '<>', label: 'HTML'       },
+  { type: 'pdf',     icon: '📄', label: 'PDF'        },
 ];
 const NB_TEXT_TYPES = new Set(['p','h1','h2','h3','quote','bullet']);
 const NB_PH = { p:'Escreva algo…', h1:'Título', h2:'Subtítulo', h3:'Cabeçalho', quote:'Citação…', bullet:'Item de lista' };
@@ -4673,6 +4675,40 @@ function _nbBlockHtml(block, tabId) {
         <input type="file" id="nb-html-upload-${block.id}" accept=".html,.htm" style="display:none" onchange="_nbHtmlUpload('${tabId}','${block.id}',this)">
         ${content ? `<button class="nb-del-media-btn" onclick="_nbMediaClear('${tabId}','${block.id}')">Limpar</button>` : ''}
       </div>
+    </div>`;
+  }
+  if (t === 'pdf') {
+    const src = block.content || '';
+    const editing = !src || _nbEditingMedia.has(block.id);
+    if (!editing) {
+      return `<div class="nb-media-block nb-media-embedded">
+        <iframe class="nb-pdf-iframe" src="${src}"></iframe>
+        <div class="nb-media-edit-overlay">
+          <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
+          <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>
+        </div>
+      </div>`;
+    }
+    const isData = src.startsWith('data:');
+    const hasContent = !!src;
+    return `<div class="nb-media-block">
+      <div class="nb-media-url-row">
+        <input type="url" placeholder="Cole a URL do PDF…" value="${isData ? '' : src.replace(/"/g,'&quot;')}"
+          ${isData ? 'disabled style="opacity:.45;background:var(--gray-light)"' : ''}
+          oninput="_nbMediaStage('${tabId}','${block.id}',this.value)"
+          onblur="_nbMediaStage('${tabId}','${block.id}',this.value)">
+        <label class="nb-upload-btn" title="Fazer upload de PDF">
+          ↑ Upload
+          <input type="file" accept=".pdf,application/pdf" style="display:none"
+            onchange="_nbFileUpload('${tabId}','${block.id}',this,'pdf')">
+        </label>
+      </div>
+      ${hasContent
+        ? `<div class="nb-media-actions">
+            <button class="nb-save-media-btn" onclick="_nbSaveMedia('${tabId}','${block.id}')">Salvar</button>
+            <button class="nb-del-media-btn"  onclick="_nbMediaClear('${tabId}','${block.id}')">Remover</button>
+           </div>`
+        : ''}
     </div>`;
   }
   const cls = 'nb-' + t;

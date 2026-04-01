@@ -1073,7 +1073,7 @@
     .arq-flow-add { flex-shrink:0; margin-left:10px; width:46px; height:46px; border-radius:10px; border:2px dashed var(--gray-mid); background:none; color:var(--text-mid); font-size:1.4rem; font-weight:300; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:border-color .15s, color .15s; }
     .arq-flow-add:hover { border-color:var(--teal); color:var(--teal); }
     /* Painel expansível */
-    .arq-detail-panel { margin-top:12px; border-radius:12px; border:1.5px solid var(--teal); background:var(--white); overflow:visible; animation:arqDetailIn .18s ease; }
+    .arq-detail-panel { margin-top:12px; border-radius:12px; border:1.5px solid var(--teal); background:var(--white); overflow:visible; animation:arqDetailIn .18s ease; max-width:90%; }
     @keyframes arqDetailIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
     .arq-detail-header { display:flex; align-items:center; gap:10px; padding:13px 18px 11px; border-bottom:1px solid var(--gray-mid); }
     .arq-detail-name { flex:1; font-size:.92rem; font-weight:800; color:var(--blue-dark); outline:none; border-bottom:2px solid transparent; transition:border-color .15s; min-width:40px; }
@@ -5751,7 +5751,7 @@ function renderRoadmapPanel(id) {
     const vid   = _rdmVid(id, activeSi, activeEi);
     const isLast = activeEi === etapas.length - 1;
     detailHtml = `
-      <div class="arq-detail-panel" id="rdm-detail-${id}">
+      <div class="arq-detail-panel" id="rdm-detail-${id}" onclick="event.stopPropagation()">
         <div class="arq-detail-header">
           <div class="arq-detail-name" contenteditable="true"
             onblur="renameRdmEtapa('${id}',${activeSi},${activeEi},this.innerText)"
@@ -5935,7 +5935,7 @@ function renderArquiteturaPanel(id) {
     const isLast = activeIdx === d.camadas.length - 1;
     const proto  = layer.conexao?.protocolo || '';
     detailHtml = `
-      <div class="arq-detail-panel" id="arq-detail-${id}">
+      <div class="arq-detail-panel" id="arq-detail-${id}" onclick="event.stopPropagation()">
         <div class="arq-detail-header">
           <div class="arq-detail-name" contenteditable="true"
             onblur="renameArqLayer('${id}',${activeIdx},this.innerText)"

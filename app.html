@@ -4524,7 +4524,9 @@ const NB_PH = { p:'Escreva algo…', h1:'Título', h2:'Subtítulo', h3:'Cabeçal
 
 let _nbSaveTimer = {};
 const _arqLayerMap = {}; // maps virtual ID → { realTabId, li }
-const arqActiveLayer = {}; // active layer index per tabId
+const arqActiveLayer = {}; // active layer index per tabId_si
+const arqActiveScenario = {}; // active scenario index per tabId
+const _arqScenEditMode = {}; // id → index being edited (-1 = none)
 const _rdmLayerMap = {}; // maps virtual ID → { realTabId, si, ei }
 const rdmActiveScenario = {}; // active scenario index per tabId
 const rdmActiveEtapa = {}; // active etapa per tabId_si → ei | null
@@ -4546,8 +4548,8 @@ function _nbBlocks(id) {
   }
   // Camada de arquitetura (ID virtual)
   if (_arqLayerMap[id]) {
-    const { realTabId, li } = _arqLayerMap[id];
-    const layer = DATA[realTabId]?.arquitetura?.camadas?.[li];
+    const { realTabId, si, li } = _arqLayerMap[id];
+    const layer = DATA[realTabId]?.arquitetura?.scenarios?.[si]?.camadas?.[li];
     if (!layer) return [];
     if (!layer.blocks) layer.blocks = [{ id: _nbId(), type: 'p', content: '' }];
     return layer.blocks;
@@ -5883,43 +5885,90 @@ function saveRdmLabel(id, si, ei, val) {
   renderRoadmapPanel(id);
 }
 
-/* --- Camadas --- */
+/* --- Camadas (Arquitetura de Dados — multi-cenário) --- */
 const ARQ_ACCENTS = ['#00c8d4','#2540c0','#a8e063','#f5c842','#e03c3c','#9b5de5'];
 
-function _arqVid(tabId, li) {
-  return 'arqlyr_' + tabId + '_' + li;
+function _arqVid(tabId, si, li) {
+  return 'arqlyr_' + tabId + '_' + si + '_' + li;
+}
+
+function _arqCamadas(id, si) {
+  return DATA[id]?.arquitetura?.scenarios?.[si]?.camadas || [];
 }
 
 function _arqRegisterVids(id) {
-  const camadas = DATA[id]?.arquitetura?.camadas || [];
-  camadas.forEach((_, li) => {
-    const vid = _arqVid(id, li);
-    _arqLayerMap[vid] = { realTabId: id, li };
+  const scenarios = DATA[id]?.arquitetura?.scenarios || [];
+  scenarios.forEach((sc, si) => {
+    (sc.camadas || []).forEach((_, li) => {
+      const vid = _arqVid(id, si, li);
+      _arqLayerMap[vid] = { realTabId: id, si, li };
+    });
   });
+}
+
+function _arqMigrate(id) {
+  const arq = DATA[id].arquitetura || (DATA[id].arquitetura = {});
+  if (!arq.scenarios) {
+    // migrate flat camadas to first scenario
+    arq.scenarios = [{ nome: 'Cenário 1', camadas: arq.camadas || [] }];
+    delete arq.camadas;
+  }
+  if (!arq.apis) arq.apis = [];
 }
 
 function renderArquiteturaPanel(id) {
   const container = document.getElementById('arquitetura-panel-' + id);
   if (!container) return;
-  const d = DATA[id].arquitetura || (DATA[id].arquitetura = { camadas:[], apis:[] });
-  if (!d.camadas) d.camadas = [];
-  if (!d.apis)    d.apis    = [];
+  _arqMigrate(id);
+  const d = DATA[id].arquitetura;
+
+  // Garante pelo menos um cenário
+  if (!d.scenarios.length) d.scenarios.push({ nome: 'Cenário 1', camadas: [] });
+
   _arqRegisterVids(id);
 
-  const activeIdx = arqActiveLayer[id] ?? null;
+  const si = arqActiveScenario[id] ?? 0;
+  arqActiveScenario[id] = Math.min(si, d.scenarios.length - 1);
+  const activeSi = arqActiveScenario[id];
+  const sc = d.scenarios[activeSi];
 
-  // Blocos do fluxo horizontal
-  const blocksHtml = d.camadas.map((layer, li) => {
+  // Barra de cenários
+  const scenariosBar = d.scenarios.map((s, i) => {
+    const isActive = i === activeSi;
+    const isEditing = (_arqScenEditMode[id] ?? -1) === i;
+    const delBtn = `<span class="rdm-scenario-x" onclick="event.stopPropagation();_askDelArqScenario('${id}',${i})">×</span>`;
+    if (isEditing) {
+      return `<div class="rdm-tab-editing">
+        <input class="rdm-tab-input" id="arq-tab-inp-${id}-${i}" value="${_esc(s.nome)}"
+          onkeydown="event.stopPropagation();if(event.key==='Enter'){event.preventDefault();_saveEditArqScenario('${id}',${i})}"
+          onclick="event.stopPropagation()">
+        <span class="rdm-tab-save-btn" onclick="_saveEditArqScenario('${id}',${i})" title="Salvar">✓</span>
+        ${delBtn}
+      </div>`;
+    }
+    return `<button class="rdm-scenario-btn${isActive ? ' active' : ''}" onclick="selectArqScenario('${id}',${i})">
+      <span class="rdm-tab-name">${_esc(s.nome)}</span>
+      ${isActive ? `<span class="rdm-tab-edit-btn" onclick="event.stopPropagation();_startEditArqScenario('${id}',${i})" title="Renomear">✏</span>` : ''}
+      ${delBtn}
+    </button>`;
+  }).join('');
+
+  // Camadas do cenário ativo
+  const camadas = sc.camadas || (sc.camadas = []);
+  const layerKey = id + '_' + activeSi;
+  const activeIdx = arqActiveLayer[layerKey] ?? null;
+
+  const blocksHtml = camadas.map((layer, li) => {
     const accent = ARQ_ACCENTS[li % ARQ_ACCENTS.length];
     const isActive = li === activeIdx;
     const nBlocks  = (layer.blocks || []).length;
-    const arrow = li < d.camadas.length - 1 ? `
+    const arrow = li < camadas.length - 1 ? `
       <div class="arq-flow-arrow">
         <span class="arq-flow-arrow-sym">→</span>
         ${(layer.conexao?.protocolo) ? `<span class="arq-flow-arrow-proto">${layer.conexao.protocolo}</span>` : ''}
       </div>` : '';
     return `
-      <div class="arq-flow-block${isActive ? ' active' : ''}" onclick="selectArqLayer('${id}',${li})">
+      <div class="arq-flow-block${isActive ? ' active' : ''}" onclick="selectArqLayer('${id}',${activeSi},${li})">
         <div class="arq-flow-accent" style="background:${accent}"></div>
         <div class="arq-flow-label">${layer.nome || 'Camada'}</div>
         ${nBlocks ? `<div class="arq-flow-sub">${nBlocks} bloco${nBlocks !== 1 ? 's' : ''}</div>` : ''}
@@ -5929,26 +5978,26 @@ function renderArquiteturaPanel(id) {
 
   // Painel expandido da camada ativa
   let detailHtml = '';
-  if (activeIdx !== null && d.camadas[activeIdx]) {
-    const layer  = d.camadas[activeIdx];
-    const vid    = _arqVid(id, activeIdx);
-    const isLast = activeIdx === d.camadas.length - 1;
+  if (activeIdx !== null && camadas[activeIdx]) {
+    const layer  = camadas[activeIdx];
+    const vid    = _arqVid(id, activeSi, activeIdx);
+    const isLast = activeIdx === camadas.length - 1;
     const proto  = layer.conexao?.protocolo || '';
     detailHtml = `
       <div class="arq-detail-panel" id="arq-detail-${id}" onclick="event.stopPropagation()">
         <div class="arq-detail-header">
           <div class="arq-detail-name" contenteditable="true"
-            onblur="renameArqLayer('${id}',${activeIdx},this.innerText)"
+            onblur="renameArqLayer('${id}',${activeSi},${activeIdx},this.innerText)"
             onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
           >${layer.nome || 'Camada'}</div>
           <span class="arq-detail-hint">clique no nome para editar</span>
-          <button class="arq-detail-del" onclick="delArqLayer('${id}',${activeIdx})">× Remover</button>
+          <button class="arq-detail-del" onclick="delArqLayer('${id}',${activeSi},${activeIdx})">× Remover</button>
         </div>
         ${!isLast ? `
         <div class="arq-detail-proto-row">
           <span>→ Protocolo para próxima camada:</span>
           <input type="text" placeholder="ex: MQTT, HTTP, LoRa…" value="${proto.replace(/"/g,'&quot;')}"
-            onblur="saveArqProto('${id}',${activeIdx},this.value)"
+            onblur="saveArqProto('${id}',${activeSi},${activeIdx},this.value)"
             onkeydown="if(event.key==='Enter')this.blur()">
         </div>` : ''}
         <div class="arq-detail-body">
@@ -5959,56 +6008,101 @@ function renderArquiteturaPanel(id) {
   }
 
   container.innerHTML = `<div class="arq-wrap">
+    <div class="rdm-scenarios-bar">
+      ${scenariosBar}
+      <button class="rdm-add-scenario" onclick="addArqScenario('${id}')" title="Novo cenário">+</button>
+    </div>
     <div>
       <div class="arq-section-title">Fluxo de Camadas</div>
       <div class="arq-flow-row">
         ${blocksHtml || '<span style="color:var(--text-mid);font-size:.74rem">Nenhuma camada.</span>'}
-        <button class="arq-flow-add" onclick="addArqLayer('${id}')" title="Adicionar camada">+</button>
+        <button class="arq-flow-add" onclick="addArqLayer('${id}',${activeSi})" title="Adicionar camada">+</button>
       </div>
       ${detailHtml}
     </div>
   </div>`;
 
-  // Renderiza o editor de blocos da camada ativa
-  if (activeIdx !== null && d.camadas[activeIdx]) {
-    _nbRenderBlocks(_arqVid(id, activeIdx));
+  if (activeIdx !== null && camadas[activeIdx]) {
+    _nbRenderBlocks(_arqVid(id, activeSi, activeIdx));
   }
 }
 
-function selectArqLayer(id, li) {
-  // Toggle: clicar na camada ativa fecha o painel
-  arqActiveLayer[id] = arqActiveLayer[id] === li ? null : li;
+function selectArqScenario(id, si) {
+  arqActiveScenario[id] = si;
+  arqActiveLayer[id + '_' + si] = null;
   renderArquiteturaPanel(id);
 }
 
-function renameArqLayer(id, li, nome) {
-  DATA[id].arquitetura.camadas[li].nome = nome.trim() || 'Camada';
+function addArqScenario(id) {
+  const n = DATA[id].arquitetura.scenarios.length + 1;
+  DATA[id].arquitetura.scenarios.push({ nome: 'Cenário ' + n, camadas: [] });
+  const newSi = DATA[id].arquitetura.scenarios.length - 1;
+  arqActiveScenario[id] = newSi;
+  arqActiveLayer[id + '_' + newSi] = null;
   persistData(id);
-  // Atualiza só o bloco no flow row sem fechar o painel
+  renderArquiteturaPanel(id);
+  setTimeout(() => { _arqScenEditMode[id] = newSi; renderArquiteturaPanel(id); setTimeout(() => document.getElementById('arq-tab-inp-' + id + '-' + newSi)?.focus(), 30); }, 50);
+}
+
+function _askDelArqScenario(id, si) {
+  const nome = DATA[id]?.arquitetura?.scenarios?.[si]?.nome || 'este cenário';
+  showConfirm('Excluir cenário?', `"${nome}" e todas as suas camadas serão removidos.`, () => {
+    DATA[id].arquitetura.scenarios.splice(si, 1);
+    if (!DATA[id].arquitetura.scenarios.length) DATA[id].arquitetura.scenarios.push({ nome: 'Cenário 1', camadas: [] });
+    arqActiveScenario[id] = 0;
+    persistData(id);
+    renderArquiteturaPanel(id);
+  });
+}
+
+function _startEditArqScenario(id, si) {
+  _arqScenEditMode[id] = si;
+  renderArquiteturaPanel(id);
+  setTimeout(() => document.getElementById('arq-tab-inp-' + id + '-' + si)?.focus(), 30);
+}
+
+function _saveEditArqScenario(id, si) {
+  const inp = document.getElementById('arq-tab-inp-' + id + '-' + si);
+  if (inp) DATA[id].arquitetura.scenarios[si].nome = inp.value.trim() || 'Cenário';
+  _arqScenEditMode[id] = -1;
+  persistData(id);
+  renderArquiteturaPanel(id);
+}
+
+function selectArqLayer(id, si, li) {
+  const key = id + '_' + si;
+  arqActiveLayer[key] = arqActiveLayer[key] === li ? null : li;
+  renderArquiteturaPanel(id);
+}
+
+function renameArqLayer(id, si, li, nome) {
+  DATA[id].arquitetura.scenarios[si].camadas[li].nome = nome.trim() || 'Camada';
+  persistData(id);
   const blocks = document.querySelectorAll('.arq-flow-block');
-  if (blocks[li]) blocks[li].querySelector('.arq-flow-label').textContent = DATA[id].arquitetura.camadas[li].nome;
+  if (blocks[li]) blocks[li].querySelector('.arq-flow-label').textContent = DATA[id].arquitetura.scenarios[si].camadas[li].nome;
 }
 
-function saveArqProto(id, li, val) {
-  if (!DATA[id].arquitetura.camadas[li].conexao) DATA[id].arquitetura.camadas[li].conexao = {};
-  DATA[id].arquitetura.camadas[li].conexao.protocolo = val.trim();
+function saveArqProto(id, si, li, val) {
+  const cam = DATA[id].arquitetura.scenarios[si].camadas[li];
+  if (!cam.conexao) cam.conexao = {};
+  cam.conexao.protocolo = val.trim();
   persistData(id);
   renderArquiteturaPanel(id);
 }
 
-function addArqLayer(id) {
-  DATA[id].arquitetura.camadas.push({ nome: 'Nova Camada', blocks: [], conexao: { protocolo:'', desc:'' } });
-  arqActiveLayer[id] = DATA[id].arquitetura.camadas.length - 1;
+function addArqLayer(id, si) {
+  DATA[id].arquitetura.scenarios[si].camadas.push({ nome: 'Nova Camada', blocks: [], conexao: { protocolo:'', desc:'' } });
+  const li = DATA[id].arquitetura.scenarios[si].camadas.length - 1;
+  arqActiveLayer[id + '_' + si] = li;
   persistData(id);
   renderArquiteturaPanel(id);
-  // Foca no nome para edição imediata
   setTimeout(() => document.querySelector('.arq-detail-name')?.focus(), 50);
 }
 
-function delArqLayer(id, li) {
+function delArqLayer(id, si, li) {
   showConfirm('Excluir camada?', 'O conteúdo desta camada será removido permanentemente.', () => {
-    DATA[id].arquitetura.camadas.splice(li, 1);
-    arqActiveLayer[id] = null;
+    DATA[id].arquitetura.scenarios[si].camadas.splice(li, 1);
+    arqActiveLayer[id + '_' + si] = null;
     persistData(id);
     renderArquiteturaPanel(id);
   });
@@ -6486,8 +6580,9 @@ async function persistData(id) {
           merged.roadmap = { scenarios: v.roadmap?.scenarios || [] };
           merged.statusLog = v.statusLog || [];
           merged.arquitetura = {
-            camadas: v.arquitetura?.camadas || def.arquitetura?.camadas || [],
-            apis:    v.arquitetura?.apis    || def.arquitetura?.apis    || [],
+            scenarios: v.arquitetura?.scenarios ||
+              (v.arquitetura?.camadas ? [{ nome: 'Cenário 1', camadas: v.arquitetura.camadas }] : (def.arquitetura?.camadas ? [{ nome: 'Cenário 1', camadas: def.arquitetura.camadas }] : [])),
+            apis: v.arquitetura?.apis || def.arquitetura?.apis || [],
           };
           DATA[k] = merged;
         }

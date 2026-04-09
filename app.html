@@ -5224,18 +5224,19 @@ function renameInfoArtigo(id, ai, nome) {
 }
 
 const GESTAO_STATUSES = [
-  { key: 'em_avaliacao',  label: 'Em Avaliação',   color: '#64748b', bg: '#f1f5f9' },
-  { key: 'em_negociacao', label: 'Em Negociação',  color: '#1d4ed8', bg: '#eff6ff' },
-  { key: 'aprovado',      label: 'Aprovado',        color: '#15803d', bg: '#f0fdf4' },
-  { key: 'descontinuado', label: 'Descontinuado',  color: '#b91c1c', bg: '#fff1f2' },
+  { key: 'neutro',        label: 'Neutro',          color: '#94a3b8', bg: '#f8fafc' },
+  { key: 'em_avaliacao',  label: 'Em Avaliação',    color: '#64748b', bg: '#f1f5f9' },
+  { key: 'em_negociacao', label: 'Em Negociação',   color: '#1d4ed8', bg: '#eff6ff' },
+  { key: 'aprovado',      label: 'Aprovado',         color: '#15803d', bg: '#f0fdf4' },
+  { key: 'reprovado',     label: 'Reprovado',        color: '#b91c1c', bg: '#fff1f2' },
 ];
 
 function _gMapStatus(s) {
-  if (!s || s === 'planejado') return 'em_avaliacao';
+  if (!s || s === 'planejado') return 'neutro';
   if (s === 'em_andamento') return 'em_negociacao';
   if (s === 'concluido') return 'aprovado';
-  if (s === 'cancelado') return 'descontinuado';
-  return GESTAO_STATUSES.find(x => x.key === s) ? s : 'em_avaliacao';
+  if (s === 'cancelado' || s === 'descontinuado') return 'reprovado';
+  return GESTAO_STATUSES.find(x => x.key === s) ? s : 'neutro';
 }
 
 function renderGestaoPage()   { _renderGestaoKanban(TABS,    'gestao-page-content',    false); }

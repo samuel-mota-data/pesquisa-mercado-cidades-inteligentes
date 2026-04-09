@@ -1015,10 +1015,6 @@
     }
     .gestao-add-btn:hover { border-color: var(--teal); color: var(--blue-dark); }
     /* Gestão de Processo — página top-level */
-    .gestao-page-tabs { display:flex; flex-wrap:wrap; gap:6px; max-width:1400px; margin:0 auto; padding:0 24px 16px; }
-    .gestao-page-tab { font-family:inherit; font-size:.72rem; font-weight:700; padding:5px 14px; border-radius:20px; border:1.5px solid var(--gray-mid); background:var(--white); color:var(--text-mid); cursor:pointer; transition:border-color .15s, color .15s, background .15s; }
-    .gestao-page-tab:hover { border-color:var(--blue-mid); color:var(--blue-mid); }
-    .gestao-page-tab.active { border-color:var(--blue-mid); background:var(--blue-mid); color:var(--white); }
     #gestao-page-content, #ci-gestao-page-content { max-width:900px; margin:0 auto; padding:0 24px 48px; }
 
     /* --- Tecnologia --- */
@@ -2989,7 +2985,6 @@ let DATA = {
   <div class="kanban-toolbar">
     <span class="kanban-title">Gestão de Processo</span>
   </div>
-  <div class="gestao-page-tabs" id="gestao-page-tabs"></div>
   <div id="gestao-page-content"></div>
 </div>
 
@@ -3024,7 +3019,6 @@ let DATA = {
   <div class="kanban-toolbar">
     <span class="kanban-title">Gestão de Processo</span>
   </div>
-  <div class="gestao-page-tabs" id="ci-gestao-page-tabs"></div>
   <div id="ci-gestao-page-content"></div>
 </div>
 
@@ -5213,26 +5207,18 @@ function renameInfoArtigo(id, ai, nome) {
   if (artigos[ai]) { artigos[ai].nome = nome.trim() || 'Artigo'; persistData(id); }
 }
 
-let _gestaoPageActiveId = null;
-let _ciGestaoPageActiveId = null;
-
 function renderGestaoPage() {
-  _gestaoPageActiveId = _gestaoPageActiveId || activeTabId || TABS[0]?.id;
-  _renderGestaoPageForTab(_gestaoPageActiveId, TABS, 'gestao-page-tabs', 'gestao-page-content', false);
+  const id = activeTabId || TABS[0]?.id;
+  const el = document.getElementById('gestao-page-content');
+  if (!el || !id) return;
+  el.innerHTML = `<div id="gestao-panel-${id}"></div>`;
+  renderGestaoPanel(id);
 }
 function renderCiGestaoPage() {
-  _ciGestaoPageActiveId = _ciGestaoPageActiveId || ciActiveTabId || CI_TABS[0]?.id;
-  _renderGestaoPageForTab(_ciGestaoPageActiveId, CI_TABS, 'ci-gestao-page-tabs', 'ci-gestao-page-content', true);
-}
-function _renderGestaoPageForTab(id, tabs, tabsElId, contentElId, isCi) {
-  if (isCi) _ciGestaoPageActiveId = id; else _gestaoPageActiveId = id;
-  const tabsEl = document.getElementById(tabsElId);
-  if (tabsEl) tabsEl.innerHTML = tabs.map(t =>
-    `<button class="gestao-page-tab${t.id === id ? ' active' : ''}" onclick="_renderGestaoPageForTab('${t.id}',${isCi ? 'CI_TABS' : 'TABS'},'${tabsElId}','${contentElId}',${isCi})">${t.nome}</button>`
-  ).join('');
-  const contentEl = document.getElementById(contentElId);
-  if (!contentEl) return;
-  contentEl.innerHTML = `<div id="gestao-panel-${id}"></div>`;
+  const id = ciActiveTabId || CI_TABS[0]?.id;
+  const el = document.getElementById('ci-gestao-page-content');
+  if (!el || !id) return;
+  el.innerHTML = `<div id="gestao-panel-${id}"></div>`;
   renderGestaoPanel(id);
 }
 

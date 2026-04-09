@@ -1014,6 +1014,12 @@
       cursor: pointer; transition: border-color .15s, color .15s;
     }
     .gestao-add-btn:hover { border-color: var(--teal); color: var(--blue-dark); }
+    /* Gestão de Processo — página top-level */
+    .gestao-page-tabs { display:flex; flex-wrap:wrap; gap:6px; max-width:1400px; margin:0 auto; padding:0 24px 16px; }
+    .gestao-page-tab { font-family:inherit; font-size:.72rem; font-weight:700; padding:5px 14px; border-radius:20px; border:1.5px solid var(--gray-mid); background:var(--white); color:var(--text-mid); cursor:pointer; transition:border-color .15s, color .15s, background .15s; }
+    .gestao-page-tab:hover { border-color:var(--blue-mid); color:var(--blue-mid); }
+    .gestao-page-tab.active { border-color:var(--blue-mid); background:var(--blue-mid); color:var(--white); }
+    #gestao-page-content, #ci-gestao-page-content { max-width:900px; margin:0 auto; padding:0 24px 48px; }
 
     /* --- Tecnologia --- */
     .tec-wrap  { max-width:1100px; margin:0 auto; padding:clamp(12px, 2.5vw, 24px) clamp(8px, 1.5vw, 16px) 0; }
@@ -2873,10 +2879,12 @@ let DATA = {
   <nav class="site-page-nav" id="site-page-nav-cidades">
     <button class="site-page-btn active" id="site-btn-solucoes" onclick="switchSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="site-btn-kanban" onclick="switchSitePage('kanban')">Kanban de Compras</button>
+    <button class="site-page-btn" id="site-btn-gestao" onclick="switchSitePage('gestao')">Gestão de Processo</button>
   </nav>
   <nav class="site-page-nav" id="site-page-nav-casainte" style="display:none">
     <button class="site-page-btn active" id="ci-site-btn-solucoes" onclick="switchCiSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="ci-site-btn-kanban" onclick="switchCiSitePage('kanban')">Kanban de Compras</button>
+    <button class="site-page-btn" id="ci-site-btn-gestao" onclick="switchCiSitePage('gestao')">Gestão de Processo</button>
   </nav>
   <nav class="site-page-nav" id="site-page-nav-telemed" style="display:none">
     <button class="site-page-btn active" id="telemed-btn-faq">Perguntas Frequentes</button>
@@ -2977,6 +2985,14 @@ let DATA = {
   <div class="kanban-board" id="kanban-board"></div>
 </div>
 
+<div id="page-gestao" style="display:none">
+  <div class="kanban-toolbar">
+    <span class="kanban-title">Gestão de Processo</span>
+  </div>
+  <div class="gestao-page-tabs" id="gestao-page-tabs"></div>
+  <div id="gestao-page-content"></div>
+</div>
+
 <div id="page-ci-solucoes" style="display:none">
 <nav class="tab-bar">
   <div class="tab-bar-center">
@@ -3002,6 +3018,14 @@ let DATA = {
     <button class="kanban-refresh-btn" onclick="renderCiKanban()">↺ Atualizar</button>
   </div>
   <div class="kanban-board" id="ci-kanban-board"></div>
+</div>
+
+<div id="page-ci-gestao" style="display:none">
+  <div class="kanban-toolbar">
+    <span class="kanban-title">Gestão de Processo</span>
+  </div>
+  <div class="gestao-page-tabs" id="ci-gestao-page-tabs"></div>
+  <div id="ci-gestao-page-content"></div>
 </div>
 
 <div id="page-telemed-faq" style="display:none">
@@ -3290,9 +3314,12 @@ function switchSitePage(page) {
   _currentSitePage = page;
   document.getElementById('page-solucoes').style.display = page === 'solucoes' ? '' : 'none';
   document.getElementById('page-kanban').style.display   = page === 'kanban'   ? '' : 'none';
+  document.getElementById('page-gestao').style.display   = page === 'gestao'   ? '' : 'none';
   document.getElementById('site-btn-solucoes').classList.toggle('active', page === 'solucoes');
   document.getElementById('site-btn-kanban').classList.toggle('active', page === 'kanban');
+  document.getElementById('site-btn-gestao').classList.toggle('active', page === 'gestao');
   if (page === 'kanban') renderKanban();
+  if (page === 'gestao') renderGestaoPage();
 }
 
 function renderKanban() {
@@ -3448,7 +3475,6 @@ function renderPanel(id) {
       <button class="subtab-btn"        data-subtab="tecnologia"  onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
       <button class="subtab-btn"        data-subtab="roadmap"     onclick="activateSubTab('${id}','roadmap')">Arquitetura Geral</button>
       <button class="subtab-btn"        data-subtab="arquitetura" onclick="activateSubTab('${id}','arquitetura')">Arquitetura de Dados</button>
-      <button class="subtab-btn"        data-subtab="gestao"      onclick="activateSubTab('${id}','gestao')">Gestão de Processo</button>
       <button class="subtab-btn"        data-subtab="parceiros"      onclick="activateSubTab('${id}','parceiros')">Parceiros</button>
       <button class="subtab-btn"        data-subtab="acompanhamento" onclick="activateSubTab('${id}','acompanhamento')">Processo de Compra</button>
     </div>
@@ -3869,7 +3895,6 @@ function renderPanel(id) {
   <div class="subtab-panel" data-tab="${id}" data-subtab="tecnologia"><div id="tecnologia-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="roadmap"><div id="roadmap-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="arquitetura"><div id="arquitetura-panel-${id}"></div></div>
-  <div class="subtab-panel" data-tab="${id}" data-subtab="gestao"><div id="gestao-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="parceiros"><div id="parceiros-panel-${id}"></div></div>
   <div class="subtab-panel" data-tab="${id}" data-subtab="acompanhamento"><div id="acompanhamento-panel-${id}"></div></div>
 `;
@@ -3920,7 +3945,6 @@ function renderPanel(id) {
   initCalcScenarios(id);
   renderCalcScenariosBar(id);
   renderCalcCompare(id);
-  renderGestaoPanel(id);
   renderTecnologiaPanel(id);
   renderRoadmapPanel(id);
   renderArquiteturaPanel(id);
@@ -4571,9 +4595,12 @@ function switchCiSitePage(page) {
   _ciSitePage = page;
   document.getElementById('page-ci-solucoes').style.display = page === 'solucoes' ? '' : 'none';
   document.getElementById('page-ci-kanban').style.display   = page === 'kanban'   ? '' : 'none';
+  document.getElementById('page-ci-gestao').style.display   = page === 'gestao'   ? '' : 'none';
   document.getElementById('ci-site-btn-solucoes').classList.toggle('active', page === 'solucoes');
   document.getElementById('ci-site-btn-kanban').classList.toggle('active', page === 'kanban');
+  document.getElementById('ci-site-btn-gestao').classList.toggle('active', page === 'gestao');
   if (page === 'kanban') renderCiKanban();
+  if (page === 'gestao') renderCiGestaoPage();
 }
 
 function scrollCiTabBar(dir) {
@@ -4800,9 +4827,10 @@ function _nbBlockHtml(block, tabId) {
       const _wrapped = content.startsWith('<!') || content.startsWith('<html') ? content : _reset + content;
       const srcdoc = _wrapped.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       return `<div class="nb-html-block nb-media-embedded">
-        <iframe class="nb-html-iframe" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin allow-popups"
+        <iframe class="nb-html-iframe" id="nb-html-if-${block.id}" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin allow-popups"
           onload="(function(f){function fit(){f.style.height='0';f.style.height=f.contentDocument.documentElement.scrollHeight+'px';}fit();new ResizeObserver(fit).observe(f.contentDocument.documentElement);})(this)"></iframe>
         <div class="nb-media-edit-overlay">
+          <button onclick="_nbHtmlFullscreen('${block.id}')">⛶ Apresentar</button>
           <button onclick="_nbEditMedia('${tabId}','${block.id}')">✏ Editar</button>
           <button style="background:rgba(180,30,30,.7)" onclick="_nbMediaClear('${tabId}','${block.id}')">× Remover</button>
         </div>
@@ -4971,6 +4999,12 @@ function _nbHtmlUpload(tabId, bid, input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+function _nbHtmlFullscreen(bid) {
+  const iframe = document.getElementById('nb-html-if-' + bid);
+  if (!iframe) return;
+  (iframe.requestFullscreen || iframe.webkitRequestFullscreen || iframe.mozRequestFullScreen)?.call(iframe);
 }
 
 function _nbPdfDownload(bid) {
@@ -5177,6 +5211,29 @@ function delInfoArtigo(id, ai) {
 function renameInfoArtigo(id, ai, nome) {
   const artigos = _infoArtigos(id);
   if (artigos[ai]) { artigos[ai].nome = nome.trim() || 'Artigo'; persistData(id); }
+}
+
+let _gestaoPageActiveId = null;
+let _ciGestaoPageActiveId = null;
+
+function renderGestaoPage() {
+  _gestaoPageActiveId = _gestaoPageActiveId || activeTabId || TABS[0]?.id;
+  _renderGestaoPageForTab(_gestaoPageActiveId, TABS, 'gestao-page-tabs', 'gestao-page-content', false);
+}
+function renderCiGestaoPage() {
+  _ciGestaoPageActiveId = _ciGestaoPageActiveId || ciActiveTabId || CI_TABS[0]?.id;
+  _renderGestaoPageForTab(_ciGestaoPageActiveId, CI_TABS, 'ci-gestao-page-tabs', 'ci-gestao-page-content', true);
+}
+function _renderGestaoPageForTab(id, tabs, tabsElId, contentElId, isCi) {
+  if (isCi) _ciGestaoPageActiveId = id; else _gestaoPageActiveId = id;
+  const tabsEl = document.getElementById(tabsElId);
+  if (tabsEl) tabsEl.innerHTML = tabs.map(t =>
+    `<button class="gestao-page-tab${t.id === id ? ' active' : ''}" onclick="_renderGestaoPageForTab('${t.id}',${isCi ? 'CI_TABS' : 'TABS'},'${tabsElId}','${contentElId}',${isCi})">${t.nome}</button>`
+  ).join('');
+  const contentEl = document.getElementById(contentElId);
+  if (!contentEl) return;
+  contentEl.innerHTML = `<div id="gestao-panel-${id}"></div>`;
+  renderGestaoPanel(id);
 }
 
 function renderGestaoPanel(id) {

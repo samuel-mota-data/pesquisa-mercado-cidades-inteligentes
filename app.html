@@ -90,6 +90,8 @@
     .kanban-card-stars { font-size:.65rem; color:#f59e0b; letter-spacing:1px; }
     .kanban-empty-col { font-size:.65rem; color:var(--text-mid); text-align:center; padding:16px 8px; }
 
+    .kanban-card-move-btn { background:none; border:1px solid var(--gray-mid); border-radius:5px; font-size:.72rem; color:var(--text-mid); cursor:pointer; padding:1px 6px; line-height:1.4; flex-shrink:0; transition:border-color .12s, color .12s; }
+    .kanban-card-move-btn:hover { border-color:var(--teal); color:var(--teal); }
     /* ---- Gestão de Processo Kanban ---- */
 
     .gestao-k-card { background:var(--white); border-radius:8px; border:1px solid var(--gray-mid); padding:11px 13px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -3372,7 +3374,10 @@ function renderKanban() {
       const entregaTxt = c.entrega ? `<span class="kanban-card-entrega">⏱ ${_escForn(c.entrega)}</span>` : '';
       const starsTxt = c.nota ? `<span class="kanban-card-stars">${'★'.repeat(c.nota)}${'☆'.repeat(5-c.nota)}</span>` : '';
       return `<div class="kanban-card">
-        <div class="kanban-card-forn">${_escForn(c.forn)}</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="kanban-card-forn">${_escForn(c.forn)}</div>
+          <button class="kanban-card-move-btn" title="Mover coluna" onclick="cycleTecFornStatus('${c.tabId}',${c.tecIdx},${c.fi})">→</button>
+        </div>
         <div class="kanban-card-meta">${tagBadge}${precoTxt}${starsTxt}</div>
         ${dateTxt || entregaTxt ? `<div class="kanban-card-meta" style="margin-top:2px">${dateTxt}${entregaTxt}</div>` : ''}
         <div class="kanban-card-device" title="${_escForn(c.device)}">${_escForn(c.device)}</div>
@@ -4628,7 +4633,7 @@ function renderCiKanban() {
     (DATA[tab.id]?.tecnologia || []).forEach((item, tecIdx) => {
       (item.fornecedores || []).forEach((f, fi) => {
         const stKey = f.status || 'sem_obs';
-        cols[stKey].push({ forn: f.nome||'—', tag: f.tag||'', preco: f.preco||'', device: item.titulo||'—', solution: tab.label });
+        cols[stKey].push({ forn: f.nome||'—', tag: f.tag||'', preco: f.preco||'', device: item.titulo||'—', solution: tab.label, tabId: tab.id, tecIdx, fi });
       });
     });
   });
@@ -4637,7 +4642,10 @@ function renderCiKanban() {
       const tagBadge = c.tag ? `<span class="acomp-entry-tag" style="font-size:.58rem">${_escForn(c.tag)}</span>` : '';
       const precoTxt = c.preco ? `<span class="kanban-card-price">R$ ${_escForn(c.preco)}</span>` : '';
       return `<div class="kanban-card">
-        <div class="kanban-card-forn">${_escForn(c.forn)}</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="kanban-card-forn">${_escForn(c.forn)}</div>
+          <button class="kanban-card-move-btn" title="Mover coluna" onclick="cycleTecFornStatus('${c.tabId}',${c.tecIdx},${c.fi})">→</button>
+        </div>
         <div class="kanban-card-meta">${tagBadge}${precoTxt}</div>
         <div class="kanban-card-device">${_escForn(c.device)}</div>
         <span class="kanban-card-solution">${_escForn(c.solution)}</span>
@@ -5277,7 +5285,10 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
       const nextF   = GESTAO_FUNIL[ci + 1];
       const nextSt  = GESTAO_CARD_ST[(GESTAO_CARD_ST.findIndex(s => s.key === item.card_status) + 1) % GESTAO_CARD_ST.length];
       return `<div class="kanban-card" style="background:${st.bg};border-color:${st.border}">
-        <div class="kanban-card-forn" style="color:${st.color === 'var(--text-mid)' ? 'var(--blue-dark)' : st.color}">${item.tabLabel}</div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+          <div class="kanban-card-forn" style="color:${st.color === 'var(--text-mid)' ? 'var(--blue-dark)' : st.color}">${item.tabLabel}</div>
+          <button class="kanban-card-move-btn" title="Mover fase" onclick="showGestaoMoveModal('${item.tabId}',${item.ei},'${contentId}',${isCi})">→</button>
+        </div>
         ${item.titulo ? `<div class="kanban-card-device" title="${item.titulo}">${item.titulo}</div>` : ''}
         ${item.desc   ? `<div class="kanban-card-device" style="opacity:.75;font-style:italic" title="${item.desc}">${item.desc}</div>` : ''}
         ${dateStr ? `<div class="kanban-card-meta" style="margin-top:4px"><span class="kanban-card-date${isPast ? '" style="color:#dc2626;font-weight:700' : ''}">${dateStr}</span></div>` : ''}
@@ -5391,6 +5402,36 @@ function showGestaoAddModal(defaultFase, contentId, isCi) {
   document.addEventListener('keydown', onKey);
   document.body.appendChild(ov);
   document.getElementById('gk-titulo')?.focus();
+}
+
+function showGestaoMoveModal(tabId, ei, contentId, isCi) {
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev) return;
+  const currentKey = _gMapEstagio(ev);
+  const curF = GESTAO_FUNIL.find(f => f.key === currentKey) || GESTAO_FUNIL[0];
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  const opts = GESTAO_FUNIL.map(f => {
+    const isActive = f.key === currentKey;
+    return `<button class="status-modal-opt${isActive ? ' status-modal-opt-active' : ''}"
+      style="background:${f.bg};color:${f.color};border-color:${isActive ? f.color : 'transparent'}"
+      onclick="moveGestaoFunil('${tabId}',${ei},'${f.key}','${contentId}',${isCi});document.getElementById('gm-modal-${tabId}-${ei}').remove()">${_escForn(f.label)}</button>`;
+  }).join('');
+  ov.innerHTML = `
+    <div class="confirm-box" style="max-width:340px">
+      <h4 style="margin-bottom:6px">Mover para fase</h4>
+      <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+        ${_escForn(ev.titulo || '—')} &nbsp;·&nbsp; atual: <strong style="color:${curF.color}">${_escForn(curF.label)}</strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:7px">${opts}</div>
+      <div class="confirm-actions" style="margin-top:14px">
+        <button class="confirm-cancel">Cancelar</button>
+      </div>
+    </div>`;
+  ov.id = `gm-modal-${tabId}-${ei}`;
+  ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
 }
 
 function renderGestaoPanel(id) {

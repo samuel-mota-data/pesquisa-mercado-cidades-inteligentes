@@ -5223,20 +5223,31 @@ function renameInfoArtigo(id, ai, nome) {
   if (artigos[ai]) { artigos[ai].nome = nome.trim() || 'Artigo'; persistData(id); }
 }
 
-const GESTAO_STATUSES = [
-  { key: 'neutro',        label: 'Neutro',          color: '#94a3b8', bg: '#f8fafc' },
-  { key: 'em_avaliacao',  label: 'Em Avaliação',    color: '#64748b', bg: '#f1f5f9' },
-  { key: 'em_negociacao', label: 'Em Negociação',   color: '#1d4ed8', bg: '#eff6ff' },
-  { key: 'aprovado',      label: 'Aprovado',         color: '#15803d', bg: '#f0fdf4' },
-  { key: 'reprovado',     label: 'Reprovado',        color: '#b91c1c', bg: '#fff1f2' },
+/* Fases do funil — definem as COLUNAS */
+const GESTAO_FUNIL = [
+  { key: 'pesquisa',        label: 'Pesquisa' },
+  { key: 'modelagem',       label: 'Modelagem' },
+  { key: 'homologacao',     label: 'Homologação' },
+  { key: 'teste_comercial', label: 'Teste Comercial' },
+  { key: 'go_live',         label: 'Go-Live' },
+  { key: 'aderencia',       label: 'Aderência' },
 ];
 
-function _gMapStatus(s) {
-  if (!s || s === 'planejado') return 'neutro';
-  if (s === 'em_andamento') return 'em_negociacao';
-  if (s === 'concluido') return 'aprovado';
-  if (s === 'cancelado' || s === 'descontinuado') return 'reprovado';
-  return GESTAO_STATUSES.find(x => x.key === s) ? s : 'neutro';
+/* Status visual do card — define a COR */
+const GESTAO_CARD_ST = [
+  { key: 'neutro',   label: 'Neutro',   bg: 'var(--white)', border: 'var(--gray-mid)', color: 'var(--text-mid)' },
+  { key: 'ativo',    label: 'Ativo',    bg: '#dcfce7',      border: '#86efac',         color: '#15803d' },
+  { key: 'impedido', label: 'Impedido', bg: '#fee2e2',      border: '#fca5a5',         color: '#b91c1c' },
+];
+function _gCardSt(k) { return GESTAO_CARD_ST.find(s => s.key === k) || GESTAO_CARD_ST[0]; }
+function _gFunilIdx(k) { return GESTAO_FUNIL.findIndex(f => f.key === k); }
+function _gMapEstagio(ev) {
+  if (ev.estagio && _gFunilIdx(ev.estagio) >= 0) return ev.estagio;
+  // migração de dados antigos
+  const s = ev.status || '';
+  if (s === 'em_andamento' || s === 'em_negociacao') return 'modelagem';
+  if (s === 'concluido' || s === 'aprovado') return 'go_live';
+  return 'pesquisa';
 }
 
 function renderGestaoPage()   { _renderGestaoKanban(TABS,    'gestao-page-content',    false); }
@@ -5247,39 +5258,41 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
   if (!el) return;
   const today = new Date().toISOString().slice(0, 10);
   const cols = {};
-  GESTAO_STATUSES.forEach(s => cols[s.key] = []);
+  GESTAO_FUNIL.forEach(f => cols[f.key] = []);
   tabs.forEach(tab => {
     (DATA[tab.id]?.gestao || []).forEach((ev, ei) => {
-      const st = _gMapStatus(ev.status);
-      cols[st].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc });
+      const estagio = _gMapEstagio(ev);
+      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro' });
     });
   });
-  Object.values(cols).forEach(arr => arr.sort((a, b) => (a.data || '').localeCompare(b.data || '')));
 
-  const board = GESTAO_STATUSES.map(col => {
+  const board = GESTAO_FUNIL.map((col, ci) => {
     const items = cols[col.key];
     const cards = items.map(item => {
-      const isPast = item.data && item.data < today;
+      const st = _gCardSt(item.card_status);
       const dateStr = item.data ? _fmtDate(item.data) : '';
-      const moves = GESTAO_STATUSES.filter(s => s.key !== col.key).map(s =>
-        `<button class="gestao-k-move" style="color:${s.color}" onclick="moveGestaoKanbanItem('${item.tabId}',${item.ei},'${s.key}','${contentId}',${isCi})">${s.label}</button>`
-      ).join('');
-      return `<div class="gestao-k-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
-          <span class="gestao-k-badge" style="background:${col.bg};color:${col.color}">${item.tabLabel}</span>
-          ${dateStr ? `<span class="gestao-k-date${isPast ? ' past' : ''}">${dateStr}</span>` : ''}
-        </div>
-        <div class="gestao-k-title">${item.titulo || '—'}</div>
-        ${item.desc ? `<div class="gestao-k-desc">${item.desc}</div>` : ''}
-        <div class="gestao-k-actions">
-          <div class="gestao-k-moves">${moves}</div>
-          <button class="gestao-k-del" title="Excluir" onclick="delGestaoKanbanItem('${item.tabId}',${item.ei},'${contentId}',${isCi})">×</button>
+      const isPast  = item.data && item.data < today;
+      const prevF   = GESTAO_FUNIL[ci - 1];
+      const nextF   = GESTAO_FUNIL[ci + 1];
+      const nextSt  = GESTAO_CARD_ST[(GESTAO_CARD_ST.findIndex(s => s.key === item.card_status) + 1) % GESTAO_CARD_ST.length];
+      return `<div class="kanban-card" style="background:${st.bg};border-color:${st.border}">
+        <div class="kanban-card-forn" style="color:${st.color === 'var(--text-mid)' ? 'var(--blue-dark)' : st.color}">${item.tabLabel}</div>
+        ${item.titulo ? `<div class="kanban-card-device" title="${item.titulo}">${item.titulo}</div>` : ''}
+        ${item.desc   ? `<div class="kanban-card-device" style="opacity:.75;font-style:italic" title="${item.desc}">${item.desc}</div>` : ''}
+        ${dateStr ? `<div class="kanban-card-meta" style="margin-top:4px"><span class="kanban-card-date${isPast ? '" style="color:#dc2626;font-weight:700' : ''}">${dateStr}</span></div>` : ''}
+        <div class="kanban-card-meta" style="margin-top:6px;justify-content:space-between">
+          <button class="kanban-card-solution" style="background:${st.bg === 'var(--white)' ? 'rgba(37,64,192,.08)' : st.bg};color:${st.color};border:none;cursor:pointer;font-family:inherit" title="Alternar status" onclick="cycleGestaoCardSt('${item.tabId}',${item.ei},'${contentId}',${isCi})">● ${st.label}</button>
+          <span style="display:flex;gap:3px">
+            ${prevF ? `<button class="gestao-k-nav" title="← ${prevF.label}" onclick="moveGestaoFunil('${item.tabId}',${item.ei},'${prevF.key}','${contentId}',${isCi})">‹</button>` : '<span style="width:22px"></span>'}
+            ${nextF ? `<button class="gestao-k-nav" title="→ ${nextF.label}" onclick="moveGestaoFunil('${item.tabId}',${item.ei},'${nextF.key}','${contentId}',${isCi})">›</button>` : '<span style="width:22px"></span>'}
+            <button class="gestao-k-del" title="Excluir" onclick="delGestaoKanbanItem('${item.tabId}',${item.ei},'${contentId}',${isCi})">×</button>
+          </span>
         </div>
       </div>`;
-    }).join('') || `<div class="kanban-empty-col">Sem itens</div>`;
+    }).join('') || `<div class="kanban-empty-col">—</div>`;
 
     return `<div class="kanban-col">
-      <div class="kanban-col-head" style="border-color:${col.color};color:${col.color}">${col.label} <span style="font-weight:400;opacity:.6">${items.length}</span></div>
+      <div class="kanban-col-head" style="border-color:#475569;color:#475569;background:#f8fafc">${col.label}<span style="float:right;font-weight:400;opacity:.65">${items.length}</span></div>
       <div class="kanban-col-body">${cards}</div>
       <button class="gestao-k-add" onclick="showGestaoAddModal('${col.key}','${contentId}',${isCi})">+ Adicionar</button>
     </div>`;
@@ -5288,9 +5301,18 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
   el.innerHTML = `<div class="kanban-board">${board}</div>`;
 }
 
-function moveGestaoKanbanItem(tabId, ei, newStatus, contentId, isCi) {
+function moveGestaoFunil(tabId, ei, novaFase, contentId, isCi) {
   if (!DATA[tabId]?.gestao?.[ei]) return;
-  DATA[tabId].gestao[ei].status = newStatus;
+  DATA[tabId].gestao[ei].estagio = novaFase;
+  persistData(tabId);
+  _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
+}
+
+function cycleGestaoCardSt(tabId, ei, contentId, isCi) {
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev) return;
+  const idx = GESTAO_CARD_ST.findIndex(s => s.key === (ev.card_status || 'neutro'));
+  ev.card_status = GESTAO_CARD_ST[(idx + 1) % GESTAO_CARD_ST.length].key;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }
@@ -5303,7 +5325,7 @@ function delGestaoKanbanItem(tabId, ei, contentId, isCi) {
   });
 }
 
-function showGestaoAddModal(defaultStatus, contentId, isCi) {
+function showGestaoAddModal(defaultFase, contentId, isCi) {
   const tabs = isCi ? CI_TABS : TABS;
   const ov = document.createElement('div');
   ov.className = 'confirm-overlay';
@@ -5318,7 +5340,13 @@ function showGestaoAddModal(defaultStatus, contentId, isCi) {
           </select>
         </div>
         <div>
-          <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Título</label>
+          <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Fase do funil</label>
+          <select id="gk-fase" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;background:var(--white);outline:none">
+            ${GESTAO_FUNIL.map(f => `<option value="${f.key}"${f.key === defaultFase ? ' selected' : ''}>${f.label}</option>`).join('')}
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Título / Nota</label>
           <input id="gk-titulo" type="text" placeholder="Ex: Reunião com fornecedor" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;outline:none">
         </div>
         <div>
@@ -5327,12 +5355,12 @@ function showGestaoAddModal(defaultStatus, contentId, isCi) {
         </div>
         <div>
           <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Descrição</label>
-          <textarea id="gk-desc" rows="2" placeholder="Notas ou detalhes (opcional)" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;outline:none;resize:vertical"></textarea>
+          <textarea id="gk-desc" rows="2" placeholder="Notas adicionais (opcional)" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;outline:none;resize:vertical"></textarea>
         </div>
         <div>
           <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Status</label>
-          <select id="gk-status" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;background:var(--white);outline:none">
-            ${GESTAO_STATUSES.map(s => `<option value="${s.key}"${s.key === defaultStatus ? ' selected' : ''}>${s.label}</option>`).join('')}
+          <select id="gk-card-st" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;background:var(--white);outline:none">
+            ${GESTAO_CARD_ST.map(s => `<option value="${s.key}">${s.label}</option>`).join('')}
           </select>
         </div>
       </div>
@@ -5343,14 +5371,15 @@ function showGestaoAddModal(defaultStatus, contentId, isCi) {
     </div>`;
   ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
   ov.querySelector('.confirm-ok').onclick = () => {
-    const tabId  = document.getElementById('gk-tab-sel').value;
-    const titulo = document.getElementById('gk-titulo').value.trim();
-    const data   = document.getElementById('gk-data').value;
-    const desc   = document.getElementById('gk-desc').value.trim();
-    const status = document.getElementById('gk-status').value;
+    const tabId     = document.getElementById('gk-tab-sel').value;
+    const estagio   = document.getElementById('gk-fase').value;
+    const titulo    = document.getElementById('gk-titulo').value.trim();
+    const data      = document.getElementById('gk-data').value;
+    const desc      = document.getElementById('gk-desc').value.trim();
+    const card_status = document.getElementById('gk-card-st').value;
     if (!titulo) { document.getElementById('gk-titulo').style.borderColor='#dc2626'; document.getElementById('gk-titulo').focus(); return; }
     if (!DATA[tabId].gestao) DATA[tabId].gestao = [];
-    DATA[tabId].gestao.push({ titulo, data, desc, status, avancos: [] });
+    DATA[tabId].gestao.push({ titulo, data, desc, estagio, card_status, avancos: [] });
     DATA[tabId].gestao.sort((a, b) => (a.data || '').localeCompare(b.data || ''));
     persistData(tabId);
     ov.remove();

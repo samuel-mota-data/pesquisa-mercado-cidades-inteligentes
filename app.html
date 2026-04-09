@@ -5294,11 +5294,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
         ${dateStr ? `<div class="kanban-card-meta" style="margin-top:4px"><span class="kanban-card-date${isPast ? '" style="color:#dc2626;font-weight:700' : ''}">${dateStr}</span></div>` : ''}
         <div class="kanban-card-meta" style="margin-top:6px;justify-content:space-between">
           <button class="kanban-card-solution" style="background:${st.bg === 'var(--white)' ? 'rgba(37,64,192,.08)' : st.bg};color:${st.color};border:none;cursor:pointer;font-family:inherit" title="Alternar status" onclick="cycleGestaoCardSt('${item.tabId}',${item.ei},'${contentId}',${isCi})">● ${st.label}</button>
-          <span style="display:flex;gap:3px">
-            ${prevF ? `<button class="gestao-k-nav" title="← ${prevF.label}" onclick="moveGestaoFunil('${item.tabId}',${item.ei},'${prevF.key}','${contentId}',${isCi})">‹</button>` : '<span style="width:22px"></span>'}
-            ${nextF ? `<button class="gestao-k-nav" title="→ ${nextF.label}" onclick="moveGestaoFunil('${item.tabId}',${item.ei},'${nextF.key}','${contentId}',${isCi})">›</button>` : '<span style="width:22px"></span>'}
-            <button class="gestao-k-del" title="Excluir" onclick="delGestaoKanbanItem('${item.tabId}',${item.ei},'${contentId}',${isCi})">×</button>
-          </span>
+          <button class="gestao-k-del" title="Excluir" onclick="delGestaoKanbanItem('${item.tabId}',${item.ei},'${contentId}',${isCi})">×</button>
         </div>
       </div>`;
     }).join('') || `<div class="kanban-empty-col">—</div>`;
@@ -5411,27 +5407,64 @@ function showGestaoMoveModal(tabId, ei, contentId, isCi) {
   const curF = GESTAO_FUNIL.find(f => f.key === currentKey) || GESTAO_FUNIL[0];
   const ov = document.createElement('div');
   ov.className = 'confirm-overlay';
-  const opts = GESTAO_FUNIL.map(f => {
-    const isActive = f.key === currentKey;
-    return `<button class="status-modal-opt${isActive ? ' status-modal-opt-active' : ''}"
-      style="background:${f.bg};color:${f.color};border-color:${isActive ? f.color : 'transparent'}"
-      onclick="moveGestaoFunil('${tabId}',${ei},'${f.key}','${contentId}',${isCi});document.getElementById('gm-modal-${tabId}-${ei}').remove()">${_escForn(f.label)}</button>`;
-  }).join('');
-  ov.innerHTML = `
-    <div class="confirm-box" style="max-width:340px">
-      <h4 style="margin-bottom:6px">Mover para fase</h4>
-      <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
-        ${_escForn(ev.titulo || '—')} &nbsp;·&nbsp; atual: <strong style="color:${curF.color}">${_escForn(curF.label)}</strong>
-      </p>
-      <div style="display:flex;flex-direction:column;gap:7px">${opts}</div>
-      <div class="confirm-actions" style="margin-top:14px">
-        <button class="confirm-cancel">Cancelar</button>
-      </div>
-    </div>`;
   ov.id = `gm-modal-${tabId}-${ei}`;
-  ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+
+  function _showFaseOpts() {
+    const opts = GESTAO_FUNIL.map(f => {
+      const isActive = f.key === currentKey;
+      return `<button class="status-modal-opt${isActive ? ' status-modal-opt-active' : ''}"
+        style="background:${f.bg};color:${f.color};border-color:${isActive ? f.color : 'transparent'}"
+        onclick="_showGestaoDateStep('${tabId}',${ei},'${f.key}','${contentId}',${isCi})">${_escForn(f.label)}</button>`;
+    }).join('');
+    ov.innerHTML = `
+      <div class="confirm-box" style="max-width:340px" id="gm-box-${tabId}-${ei}">
+        <h4 style="margin-bottom:6px">Mover para fase</h4>
+        <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+          ${_escForn(ev.titulo || '—')} &nbsp;·&nbsp; atual: <strong style="color:${curF.color}">${_escForn(curF.label)}</strong>
+        </p>
+        <div style="display:flex;flex-direction:column;gap:7px">${opts}</div>
+        <div class="confirm-actions" style="margin-top:14px">
+          <button class="confirm-cancel">Cancelar</button>
+        </div>
+      </div>`;
+    ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+  }
+
+  _showFaseOpts();
   ov.onclick = e => { if (e.target === ov) ov.remove(); };
   document.body.appendChild(ov);
+}
+
+function _showGestaoDateStep(tabId, ei, newKey, contentId, isCi) {
+  const box = document.getElementById(`gm-box-${tabId}-${ei}`);
+  if (!box) return;
+  const newF = GESTAO_FUNIL.find(f => f.key === newKey) || GESTAO_FUNIL[0];
+  const today = new Date().toISOString().slice(0, 10);
+  box.innerHTML = `
+    <h4 style="margin-bottom:8px">Confirmar mudança de fase</h4>
+    <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+      → <strong style="color:${newF.color};background:${newF.bg};padding:2px 8px;border-radius:4px">${_escForn(newF.label)}</strong>
+    </p>
+    <label style="display:block;font-size:.68rem;color:var(--text-mid);margin-bottom:4px">Data da mudança</label>
+    <input type="date" id="gm-date-${tabId}-${ei}" value="${today}"
+      style="font-family:inherit;font-size:.78rem;border:1.5px solid var(--gray-mid);border-radius:6px;padding:5px 9px;background:var(--white);outline:none;color:var(--text-dark);width:100%">
+    <div class="confirm-actions" style="margin-top:16px">
+      <button class="confirm-ok" style="background:${newF.color}"
+        onclick="_applyGestaoMove('${tabId}',${ei},'${newKey}','${contentId}',${isCi})">Confirmar</button>
+      <button class="confirm-cancel" onclick="showGestaoMoveModal('${tabId}',${ei},'${contentId}',${isCi});document.getElementById('gm-modal-${tabId}-${ei}').remove()">← Voltar</button>
+    </div>`;
+}
+
+function _applyGestaoMove(tabId, ei, newKey, contentId, isCi) {
+  const ov = document.getElementById(`gm-modal-${tabId}-${ei}`);
+  if (ov) ov.remove();
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev) return;
+  const dateVal = document.getElementById(`gm-date-${tabId}-${ei}`)?.value;
+  ev.estagio = newKey;
+  if (dateVal) ev.data = dateVal;
+  persistData(tabId);
+  _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }
 
 function renderGestaoPanel(id) {

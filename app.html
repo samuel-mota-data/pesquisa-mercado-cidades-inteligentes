@@ -5319,8 +5319,61 @@ function moveGestaoFunil(tabId, ei, novaFase, contentId, isCi) {
 function cycleGestaoCardSt(tabId, ei, contentId, isCi) {
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
-  const idx = GESTAO_CARD_ST.findIndex(s => s.key === (ev.card_status || 'neutro'));
-  ev.card_status = GESTAO_CARD_ST[(idx + 1) % GESTAO_CARD_ST.length].key;
+  const currentKey = ev.card_status || 'neutro';
+  const curSt = GESTAO_CARD_ST.find(s => s.key === currentKey) || GESTAO_CARD_ST[0];
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  ov.id = `gst-modal-${tabId}-${ei}`;
+  const opts = GESTAO_CARD_ST.map(s => {
+    const isActive = s.key === currentKey;
+    return `<button class="status-modal-opt${isActive ? ' status-modal-opt-active' : ''}"
+      style="background:${s.bg};color:${s.color};border-color:${isActive ? s.border : 'transparent'}"
+      onclick="_showGestaoStDateStep('${tabId}',${ei},'${s.key}','${contentId}',${isCi})">${_escForn(s.label)}</button>`;
+  }).join('');
+  ov.innerHTML = `
+    <div class="confirm-box" style="max-width:340px" id="gst-box-${tabId}-${ei}">
+      <h4 style="margin-bottom:6px">Alterar status</h4>
+      <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+        ${_escForn(ev.titulo || '—')} &nbsp;·&nbsp; atual: <strong style="color:${curSt.color}">${_escForn(curSt.label)}</strong>
+      </p>
+      <div style="display:flex;flex-direction:column;gap:7px">${opts}</div>
+      <div class="confirm-actions" style="margin-top:14px">
+        <button class="confirm-cancel">Cancelar</button>
+      </div>
+    </div>`;
+  ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
+}
+
+function _showGestaoStDateStep(tabId, ei, newKey, contentId, isCi) {
+  const box = document.getElementById(`gst-box-${tabId}-${ei}`);
+  if (!box) return;
+  const newSt = GESTAO_CARD_ST.find(s => s.key === newKey) || GESTAO_CARD_ST[0];
+  const today = new Date().toISOString().slice(0, 10);
+  box.innerHTML = `
+    <h4 style="margin-bottom:8px">Confirmar alteração de status</h4>
+    <p style="font-size:.72rem;color:var(--text-mid);margin-bottom:14px">
+      → <strong style="color:${newSt.color};background:${newSt.bg};padding:2px 8px;border-radius:4px;border:1px solid ${newSt.border}">${_escForn(newSt.label)}</strong>
+    </p>
+    <label style="display:block;font-size:.68rem;color:var(--text-mid);margin-bottom:4px">Data da mudança</label>
+    <input type="date" id="gst-date-${tabId}-${ei}" value="${today}"
+      style="font-family:inherit;font-size:.78rem;border:1.5px solid var(--gray-mid);border-radius:6px;padding:5px 9px;background:var(--white);outline:none;color:var(--text-dark);width:100%">
+    <div class="confirm-actions" style="margin-top:16px">
+      <button class="confirm-ok" style="background:${newSt.color}"
+        onclick="_applyGestaoCardSt('${tabId}',${ei},'${newKey}','${contentId}',${isCi})">Confirmar</button>
+      <button class="confirm-cancel" onclick="cycleGestaoCardSt('${tabId}',${ei},'${contentId}',${isCi});document.getElementById('gst-modal-${tabId}-${ei}').remove()">← Voltar</button>
+    </div>`;
+}
+
+function _applyGestaoCardSt(tabId, ei, newKey, contentId, isCi) {
+  const ov = document.getElementById(`gst-modal-${tabId}-${ei}`);
+  if (ov) ov.remove();
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev) return;
+  const dateVal = document.getElementById(`gst-date-${tabId}-${ei}`)?.value;
+  ev.card_status = newKey;
+  if (dateVal) ev.data_status = dateVal;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }

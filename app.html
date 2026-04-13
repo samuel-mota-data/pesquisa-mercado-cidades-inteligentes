@@ -3388,7 +3388,7 @@ function renderKanban() {
         <span class="kanban-card-solution">${_escForn(c.solution)}</span>
       </div>`;
     }).join('');
-    return `<div class="kanban-col">
+    return `<div class="kanban-col" style="background:${s.bg};opacity:.92">
       <div class="kanban-col-head" style="border-color:${s.color};color:${s.color};background:${s.bg}">${_escForn(s.label)}<span style="float:right;font-weight:400;opacity:.7">${cols[s.key].length}</span></div>
       <div class="kanban-col-body">${cards || '<div class="kanban-empty-col">—</div>'}</div>
     </div>`;
@@ -4655,7 +4655,7 @@ function renderCiKanban() {
         <span class="kanban-card-solution">${_escForn(c.solution)}</span>
       </div>`;
     }).join('');
-    return `<div class="kanban-col">
+    return `<div class="kanban-col" style="background:${s.bg};opacity:.92">
       <div class="kanban-col-head" style="border-color:${s.color};color:${s.color};background:${s.bg}">${_escForn(s.label)}<span style="float:right;font-weight:400;opacity:.7">${cols[s.key].length}</span></div>
       <div class="kanban-col-body">${cards || '<div class="kanban-empty-col">—</div>'}</div>
     </div>`;
@@ -5314,7 +5314,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
       </div>`;
     }).join('') || `<div class="kanban-empty-col">—</div>`;
 
-    return `<div class="kanban-col" data-estagio="${col.key}" style="background:${col.bg}">
+    return `<div class="kanban-col" data-estagio="${col.key}" style="background:${col.bg};opacity:.92">
       <div class="kanban-col-head" style="border-color:${col.color};color:${col.color};background:${col.bg}">${col.label}<span style="float:right;font-weight:400;opacity:.7">${items.length}</span></div>
       <div class="kanban-col-body">${cards}</div>
       <button class="gestao-k-add" onclick="showGestaoAddModal('${col.key}','${contentId}',${isCi})">+ Adicionar</button>

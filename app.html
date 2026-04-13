@@ -7,6 +7,8 @@
   <link rel="icon" type="image/png" href="/favicon.png" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     /* =============================================
        CORES E VARIÁVEIS — edite aqui para rebranding
@@ -93,6 +95,12 @@
 
     .kanban-card-move-btn { background:none; border:1px solid var(--gray-mid); border-radius:5px; font-size:.72rem; color:var(--text-mid); cursor:pointer; padding:1px 6px; line-height:1.4; flex-shrink:0; transition:border-color .12s, color .12s; }
     .kanban-card-move-btn:hover { border-color:var(--teal); color:var(--teal); }
+    /* ---- Mapa ---- */
+    #mapa-container { height: calc(100vh - 130px); min-height: 500px; position: relative; }
+    #mapa-leaflet   { width: 100%; height: 100%; }
+    .mapa-toolbar   { max-width:1400px; margin:0 auto; padding:16px 24px 8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+    .mapa-filter-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:4px 12px; border-radius:20px; border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; transition:all .15s; }
+    .mapa-filter-btn:hover, .mapa-filter-btn.active { border-color:var(--teal); color:var(--teal); background:rgba(0,163,163,.08); }
     /* ---- Gestão de Processo Kanban ---- */
 
     .gestao-k-card { background:var(--white); border-radius:8px; border:1px solid var(--gray-mid); padding:11px 13px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -2899,6 +2907,7 @@ let DATA = {
     <button class="site-page-btn active" id="site-btn-solucoes" onclick="switchSitePage('solucoes')">Soluções</button>
     <button class="site-page-btn" id="site-btn-kanban" onclick="switchSitePage('kanban')">Kanban de Compras</button>
     <button class="site-page-btn" id="site-btn-gestao" onclick="switchSitePage('gestao')">Gestão de Processo</button>
+    <button class="site-page-btn" id="site-btn-mapa" onclick="switchSitePage('mapa')">Mapa de Adoção</button>
   </nav>
   <nav class="site-page-nav" id="site-page-nav-casainte" style="display:none">
     <button class="site-page-btn active" id="ci-site-btn-solucoes" onclick="switchCiSitePage('solucoes')">Soluções</button>
@@ -3009,6 +3018,14 @@ let DATA = {
     <span class="kanban-title">Gestão de Processo</span>
   </div>
   <div id="gestao-page-content"></div>
+</div>
+
+<div id="page-mapa" style="display:none">
+  <div class="mapa-toolbar">
+    <span class="kanban-title">Mapa de Adoção — Cidades Inteligentes Sul do Brasil</span>
+    <span style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto" id="mapa-filters"></span>
+  </div>
+  <div id="mapa-container"><div id="mapa-leaflet"></div></div>
 </div>
 
 <div id="page-ci-solucoes" style="display:none">
@@ -3332,11 +3349,141 @@ function switchSitePage(page) {
   document.getElementById('page-solucoes').style.display = page === 'solucoes' ? '' : 'none';
   document.getElementById('page-kanban').style.display   = page === 'kanban'   ? '' : 'none';
   document.getElementById('page-gestao').style.display   = page === 'gestao'   ? '' : 'none';
+  document.getElementById('page-mapa').style.display     = page === 'mapa'     ? '' : 'none';
   document.getElementById('site-btn-solucoes').classList.toggle('active', page === 'solucoes');
   document.getElementById('site-btn-kanban').classList.toggle('active', page === 'kanban');
   document.getElementById('site-btn-gestao').classList.toggle('active', page === 'gestao');
+  document.getElementById('site-btn-mapa').classList.toggle('active', page === 'mapa');
   if (page === 'kanban') renderKanban();
   if (page === 'gestao') renderGestaoPage();
+  if (page === 'mapa')   renderMapaAdocao();
+}
+
+/* ====================================================
+   MAPA DE ADOÇÃO
+   ==================================================== */
+let _mapaInstance = null;
+let _mapaFiltroAtivo = 'todos';
+
+const MAPA_CATEGORIAS = [
+  { key: 'todos',       label: 'Todos',           color: '#475569' },
+  { key: 'agua',        label: 'Saneamento',       color: '#0284c7' },
+  { key: 'energia',     label: 'Energia',          color: '#d97706' },
+  { key: 'mobilidade',  label: 'Mobilidade',       color: '#7c3aed' },
+  { key: 'iluminacao',  label: 'Iluminação',       color: '#ca8a04' },
+  { key: 'seguranca',   label: 'Segurança',        color: '#dc2626' },
+  { key: 'clima',       label: 'Clima / Defesa',   color: '#0f766e' },
+  { key: 'conectividade', label: 'Conectividade',  color: '#2563eb' },
+  { key: 'agro',        label: 'Agronegócio',      color: '#16a34a' },
+];
+
+const MAPA_CIDADES = [
+  // ── Saneamento / Água ──
+  { nome: 'Criciúma',          lat: -28.6775, lng: -49.3697, cat: 'agua',       solucao: 'Hidrômetro Inteligente (CASAN — 80 unidades piloto)', estado: 'SC' },
+  // ── Energia ──
+  { nome: 'Florianópolis',     lat: -27.5954, lng: -48.5480, cat: 'energia',    solucao: 'Smart Meter CELESC + Nansen (20.000+ medidores)', estado: 'SC' },
+  { nome: 'Curitiba',          lat: -25.4290, lng: -49.2710, cat: 'energia',    solucao: 'Pirâmide Solar Caximba + Smart Meter COPEL', estado: 'PR' },
+  { nome: 'Balsa Nova',        lat: -25.5797, lng: -49.6354, cat: 'energia',    solucao: 'Usina solar municipal (programa Fomento PR)', estado: 'PR' },
+  // ── Mobilidade ──
+  { nome: 'São José dos Pinhais', lat: -25.5350, lng: -49.2094, cat: 'mobilidade', solucao: 'Semáforo Inteligente Pumatronix (−31% congestionamento)', estado: 'PR' },
+  { nome: 'Porto Alegre',      lat: -30.0346, lng: -51.2177, cat: 'mobilidade', solucao: 'Estacionamento Rotativo Digital (Sigapay/ZonaAzul)', estado: 'RS' },
+  { nome: 'Chapecó',           lat: -27.1005, lng: -52.6150, cat: 'mobilidade', solucao: 'Rastreamento de Frota Municipal (OnixSat)', estado: 'SC' },
+  { nome: 'Itajaí',            lat: -26.9078, lng: -48.6618, cat: 'mobilidade', solucao: 'Controle de acesso Porto de Itajaí (LPR + rastreamento)', estado: 'SC' },
+  // ── Iluminação ──
+  { nome: 'Palhoça',           lat: -27.6460, lng: -48.6696, cat: 'iluminacao', solucao: 'Iluminação Pública Inteligente QLuz (CCO desde 2020)', estado: 'SC' },
+  { nome: 'Garopaba',          lat: -28.0247, lng: -48.6203, cat: 'iluminacao', solucao: 'Iluminação Pública Inteligente QLuz (2024)', estado: 'SC' },
+  { nome: 'Penha',             lat: -26.7730, lng: -48.6449, cat: 'iluminacao', solucao: 'Iluminação Pública Inteligente QLuz (2024)', estado: 'SC' },
+  { nome: 'Balneário Camboriú',lat: -26.9902, lng: -48.6349, cat: 'seguranca',  solucao: 'Cerca Eletrônica LPR (licitação R$1,9M jul/2025)', estado: 'SC' },
+  // ── Segurança ──
+  { nome: 'Blumenau',          lat: -26.9194, lng: -49.0661, cat: 'clima',      solucao: 'AlertaBlu — 600+ pontos de monitoramento de encostas', estado: 'SC' },
+  { nome: 'Procempa/POA',      lat: -30.0500, lng: -51.2000, cat: 'seguranca',  solucao: 'LPR integrado a banco de veículos furtados (Procempa)', estado: 'RS' },
+  // ── Clima / Defesa Civil ──
+  { nome: 'Porto Alegre (CEMADEN)', lat: -30.0600, lng: -51.1800, cat: 'clima', solucao: 'TideSat 3 sensores GNSS ativos (enchente mai/2024)', estado: 'RS' },
+  { nome: 'SC — Rede CEMADEN', lat: -27.2500, lng: -50.2000, cat: 'clima',      solucao: '130 estações meteorológicas CEMADEN (2023–2025)', estado: 'SC' },
+  // ── Conectividade ──
+  { nome: 'Unifique — FUST',   lat: -27.6000, lng: -51.0000, cat: 'conectividade', solucao: '97 ERBs 5G em 28 municípios SC+RS (614km fibra)', estado: 'SC/RS' },
+  { nome: 'CIGA-SC',           lat: -27.4000, lng: -49.8000, cat: 'conectividade', solucao: '8.850 câmeras CIGA em municípios SC (backhaul 5G)', estado: 'SC' },
+  // ── Agronegócio ──
+  { nome: 'RS — Irriga+RS',    lat: -29.5000, lng: -53.0000, cat: 'agro',       solucao: 'Programa estadual de irrigação inteligente', estado: 'RS' },
+  { nome: 'PR — Banco Agricultor', lat: -24.5000, lng: -51.5000, cat: 'agro',   solucao: '875 projetos irrigação financiados (R$155,1M)', estado: 'PR' },
+  // ── Solar ──
+  { nome: 'Florianópolis (solar)', lat: -27.6200, lng: -48.4800, cat: 'energia', solucao: 'Maior produtora solar de SC + monitoramento NB-IoT', estado: 'SC' },
+  { nome: 'Porto de Itapoá',   lat: -26.1060, lng: -48.6140, cat: 'mobilidade', solucao: 'IoT 100% própria e patenteada (FIESC)', estado: 'SC' },
+];
+
+function renderMapaAdocao() {
+  const el = document.getElementById('mapa-leaflet');
+  if (!el) return;
+
+  // Renderiza filtros
+  const filtersEl = document.getElementById('mapa-filters');
+  if (filtersEl && !filtersEl.children.length) {
+    filtersEl.innerHTML = MAPA_CATEGORIAS.map(c =>
+      `<button class="mapa-filter-btn${c.key === 'todos' ? ' active' : ''}" data-cat="${c.key}"
+        onclick="_mapaSetFiltro('${c.key}')" style="${c.key === 'todos' ? `border-color:${c.color};color:${c.color}` : ''}">${c.label}</button>`
+    ).join('');
+  }
+
+  // Inicializa mapa uma única vez
+  if (!_mapaInstance) {
+    _mapaInstance = L.map('mapa-leaflet', { zoomControl: true }).setView([-27.5, -50.5], 7);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18,
+    }).addTo(_mapaInstance);
+  }
+
+  _mapaRenderPins();
+}
+
+function _mapaSetFiltro(cat) {
+  _mapaFiltroAtivo = cat;
+  document.querySelectorAll('.mapa-filter-btn').forEach(btn => {
+    const isActive = btn.dataset.cat === cat;
+    btn.classList.toggle('active', isActive);
+    const c = MAPA_CATEGORIAS.find(x => x.key === btn.dataset.cat);
+    btn.style.borderColor = isActive ? (c?.color || '') : '';
+    btn.style.color       = isActive ? (c?.color || '') : '';
+    btn.style.background  = isActive ? `${c?.color || ''}18` : '';
+  });
+  _mapaRenderPins();
+}
+
+let _mapaMarkers = [];
+function _mapaRenderPins() {
+  if (!_mapaInstance) return;
+  _mapaMarkers.forEach(m => m.remove());
+  _mapaMarkers = [];
+
+  const filtrados = _mapaFiltroAtivo === 'todos'
+    ? MAPA_CIDADES
+    : MAPA_CIDADES.filter(c => c.cat === _mapaFiltroAtivo);
+
+  filtrados.forEach(cidade => {
+    const cat   = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || MAPA_CATEGORIAS[0];
+    const icon  = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:14px;height:14px;border-radius:50%;
+        background:${cat.color};border:2.5px solid white;
+        box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:pointer
+      "></div>`,
+      iconSize: [14, 14],
+      iconAnchor: [7, 7],
+    });
+    const marker = L.marker([cidade.lat, cidade.lng], { icon })
+      .bindPopup(`
+        <div style="font-family:inherit;min-width:200px">
+          <div style="font-weight:800;font-size:.85rem;color:#1e293b;margin-bottom:4px">${cidade.nome}</div>
+          <div style="font-size:.72rem;font-weight:700;color:${cat.color};margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">${cat.label} · ${cidade.estado}</div>
+          <div style="font-size:.75rem;color:#475569;line-height:1.4">${cidade.solucao}</div>
+        </div>
+      `, { maxWidth: 280 })
+      .addTo(_mapaInstance);
+    _mapaMarkers.push(marker);
+  });
+
+  setTimeout(() => _mapaInstance.invalidateSize(), 100);
 }
 
 function renderKanban() {

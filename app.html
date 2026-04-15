@@ -1676,7 +1676,7 @@ let TABS = [
 ];
 
 let CI_TABS = [
-  { id: 'ci_visaogeral',    label: 'Visão Geral',          icon: '🏠', directSubTab: 'informativo' },
+  { id: 'ci_visaogeral',    label: 'Pesquisa',          icon: '🏠', directSubTab: 'informativo' },
   { id: 'ci_mercado',       label: 'Mercado',              icon: '📈', directSubTab: 'mercado'     },
   { id: 'ci_seguranca',     label: 'Segurança',            icon: '🔒' },
   { id: 'ci_emergencia',    label: 'Emergência & Cuidado', icon: '🆘' },
@@ -3637,7 +3637,7 @@ function renderPanel(id) {
   panel.innerHTML = `
   <div class="subtab-bar">
     <div class="subtab-bar-inner" id="subtab-bar-${id}">
-      <button class="subtab-btn active" data-subtab="informativo" onclick="activateSubTab('${id}','informativo')">Visão Geral</button>
+      <button class="subtab-btn active" data-subtab="informativo" onclick="activateSubTab('${id}','informativo')">Pesquisa</button>
       <button class="subtab-btn"        data-subtab="mercado"     onclick="activateSubTab('${id}','mercado')">Mercado</button>
       <button class="subtab-btn"        data-subtab="tecnologia"  onclick="activateSubTab('${id}','tecnologia')">Tecnologia</button>
       <button class="subtab-btn"        data-subtab="roadmap"     onclick="activateSubTab('${id}','roadmap')">Arquitetura Geral</button>
@@ -4825,7 +4825,7 @@ function _daysBetween(a, b) {
 }
 
 /* ====================================================
-   renderInfoPanel — Visão Geral / Informativo da solução
+   renderInfoPanel — Pesquisa / Informativo da solução
    ==================================================== */
 /* ====================================================
    NOTEBOOK — Editor de blocos (estilo Notion)
@@ -5287,7 +5287,7 @@ function _infoArtigos(id) {
   if (!info.artigos) {
     // migração: blocos antigos viram o primeiro artigo
     const old = info.blocks || (info.pitch ? [{ id: _nbId(), type: 'p', content: info.pitch }] : []);
-    info.artigos = [{ id: _nbId(), nome: 'Visão Geral', blocks: old }];
+    info.artigos = [{ id: _nbId(), nome: 'Pesquisa', blocks: old }];
     delete info.blocks;
     delete info.pitch;
   }

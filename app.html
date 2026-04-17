@@ -3733,17 +3733,15 @@ function _toggleMapaTagDd(inputId) {
     panel.style.display = 'block';
     const search = panel.querySelector('.mapa-tag-dd-search');
     if (search) setTimeout(() => search.focus(), 30);
-    setTimeout(() => {
-      const close = e => {
-        if (!panel.closest('.mapa-tag-dd').contains(e.target)) {
-          panel.style.display = 'none';
-          document.removeEventListener('mousedown', close);
-        }
-      };
-      document.addEventListener('mousedown', close);
-    }, 0);
   }
 }
+
+// Fecha qualquer dropdown de tag ao clicar fora
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.mapa-tag-dd')) {
+    document.querySelectorAll('.mapa-tag-dd-panel').forEach(p => { p.style.display = 'none'; });
+  }
+});
 
 function _filterMapaTagDd(inputId, query) {
   const list = document.getElementById(`mapa-tag-dd-list-${inputId}`);
@@ -3791,11 +3789,11 @@ function _mapaTagPickerHtml(inputId, currentVal) {
   ).join('');
   const labelStyle = currentVal ? 'color:var(--teal);font-weight:700' : 'color:var(--text-mid)';
   return `<div class="mapa-tag-dd" id="mapa-tag-dd-${inputId}">
-    <button type="button" class="mapa-tag-dd-btn" onclick="_toggleMapaTagDd('${inputId}')">
+    <button type="button" class="mapa-tag-dd-btn" onclick="event.stopPropagation();_toggleMapaTagDd('${inputId}')">
       <span id="mapa-tag-dd-label-${inputId}" style="${labelStyle}">${_esc(currentVal || 'Tag…')}</span>
       <span style="color:var(--text-mid);font-size:.6rem">▾</span>
     </button>
-    <div class="mapa-tag-dd-panel" id="mapa-tag-dd-panel-${inputId}" style="display:none">
+    <div class="mapa-tag-dd-panel" id="mapa-tag-dd-panel-${inputId}" style="display:none" onclick="event.stopPropagation()">
       <input type="text" class="mapa-tag-dd-search" placeholder="Buscar ou criar…" maxlength="40"
         oninput="_filterMapaTagDd('${inputId}',this.value)"
         onkeydown="if(event.key==='Escape'){document.getElementById('mapa-tag-dd-panel-${inputId}').style.display='none'}">

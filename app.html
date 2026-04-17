@@ -560,6 +560,7 @@
     .tab-bar-inner {
       display: flex; gap: 0;
       padding: 0 14px;
+      width: max-content;
     }
     /* modais genéricos */
     .modal-overlay {
@@ -3307,6 +3308,7 @@ const PROJECT_LABELS = {
 let _currentProject = 'cidades';
 function switchProject(proj) {
   _currentProject = proj;
+  sessionStorage.setItem('usc_project', proj);
   ['cidades','telemed','seguro','casainte'].forEach(p => {
     document.getElementById('proj-btn-' + p).classList.toggle('active', p === proj);
   });
@@ -3314,8 +3316,8 @@ function switchProject(proj) {
   ['site-page-nav-cidades','site-page-nav-casainte','site-page-nav-telemed'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
-  ['page-solucoes','page-kanban','page-ci-solucoes','page-ci-kanban','page-telemed-faq','page-other-project'].forEach(id => {
-    document.getElementById(id).style.display = 'none';
+  ['page-solucoes','page-kanban','page-gestao','page-mapa','page-ci-solucoes','page-ci-kanban','page-ci-gestao','page-telemed-faq','page-other-project'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   if (proj === 'cidades') {
     document.getElementById('site-page-nav-cidades').style.display = '';
@@ -3346,6 +3348,7 @@ function switchProject(proj) {
 let _currentSitePage = 'solucoes';
 function switchSitePage(page) {
   _currentSitePage = page;
+  sessionStorage.setItem('usc_site_page', page);
   document.getElementById('page-solucoes').style.display = page === 'solucoes' ? '' : 'none';
   document.getElementById('page-kanban').style.display   = page === 'kanban'   ? '' : 'none';
   document.getElementById('page-gestao').style.display   = page === 'gestao'   ? '' : 'none';
@@ -4760,6 +4763,7 @@ function activateCiTab(id) {
 
 function switchCiSitePage(page) {
   _ciSitePage = page;
+  sessionStorage.setItem('usc_ci_site_page', page);
   document.getElementById('page-ci-solucoes').style.display = page === 'solucoes' ? '' : 'none';
   document.getElementById('page-ci-kanban').style.display   = page === 'kanban'   ? '' : 'none';
   document.getElementById('page-ci-gestao').style.display   = page === 'gestao'   ? '' : 'none';
@@ -7366,7 +7370,7 @@ async function persistData(id) {
   }
 
   /* ---- Seed inicial — Casa Inteligente ---- */
-  const _ciSeed = id => !DATA[id] || (!DATA[id].mercado?.tamanho_bi && !DATA[id].informativo?.pitch && !(DATA[id].tecnologia?.length));
+  const _ciSeed = id => !DATA[id] || (!DATA[id].mercado?.tamanho_bi && !DATA[id].informativo?.pitch && !DATA[id].informativo?.artigos?.length && !(DATA[id].tecnologia?.length));
 
   if (_ciSeed('ci_visaogeral')) {
     DATA['ci_visaogeral'] = defaultData('ci_visaogeral', CI_TABS.find(t => t.id === 'ci_visaogeral'));
@@ -7837,24 +7841,34 @@ O padrão das **16 falhas documentadas** tem 4 causas recorrentes:
     persistData('ci_automacao');
   }
 
+  // Restaura aba/sub-aba de Cidades Inteligentes
   const savedTab = sessionStorage.getItem('usc_tab');
   const startTab = (savedTab && TABS.find(t => t.id === savedTab)) ? savedTab : TABS[0].id;
-  // Restaura sub-abas antes de renderizar
   TABS.forEach(t => {
     const sub = sessionStorage.getItem('usc_subtab_' + t.id);
     if (sub) activeSubTab[t.id] = sub;
   });
-  // Restaura aba ativa do CI
+  // Restaura aba/sub-aba de Casa Inteligente
   const savedCiTab = sessionStorage.getItem('usc_ci_tab');
   if (savedCiTab && CI_TABS.find(t => t.id === savedCiTab)) ciActiveTabId = savedCiTab;
   CI_TABS.forEach(t => {
     const sub = sessionStorage.getItem('usc_subtab_' + t.id);
     if (sub) activeSubTab[t.id] = sub;
   });
+  // Restaura sub-páginas (mapa, kanban, gestao, etc.)
+  const savedSitePage = sessionStorage.getItem('usc_site_page');
+  if (savedSitePage) _currentSitePage = savedSitePage;
+  const savedCiSitePage = sessionStorage.getItem('usc_ci_site_page');
+  if (savedCiSitePage) _ciSitePage = savedCiSitePage;
+  // Restaura projeto ativo (aba principal)
+  const savedProject = sessionStorage.getItem('usc_project');
   activeTabId = startTab;
   renderTabBar();
   document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + startTab));
   renderPanel(startTab);
+  if (savedProject && ['cidades','telemed','seguro','casainte'].includes(savedProject)) {
+    switchProject(savedProject);
+  }
 })();
 </script>
 </body>

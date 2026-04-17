@@ -3597,6 +3597,7 @@ function _mapaRenderPins() {
 let _mapaActiveCidade = null;
 let _mapaActiveMarcoId = null;
 let _mapaAddingMarco = false;
+let _mapaEditingMarco = null; // marcoId sendo editado inline
 
 function _mapaGetMarcos(cidadeNome) {
   if (!DATA['__mapa__']) DATA['__mapa__'] = {};
@@ -3656,15 +3657,39 @@ function renderMapaTimeline(cidadeNome) {
     </div>` : '';
 
   track.innerHTML = marcos.map(m => {
-    const isActive = m.id === _mapaActiveMarcoId;
+    const isActive  = m.id === _mapaActiveMarcoId;
+    const isEditing = m.id === _mapaEditingMarco;
     const cEsc = _esc(cidadeNome);
-    const tagBadge = m.tag ? `<span class="acomp-entry-tag" style="margin-top:4px;font-size:.55rem">${_esc(m.tag)}</span>` : '';
+    if (isEditing) {
+      const tsList = _getGlobalTags().map(t => `<option value="${_esc(t)}">`).join('');
+      return `<datalist id="mapa-edit-tags-dl">${tsList}</datalist>
+        <div class="mapa-marco active" style="min-width:150px" onclick="event.stopPropagation()">
+          <div class="mapa-marco-dot" style="background:var(--blue-dark)"></div>
+          <input id="mapa-edit-data" type="month" value="${_esc(m.data)}" style="width:130px;margin-top:6px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit">
+          <input id="mapa-edit-titulo" value="${_esc(m.titulo)}" maxlength="80" placeholder="Título"
+            style="width:130px;margin-top:4px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit"
+            onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${cEsc}','${m.id}')">
+          <input id="mapa-edit-tag" list="mapa-edit-tags-dl" value="${_esc(m.tag||'')}" maxlength="40" placeholder="Tag"
+            style="width:130px;margin-top:4px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit"
+            onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${cEsc}','${m.id}')">
+          <div style="display:flex;gap:4px;margin-top:6px">
+            <button class="mapa-tl-add" style="font-size:.6rem;padding:3px 8px" onclick="saveMapaMarcoEdit('${cEsc}','${m.id}')">✓</button>
+            <button class="mapa-marco-del" style="font-size:.75rem" onclick="event.stopPropagation();_mapaEditingMarco=null;renderMapaTimeline('${cEsc}')">✕</button>
+          </div>
+        </div>`;
+    }
+    const tagBadge = m.tag
+      ? `<span style="display:inline-block;margin-top:5px;font-size:.55rem;font-weight:700;color:var(--teal);background:rgba(0,163,163,.1);border-radius:20px;padding:1px 7px;white-space:nowrap;max-width:95px;overflow:hidden;text-overflow:ellipsis">${_esc(m.tag)}</span>`
+      : '';
     return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
       <div class="mapa-marco-data">${_esc(m.data)}</div>
       <div class="mapa-marco-titulo">${_esc(m.titulo)}</div>
       ${tagBadge}
-      <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir marco">×</button>
+      <div style="display:flex;gap:2px;margin-top:4px">
+        <button class="mapa-marco-del" onclick="event.stopPropagation();_mapaEditingMarco='${m.id}';renderMapaTimeline('${cEsc}')" title="Editar" style="color:var(--text-mid)">✎</button>
+        <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir">×</button>
+      </div>
     </div>`;
   }).join('') + addFormHtml;
 
@@ -3711,6 +3736,33 @@ function confirmAddMapaMarco() {
   persistData('__mapa__');
   renderMapaTimeline(_mapaActiveCidade);
   selectMapaMarco(_mapaActiveCidade, novoId);
+}
+
+function saveMapaMarcoEdit(cidadeNome, marcoId) {
+  const dataVal   = (document.getElementById('mapa-edit-data')?.value   || '').trim();
+  const tituloVal = (document.getElementById('mapa-edit-titulo')?.value || '').trim();
+  const tagVal    = (document.getElementById('mapa-edit-tag')?.value    || '').trim();
+  if (!dataVal || !tituloVal) return;
+  const marcos = _mapaGetMarcos(cidadeNome);
+  const marco  = marcos.find(m => m.id === marcoId);
+  if (!marco) return;
+  marco.data   = dataVal;
+  marco.titulo = tituloVal;
+  marco.tag    = tagVal || null;
+  if (tagVal && !(DATA['__tags__'] || []).includes(tagVal)) {
+    if (!DATA['__tags__']) DATA['__tags__'] = [];
+    DATA['__tags__'].push(tagVal);
+    persistData('__tags__');
+  }
+  marcos.sort((a, b) => a.data.localeCompare(b.data));
+  _mapaEditingMarco = null;
+  persistData('__mapa__');
+  renderMapaTimeline(cidadeNome);
+  // atualiza título no painel de detalhe se estiver aberto
+  if (_mapaActiveMarcoId === marcoId) {
+    const titleEl = document.getElementById('mapa-detail-title');
+    if (titleEl) titleEl.textContent = `${cidadeNome}  ·  ${marco.data}  —  ${marco.titulo}`;
+  }
 }
 
 function delMapaMarco(cidadeNome, marcoId) {

@@ -101,6 +101,101 @@
     .mapa-toolbar   { max-width:1400px; margin:0 auto; padding:16px 24px 8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
     .mapa-filter-btn { font-family:inherit; font-size:.68rem; font-weight:700; padding:4px 12px; border-radius:20px; border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; transition:all .15s; }
     .mapa-filter-btn:hover, .mapa-filter-btn.active { border-color:var(--teal); color:var(--teal); background:rgba(0,163,163,.08); }
+    /* ── Mapa timeline panel ── */
+    .mapa-timeline-panel {
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s cubic-bezier(.4,0,.2,1), opacity .3s;
+      opacity: 0; background: var(--white);
+      border-top: 2px solid var(--teal);
+    }
+    .mapa-timeline-panel.open { max-height: 320px; opacity: 1; }
+    .mapa-tl-header {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 24px 0; flex-wrap: wrap;
+    }
+    .mapa-tl-city { font-size: .85rem; font-weight: 800; color: var(--blue-dark); }
+    .mapa-tl-close {
+      background: none; border: none; cursor: pointer; color: var(--text-mid);
+      font-size: 1.2rem; margin-left: auto; padding: 0 4px; font-family: inherit; line-height:1;
+    }
+    .mapa-tl-add {
+      font-family: inherit; font-size: .68rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px;
+      border: 1.5px solid var(--teal); background: none; color: var(--teal); cursor: pointer;
+    }
+    .mapa-tl-add:hover { background: rgba(0,163,163,.08); }
+    .mapa-tl-track-wrap {
+      overflow-x: auto; padding: 0 24px 20px;
+      scrollbar-width: thin; scrollbar-color: var(--gray-mid) transparent;
+    }
+    .mapa-tl-track {
+      display: inline-flex; align-items: flex-start; gap: 0;
+      padding-top: 28px; position: relative; min-width: 100%;
+    }
+    .mapa-tl-track::before {
+      content: ''; position: absolute; left: 16px; right: 16px; top: 37px;
+      height: 2px; background: var(--gray-mid); z-index: 0;
+    }
+    .mapa-marco {
+      display: flex; flex-direction: column; align-items: center;
+      min-width: 110px; cursor: pointer; position: relative; z-index: 1; padding: 0 8px;
+    }
+    .mapa-marco-dot {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--teal); border: 3px solid var(--white);
+      box-shadow: 0 1px 6px rgba(0,0,0,.25);
+      transition: transform .15s, background .15s; flex-shrink: 0;
+    }
+    .mapa-marco:hover .mapa-marco-dot { transform: scale(1.35); }
+    .mapa-marco.active .mapa-marco-dot { background: var(--blue-dark); transform: scale(1.35); }
+    .mapa-marco-data { font-size: .6rem; font-weight: 800; color: var(--text-mid); margin-top: 8px; letter-spacing: .3px; }
+    .mapa-marco-titulo { font-size: .63rem; color: var(--text-dark); text-align: center; max-width: 95px; line-height: 1.3; margin-top: 3px; }
+    .mapa-marco-doc { margin-top: 8px; }
+    .mapa-marco-doc-btn {
+      font-family: inherit; font-size: .6rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 4px; cursor: pointer;
+      border: 1.5px solid var(--gray-mid); background: var(--gray-light);
+      color: var(--text-mid); display: flex; align-items: center; gap: 4px;
+      white-space: nowrap; max-width: 95px; overflow: hidden; text-overflow: ellipsis;
+    }
+    .mapa-marco-doc-btn.has-doc { border-color: var(--teal); color: var(--teal); background: rgba(0,163,163,.06); }
+    .mapa-marco-del {
+      background: none; border: none; cursor: pointer; font-size: .65rem;
+      color: var(--gray-mid); padding: 2px; font-family: inherit; margin-top: 2px;
+    }
+    .mapa-marco-del:hover { color: #dc2626; }
+    .mapa-marco-add-form {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      min-width: 120px; padding: 0 8px; padding-top: 2px;
+    }
+    .mapa-marco-add-form input {
+      font-family: inherit; font-size: .65rem; padding: 4px 7px;
+      border: 1.5px solid var(--teal); border-radius: 5px; width: 100px; text-align: center;
+    }
+    /* ── Mapa detail panel ── */
+    .mapa-detail-panel {
+      position: fixed; top: 0; right: 0;
+      width: min(440px, 90vw); height: 100vh;
+      background: var(--white); box-shadow: -6px 0 32px rgba(0,0,0,.18);
+      transform: translateX(100%);
+      transition: transform .35s cubic-bezier(.4,0,.2,1);
+      z-index: 3000; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .mapa-detail-panel.open { transform: translateX(0); }
+    .mapa-detail-hdr {
+      display: flex; align-items: center; gap: 8px;
+      padding: 14px 16px; border-bottom: 1px solid var(--gray-mid);
+      flex-shrink: 0; background: var(--blue-dark);
+    }
+    .mapa-detail-title { font-size: .78rem; font-weight: 800; color: var(--white); flex: 1; line-height: 1.35; }
+    .mapa-detail-close {
+      background: rgba(255,255,255,.15); border: none; cursor: pointer;
+      color: var(--white); font-size: 1rem; border-radius: 6px;
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      font-family: inherit; flex-shrink: 0;
+    }
+    .mapa-detail-close:hover { background: rgba(255,255,255,.25); }
+    .mapa-detail-body { flex: 1; overflow-y: auto; padding: 16px; }
     /* ---- Gestão de Processo Kanban ---- */
 
     .gestao-k-card { background:var(--white); border-radius:8px; border:1px solid var(--gray-mid); padding:11px 13px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
@@ -3027,6 +3122,19 @@ let DATA = {
     <span style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto" id="mapa-filters"></span>
   </div>
   <div id="mapa-container"><div id="mapa-leaflet"></div></div>
+  <div class="mapa-timeline-panel" id="mapa-timeline-panel">
+    <div class="mapa-tl-header" id="mapa-tl-header"></div>
+    <div class="mapa-tl-track-wrap">
+      <div class="mapa-tl-track" id="mapa-tl-track"></div>
+    </div>
+  </div>
+  <div class="mapa-detail-panel" id="mapa-detail-panel">
+    <div class="mapa-detail-hdr">
+      <div class="mapa-detail-title" id="mapa-detail-title">—</div>
+      <button class="mapa-detail-close" onclick="closeMapaDetail()">×</button>
+    </div>
+    <div class="mapa-detail-body" id="mapa-detail-body"></div>
+  </div>
 </div>
 
 <div id="page-ci-solucoes" style="display:none">
@@ -3482,11 +3590,177 @@ function _mapaRenderPins() {
           <div style="font-size:.75rem;color:#475569;line-height:1.4">${cidade.solucao}</div>
         </div>
       `, { maxWidth: 280 })
+      .on('click', () => selectMapaCidade(cidade.nome))
       .addTo(_mapaInstance);
     _mapaMarkers.push(marker);
   });
 
   setTimeout(() => _mapaInstance.invalidateSize(), 100);
+}
+
+/* ===========================================================
+   MAPA DE ADOÇÃO — TIMELINE & DETAIL PANEL
+   =========================================================== */
+let _mapaActiveCidade = null;
+let _mapaActiveMarcoId = null;
+let _mapaAddingMarco = false;
+
+function _mapaGetMarcos(cidadeNome) {
+  if (!DATA['__mapa__']) DATA['__mapa__'] = {};
+  if (!DATA['__mapa__'][cidadeNome]) DATA['__mapa__'][cidadeNome] = [];
+  return DATA['__mapa__'][cidadeNome];
+}
+
+function _mapaVid(cidadeNome, marcoId) {
+  const key = cidadeNome.replace(/[^a-z0-9]/gi, '_');
+  const vid = `__mapa__${key}_${marcoId}`;
+  _mapaBlockMap[vid] = { cidadeNome, marcoId };
+  return vid;
+}
+
+function selectMapaCidade(cidadeNome) {
+  _mapaActiveCidade = cidadeNome;
+  _mapaAddingMarco = false;
+  const panel = document.getElementById('mapa-timeline-panel');
+  if (panel) panel.classList.add('open');
+  renderMapaTimeline(cidadeNome);
+  if (_mapaActiveMarcoId) {
+    const marcos = _mapaGetMarcos(cidadeNome);
+    if (!marcos.find(m => m.id === _mapaActiveMarcoId)) {
+      _mapaActiveMarcoId = null;
+      closeMapaDetail();
+    }
+  }
+}
+
+function renderMapaTimeline(cidadeNome) {
+  const hdr   = document.getElementById('mapa-tl-header');
+  const track = document.getElementById('mapa-tl-track');
+  if (!hdr || !track) return;
+
+  const cidade = MAPA_CIDADES.find(c => c.nome === cidadeNome) || {};
+  const cat    = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || {};
+  const marcos = _mapaGetMarcos(cidadeNome);
+
+  hdr.innerHTML = `
+    <span class="mapa-tl-city">${_esc(cidadeNome)}</span>
+    <span style="font-size:.68rem;font-weight:700;color:${cat.color||'var(--teal)'};text-transform:uppercase;letter-spacing:.4px">${_esc(cat.label||'')}${cidade.estado ? ' · '+cidade.estado : ''}</span>
+    <button class="mapa-tl-add" onclick="startAddMapaMarco()">+ Marco</button>
+    <button class="mapa-tl-close" onclick="closeMapaTimeline()" title="Fechar">×</button>`;
+
+  const addFormHtml = _mapaAddingMarco ? `
+    <div class="mapa-marco-add-form">
+      <input id="mapa-inp-data" placeholder="Ex: 2024-03" maxlength="10">
+      <input id="mapa-inp-titulo" placeholder="Título do marco" maxlength="80"
+        onkeydown="if(event.key==='Enter')confirmAddMapaMarco()">
+      <div style="display:flex;gap:6px;margin-top:2px">
+        <button class="mapa-tl-add" onclick="confirmAddMapaMarco()">✓ Salvar</button>
+        <button class="mapa-marco-del" style="font-size:.75rem" onclick="_mapaAddingMarco=false;renderMapaTimeline(_mapaActiveCidade)">✕</button>
+      </div>
+    </div>` : '';
+
+  track.innerHTML = marcos.map(m => {
+    const isActive = m.id === _mapaActiveMarcoId;
+    const docLabel = m.doc ? m.doc.nome.slice(0, 14) + (m.doc.nome.length > 14 ? '…' : '') : '📎 Doc';
+    const docClass = m.doc ? 'has-doc' : '';
+    const cEsc = _esc(cidadeNome);
+    return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
+      <div class="mapa-marco-dot"></div>
+      <div class="mapa-marco-data">${_esc(m.data)}</div>
+      <div class="mapa-marco-titulo">${_esc(m.titulo)}</div>
+      <div class="mapa-marco-doc">
+        <label class="mapa-marco-doc-btn ${docClass}" title="${m.doc ? _esc(m.doc.nome) : 'Upload documento'}" onclick="event.stopPropagation()">
+          ${docLabel}
+          <input type="file" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+            onchange="uploadMapaDoc('${cEsc}','${m.id}',this)">
+        </label>
+      </div>
+      <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir marco">×</button>
+    </div>`;
+  }).join('') + addFormHtml;
+
+  if (_mapaAddingMarco) setTimeout(() => document.getElementById('mapa-inp-data')?.focus(), 50);
+}
+
+function startAddMapaMarco() {
+  _mapaAddingMarco = true;
+  renderMapaTimeline(_mapaActiveCidade);
+}
+
+function confirmAddMapaMarco() {
+  const dataVal   = (document.getElementById('mapa-inp-data')?.value || '').trim();
+  const tituloVal = (document.getElementById('mapa-inp-titulo')?.value || '').trim();
+  if (!dataVal || !tituloVal) return;
+  const marcos = _mapaGetMarcos(_mapaActiveCidade);
+  const novoId = _nbId();
+  marcos.push({ id: novoId, data: dataVal, titulo: tituloVal, doc: null, blocks: [] });
+  marcos.sort((a, b) => a.data.localeCompare(b.data));
+  _mapaAddingMarco = false;
+  persistData('__mapa__');
+  renderMapaTimeline(_mapaActiveCidade);
+  selectMapaMarco(_mapaActiveCidade, novoId);
+}
+
+function delMapaMarco(cidadeNome, marcoId) {
+  const marcos = _mapaGetMarcos(cidadeNome);
+  const idx = marcos.findIndex(m => m.id === marcoId);
+  if (idx === -1) return;
+  marcos.splice(idx, 1);
+  if (_mapaActiveMarcoId === marcoId) { _mapaActiveMarcoId = null; closeMapaDetail(); }
+  persistData('__mapa__');
+  renderMapaTimeline(cidadeNome);
+}
+
+function uploadMapaDoc(cidadeNome, marcoId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const marcos = _mapaGetMarcos(cidadeNome);
+    const marco  = marcos.find(m => m.id === marcoId);
+    if (!marco) return;
+    marco.doc = { nome: file.name, dados: e.target.result };
+    persistData('__mapa__');
+    renderMapaTimeline(cidadeNome);
+  };
+  reader.readAsDataURL(file);
+}
+
+function selectMapaMarco(cidadeNome, marcoId) {
+  _mapaActiveMarcoId = marcoId;
+  renderMapaTimeline(cidadeNome);
+
+  const marcos = _mapaGetMarcos(cidadeNome);
+  const marco  = marcos.find(m => m.id === marcoId);
+  if (!marco) return;
+  if (!marco.blocks) marco.blocks = [];
+
+  const panel = document.getElementById('mapa-detail-panel');
+  if (panel) panel.classList.add('open');
+
+  const titleEl = document.getElementById('mapa-detail-title');
+  if (titleEl) titleEl.textContent = `${cidadeNome}  ·  ${marco.data}  —  ${marco.titulo}`;
+
+  const body = document.getElementById('mapa-detail-body');
+  if (!body) return;
+  const vid = _mapaVid(cidadeNome, marcoId);
+  body.innerHTML = `
+    <div class="nb-editor" id="nb-editor-${vid}"></div>
+    <button class="nb-add-btn" onclick="_nbAdd('${vid}',null)">+ Adicionar bloco</button>`;
+  _nbRenderBlocks(vid);
+}
+
+function closeMapaDetail() {
+  _mapaActiveMarcoId = null;
+  document.getElementById('mapa-detail-panel')?.classList.remove('open');
+}
+
+function closeMapaTimeline() {
+  _mapaActiveCidade  = null;
+  _mapaActiveMarcoId = null;
+  _mapaAddingMarco   = false;
+  document.getElementById('mapa-timeline-panel')?.classList.remove('open');
+  closeMapaDetail();
 }
 
 function renderKanban() {
@@ -4861,6 +5135,7 @@ const _rdmLayerMap = {}; // maps virtual ID → { realTabId, si, ei }
 const rdmActiveScenario = {}; // active scenario index per tabId
 const rdmActiveEtapa = {}; // active etapa per tabId_si → ei | null
 const _infoArtMap = {}; // maps virtual ID → { realTabId, ai }
+const _mapaBlockMap = {}; // maps virtual ID → { cidadeNome, marcoId }
 const infoActiveArtigo = {}; // active artigo index per tabId
 const _infoArtEditMode = {}; // id → index being edited (-1 = none)
 const _rdmScenEditMode = {}; // id → index being edited (-1 = none)
@@ -4892,6 +5167,15 @@ function _nbBlocks(id) {
     if (!art.blocks) art.blocks = [];
     return art.blocks;
   }
+  // Marco de mapa de adoção (ID virtual)
+  if (_mapaBlockMap[id]) {
+    const { cidadeNome, marcoId } = _mapaBlockMap[id];
+    const marcos = _mapaGetMarcos(cidadeNome);
+    const marco = marcos.find(m => m.id === marcoId);
+    if (!marco) return [];
+    if (!marco.blocks) marco.blocks = [];
+    return marco.blocks;
+  }
   // fallback legacy (não deve ser chamado diretamente para informativo)
   if (!DATA[id]) DATA[id] = {};
   if (!DATA[id].informativo) DATA[id].informativo = {};
@@ -4904,7 +5188,7 @@ function _nbBlocks(id) {
 
 function _nbScheduleSave(tabId) {
   clearTimeout(_nbSaveTimer[tabId]);
-  const realTabId = _rdmLayerMap[tabId]?.realTabId || _arqLayerMap[tabId]?.realTabId || _infoArtMap[tabId]?.realTabId || tabId;
+  const realTabId = _rdmLayerMap[tabId]?.realTabId || _arqLayerMap[tabId]?.realTabId || _infoArtMap[tabId]?.realTabId || (_mapaBlockMap[tabId] ? '__mapa__' : tabId);
   _nbSaveTimer[tabId] = setTimeout(() => persistData(realTabId), 900);
 }
 

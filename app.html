@@ -4776,7 +4776,7 @@ function switchCiSitePage(page) {
 
 function scrollCiTabBar(dir) {
   const el = document.getElementById('ci-tab-bar-scroll');
-  if (el) el.scrollBy({ left: dir * 160, behavior: 'smooth' });
+  if (el) el.scrollLeft += dir * 160;
 }
 
 function renderCiKanban() {
@@ -7286,6 +7286,14 @@ async function persistData(id) {
 
 /* ---- Render inicial — carrega do banco ou usa defaults ---- */
 (async () => {
+  // Restaura projeto ativo imediatamente (antes do fetch) para evitar flash de Cidades
+  const _earlyProject = sessionStorage.getItem('usc_project');
+  const _earlyCiPage  = sessionStorage.getItem('usc_ci_site_page');
+  if (_earlyCiPage) _ciSitePage = _earlyCiPage;
+  if (_earlyProject && ['cidades','telemed','seguro','casainte'].includes(_earlyProject)) {
+    switchProject(_earlyProject);
+  }
+
   try {
     const res = await fetch('/api/data', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('uscToken')||'') } });
     if (res.ok) {

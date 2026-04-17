@@ -3636,8 +3636,9 @@ function renderMapaTimeline(cidadeNome) {
   const cat    = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || {};
   const marcos = _mapaGetMarcos(cidadeNome);
 
+  const nomeDisplay = cidadeNome.replace(/\s*[\u2014(\/].*$/, '').trim() || cidadeNome;
   hdr.innerHTML = `
-    <span class="mapa-tl-city">${_esc(cidadeNome)}</span>
+    <span class="mapa-tl-city">${_esc(nomeDisplay)}</span>
     <span style="font-size:.68rem;font-weight:700;color:${cat.color||'var(--teal)'};text-transform:uppercase;letter-spacing:.4px">${_esc(cat.label||'')}${cidade.estado ? ' · '+cidade.estado : ''}</span>
     <button class="mapa-tl-add" onclick="startAddMapaMarco()">+ Marco</button>
     <button class="mapa-tl-close" onclick="closeMapaTimeline()" title="Fechar">×</button>`;
@@ -3686,10 +3687,10 @@ function renderMapaTimeline(cidadeNome) {
       <div class="mapa-marco-data">${_esc(m.data)}</div>
       <div class="mapa-marco-titulo">${_esc(m.titulo)}</div>
       ${tagBadge}
-      <div style="display:flex;gap:2px;margin-top:4px">
+      ${isActive ? `<div style="display:flex;gap:2px;margin-top:4px">
         <button class="mapa-marco-del" onclick="event.stopPropagation();_mapaEditingMarco='${m.id}';renderMapaTimeline('${cEsc}')" title="Editar" style="color:var(--text-mid)">✎</button>
         <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir">×</button>
-      </div>
+      </div>` : ''}
     </div>`;
   }).join('') + addFormHtml;
 

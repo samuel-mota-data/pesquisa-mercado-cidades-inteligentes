@@ -3641,10 +3641,13 @@ function renderMapaTimeline(cidadeNome) {
     <button class="mapa-tl-add" onclick="startAddMapaMarco()">+ Marco</button>
     <button class="mapa-tl-close" onclick="closeMapaTimeline()" title="Fechar">×</button>`;
 
+  const tagsList = _getGlobalTags().map(t => `<option value="${_esc(t)}">`).join('');
   const addFormHtml = _mapaAddingMarco ? `
+    <datalist id="mapa-tags-dl">${tagsList}</datalist>
     <div class="mapa-marco-add-form">
       <input id="mapa-inp-data" type="month" style="width:140px;text-align:left">
-      <input id="mapa-inp-titulo" placeholder="Título do marco" maxlength="80"
+      <input id="mapa-inp-titulo" placeholder="Título do marco" maxlength="80">
+      <input id="mapa-inp-tag" list="mapa-tags-dl" placeholder="Tag (ex: Contrato, Piloto…)" maxlength="40"
         onkeydown="if(event.key==='Enter')confirmAddMapaMarco()">
       <div style="display:flex;gap:6px;margin-top:2px">
         <button class="mapa-tl-add" onclick="confirmAddMapaMarco()">✓ Salvar</button>
@@ -3655,10 +3658,12 @@ function renderMapaTimeline(cidadeNome) {
   track.innerHTML = marcos.map(m => {
     const isActive = m.id === _mapaActiveMarcoId;
     const cEsc = _esc(cidadeNome);
+    const tagBadge = m.tag ? `<span class="acomp-entry-tag" style="margin-top:4px;font-size:.55rem">${_esc(m.tag)}</span>` : '';
     return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
       <div class="mapa-marco-data">${_esc(m.data)}</div>
       <div class="mapa-marco-titulo">${_esc(m.titulo)}</div>
+      ${tagBadge}
       <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir marco">×</button>
     </div>`;
   }).join('') + addFormHtml;
@@ -3671,13 +3676,35 @@ function startAddMapaMarco() {
   renderMapaTimeline(_mapaActiveCidade);
 }
 
+function _getGlobalTags() {
+  const set = new Set(DATA['__tags__'] || []);
+  // coleta tags já usadas nos fornecedores de todos os tabs
+  [...TABS, ...CI_TABS].forEach(t => {
+    (DATA[t.id]?.tecnologia || []).forEach(tec =>
+      (tec.fornecedores || []).forEach(f => { if (f.tag) set.add(f.tag); })
+    );
+  });
+  // coleta tags já usadas nos marcos do mapa
+  Object.values(DATA['__mapa__'] || {}).forEach(marcos =>
+    marcos.forEach(m => { if (m.tag) set.add(m.tag); })
+  );
+  return [...set].sort();
+}
+
 function confirmAddMapaMarco() {
   const dataVal   = (document.getElementById('mapa-inp-data')?.value || '').trim();
   const tituloVal = (document.getElementById('mapa-inp-titulo')?.value || '').trim();
+  const tagVal    = (document.getElementById('mapa-inp-tag')?.value  || '').trim();
   if (!dataVal || !tituloVal) return;
+  // salva tag nova na lista global
+  if (tagVal && !(DATA['__tags__'] || []).includes(tagVal)) {
+    if (!DATA['__tags__']) DATA['__tags__'] = [];
+    DATA['__tags__'].push(tagVal);
+    persistData('__tags__');
+  }
   const marcos = _mapaGetMarcos(_mapaActiveCidade);
   const novoId = _nbId();
-  marcos.push({ id: novoId, data: dataVal, titulo: tituloVal, doc: null, blocks: [] });
+  marcos.push({ id: novoId, data: dataVal, titulo: tituloVal, tag: tagVal || null, blocks: [] });
   marcos.sort((a, b) => a.data.localeCompare(b.data));
   _mapaAddingMarco = false;
   persistData('__mapa__');

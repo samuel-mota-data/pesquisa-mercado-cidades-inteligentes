@@ -3578,9 +3578,7 @@ function _mapaRenderPins() {
     const marker = L.marker([cidade.lat, cidade.lng], { icon })
       .bindPopup(`
         <div style="font-family:inherit;min-width:200px">
-          <div style="font-weight:800;font-size:.85rem;color:#1e293b;margin-bottom:4px">${_mapaNome(cidade.nome)}</div>
-          <div style="font-size:.72rem;font-weight:700;color:${cat.color};margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">${cat.label} · ${cidade.estado}</div>
-          <div style="font-size:.75rem;color:#475569;line-height:1.4">${cidade.solucao}</div>
+          <div style="font-weight:800;font-size:.85rem;color:#1e293b">${_mapaNome(cidade.nome)}</div>
         </div>
       `, { maxWidth: 280 })
       .on('click', () => selectMapaCidade(cidade.nome))

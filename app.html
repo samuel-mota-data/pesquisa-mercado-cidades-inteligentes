@@ -3685,9 +3685,10 @@ function _getGlobalTags() {
     );
   });
   // coleta tags já usadas nos marcos do mapa
-  Object.values(DATA['__mapa__'] || {}).forEach(marcos =>
-    marcos.forEach(m => { if (m.tag) set.add(m.tag); })
-  );
+  Object.values(DATA['__mapa__'] || {}).forEach(marcos => {
+    if (!Array.isArray(marcos)) return;
+    marcos.forEach(m => { if (m.tag) set.add(m.tag); });
+  });
   return [...set].sort();
 }
 
@@ -7597,6 +7598,8 @@ async function persistData(id) {
         if (dbData.__tabs__) TABS = dbData.__tabs__;
         const { __tabs__: _, ...rest } = dbData;
         for (const [k, v] of Object.entries(rest)) {
+          // Chaves internas (__mapa__, __tags__, __gestao_order__, etc.) não passam pelo merge
+          if (k.startsWith('__')) { DATA[k] = v; continue; }
           // Usa os dados estáticos (ricos) como base, não o defaultData genérico.
           // Isso preserva campos como brasil.kpis que não existem no defaultData.
           const def = DATA[k] || defaultData(k, TABS.find(t => t.id === k) || {});

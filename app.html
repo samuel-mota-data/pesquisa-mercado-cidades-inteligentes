@@ -3578,7 +3578,7 @@ function _mapaRenderPins() {
     const marker = L.marker([cidade.lat, cidade.lng], { icon })
       .bindPopup(`
         <div style="font-family:inherit;min-width:200px">
-          <div style="font-weight:800;font-size:.85rem;color:#1e293b;margin-bottom:4px">${cidade.nome}</div>
+          <div style="font-weight:800;font-size:.85rem;color:#1e293b;margin-bottom:4px">${_mapaNome(cidade.nome)}</div>
           <div style="font-size:.72rem;font-weight:700;color:${cat.color};margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">${cat.label} · ${cidade.estado}</div>
           <div style="font-size:.75rem;color:#475569;line-height:1.4">${cidade.solucao}</div>
         </div>
@@ -3597,7 +3597,12 @@ function _mapaRenderPins() {
 let _mapaActiveCidade = null;
 let _mapaActiveMarcoId = null;
 let _mapaAddingMarco = false;
-let _mapaEditingMarco = null; // marcoId sendo editado inline
+let _mapaEditingMarco    = null; // marcoId sendo editado inline
+let _mapaEditingCityName = false;
+
+function _mapaNome(nome) {
+  return DATA['__mapa__']?.nomes?.[nome] || nome;
+}
 
 function _mapaGetMarcos(cidadeNome) {
   if (!DATA['__mapa__']) DATA['__mapa__'] = {};
@@ -3636,8 +3641,17 @@ function renderMapaTimeline(cidadeNome) {
   const cat    = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || {};
   const marcos = _mapaGetMarcos(cidadeNome);
 
+  const displayNome = _mapaNome(cidadeNome);
+  const cityHtml = _mapaEditingCityName
+    ? `<input id="mapa-city-name-inp" value="${_esc(displayNome)}" maxlength="60"
+         style="font-size:.85rem;font-weight:800;color:var(--blue-dark);border:none;border-bottom:2px solid var(--teal);outline:none;background:transparent;font-family:inherit;width:200px"
+         onkeydown="if(event.key==='Enter')saveMapaCityName('${_esc(cidadeNome)}');if(event.key==='Escape'){_mapaEditingCityName=false;renderMapaTimeline('${_esc(cidadeNome)}');}">
+       <button class="mapa-tl-add" style="padding:2px 8px;font-size:.65rem" onclick="saveMapaCityName('${_esc(cidadeNome)}')">✓</button>
+       <button class="mapa-marco-del" onclick="_mapaEditingCityName=false;renderMapaTimeline('${_esc(cidadeNome)}')">✕</button>`
+    : `<span class="mapa-tl-city">${_esc(displayNome)}</span>
+       <button class="mapa-marco-del" style="color:var(--text-mid);margin-left:2px" onclick="event.stopPropagation();_mapaEditingCityName=true;renderMapaTimeline('${_esc(cidadeNome)}')" title="Renomear">✎</button>`;
   hdr.innerHTML = `
-    <span class="mapa-tl-city">${_esc(cidadeNome)}</span>
+    ${cityHtml}
     <button class="mapa-tl-add" onclick="startAddMapaMarco()">+ Marco</button>
     <button class="mapa-tl-close" onclick="closeMapaTimeline()" title="Fechar">×</button>`;
 
@@ -3735,6 +3749,22 @@ function confirmAddMapaMarco() {
   persistData('__mapa__');
   renderMapaTimeline(_mapaActiveCidade);
   selectMapaMarco(_mapaActiveCidade, novoId);
+}
+
+function saveMapaCityName(cidadeNome) {
+  const newName = (document.getElementById('mapa-city-name-inp')?.value || '').trim();
+  if (!newName) return;
+  if (!DATA['__mapa__']) DATA['__mapa__'] = {};
+  if (!DATA['__mapa__'].nomes) DATA['__mapa__'].nomes = {};
+  if (newName === cidadeNome) {
+    delete DATA['__mapa__'].nomes[cidadeNome];
+  } else {
+    DATA['__mapa__'].nomes[cidadeNome] = newName;
+  }
+  _mapaEditingCityName = false;
+  persistData('__mapa__');
+  renderMapaTimeline(cidadeNome);
+  _mapaRenderPins();
 }
 
 function saveMapaMarcoEdit(cidadeNome, marcoId) {

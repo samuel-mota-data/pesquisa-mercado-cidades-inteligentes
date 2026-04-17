@@ -3636,10 +3636,8 @@ function renderMapaTimeline(cidadeNome) {
   const cat    = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || {};
   const marcos = _mapaGetMarcos(cidadeNome);
 
-  const nomeDisplay = cidadeNome.replace(/\s*[\u2014(\/].*$/, '').trim() || cidadeNome;
   hdr.innerHTML = `
-    <span class="mapa-tl-city">${_esc(nomeDisplay)}</span>
-    <span style="font-size:.68rem;font-weight:700;color:${cat.color||'var(--teal)'};text-transform:uppercase;letter-spacing:.4px">${_esc(cat.label||'')}${cidade.estado ? ' · '+cidade.estado : ''}</span>
+    <span class="mapa-tl-city">${_esc(cidadeNome)}</span>
     <button class="mapa-tl-add" onclick="startAddMapaMarco()">+ Marco</button>
     <button class="mapa-tl-close" onclick="closeMapaTimeline()" title="Fechar">×</button>`;
 

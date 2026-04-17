@@ -173,16 +173,25 @@
       font-family: inherit; font-size: .65rem; padding: 4px 7px;
       border: 1.5px solid var(--teal); border-radius: 5px; width: 100px; text-align: center;
     }
-    /* ── Tag picker ── */
-    .mapa-tag-picker { display:flex; flex-direction:column; gap:5px; width:130px; }
-    .mapa-tag-pills  { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
-    .mapa-tag-pill   { font-family:inherit; font-size:.58rem; font-weight:700; padding:2px 8px; border-radius:20px;
-                       border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; transition:all .15s; }
-    .mapa-tag-pill:hover { border-color:var(--teal); color:var(--teal); }
-    .mapa-tag-pill.active { border-color:var(--teal); background:var(--teal); color:#fff; }
-    .mapa-tag-new   { font-family:inherit; font-size:.63rem; padding:3px 7px; border:1.5px solid var(--teal);
-                      border-radius:5px; outline:none; width:100%; text-align:center; box-sizing:border-box; }
-    .mapa-tag-new:focus { border-color:var(--blue-dark); }
+    /* ── Tag dropdown ── */
+    .mapa-tag-dd { position:relative; width:130px; }
+    .mapa-tag-dd-btn { display:flex; justify-content:space-between; align-items:center; width:100%;
+      padding:4px 8px; border:1.5px solid var(--teal); border-radius:5px; background:var(--white);
+      font-family:inherit; font-size:.63rem; cursor:pointer; box-sizing:border-box; }
+    .mapa-tag-dd-btn:hover { border-color:var(--blue-dark); }
+    .mapa-tag-dd-panel { position:absolute; top:calc(100% + 3px); left:0; min-width:100%; width:max-content; max-width:200px;
+      background:var(--white); border:1.5px solid var(--teal); border-radius:6px;
+      z-index:4000; box-shadow:0 4px 16px rgba(0,0,0,.12); overflow:hidden; }
+    .mapa-tag-dd-search { width:100%; padding:6px 9px; border:none; border-bottom:1px solid var(--gray-mid);
+      font-family:inherit; font-size:.63rem; outline:none; box-sizing:border-box; }
+    .mapa-tag-dd-list { max-height:130px; overflow-y:auto; }
+    .mapa-tag-dd-item { padding:5px 10px; font-size:.65rem; cursor:pointer; color:var(--text-dark); white-space:nowrap; }
+    .mapa-tag-dd-item:hover { background:rgba(0,163,163,.08); color:var(--teal); }
+    .mapa-tag-dd-item.active { color:var(--teal); font-weight:700; background:rgba(0,163,163,.08); }
+    .mapa-tag-dd-create { padding:5px 10px; font-size:.63rem; font-weight:700; cursor:pointer;
+      color:var(--teal); border-top:1px solid var(--gray-mid); white-space:nowrap; }
+    .mapa-tag-dd-create:hover { background:rgba(0,163,163,.08); }
+    .mapa-tag-dd-empty { padding:6px 10px; font-size:.63rem; color:var(--text-mid); font-style:italic; }
     /* ── Mapa detail panel ── */
     .mapa-detail-panel {
       position: fixed; top: 0; right: 0;
@@ -3715,35 +3724,86 @@ function startAddMapaMarco() {
   renderMapaTimeline(_mapaActiveCidade);
 }
 
-function _pickMapaTag(pickerId, tag, fromText) {
-  const hidden = document.getElementById(pickerId);
-  if (hidden) hidden.value = tag;
-  const container = document.querySelector(`[data-tagpicker="${pickerId}"]`);
-  if (!container) return;
-  container.querySelectorAll('.mapa-tag-pill').forEach(b => {
-    b.classList.toggle('active', b.dataset.tv === tag);
-  });
-  if (!fromText) {
-    const ti = container.querySelector('.mapa-tag-new');
-    if (ti) ti.value = '';
-  } else {
-    container.querySelectorAll('.mapa-tag-pill').forEach(b => b.classList.remove('active'));
+function _toggleMapaTagDd(inputId) {
+  const panel = document.getElementById(`mapa-tag-dd-panel-${inputId}`);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  document.querySelectorAll('.mapa-tag-dd-panel').forEach(p => { p.style.display = 'none'; });
+  if (!isOpen) {
+    panel.style.display = 'block';
+    const search = panel.querySelector('.mapa-tag-dd-search');
+    if (search) setTimeout(() => search.focus(), 30);
+    setTimeout(() => {
+      const close = e => {
+        if (!panel.closest('.mapa-tag-dd').contains(e.target)) {
+          panel.style.display = 'none';
+          document.removeEventListener('mousedown', close);
+        }
+      };
+      document.addEventListener('mousedown', close);
+    }, 0);
   }
 }
 
-function _mapaTagPickerHtml(inputId, currentVal, onEnterJs) {
+function _filterMapaTagDd(inputId, query) {
+  const list = document.getElementById(`mapa-tag-dd-list-${inputId}`);
+  const createEl = document.getElementById(`mapa-tag-dd-create-${inputId}`);
+  if (!list) return;
+  const q = query.trim().toLowerCase();
+  let visible = 0;
+  list.querySelectorAll('.mapa-tag-dd-item').forEach(item => {
+    const match = !q || item.dataset.tag.toLowerCase().includes(q);
+    item.style.display = match ? '' : 'none';
+    if (match) visible++;
+  });
+  const emptyEl = list.querySelector('.mapa-tag-dd-empty');
+  if (emptyEl) emptyEl.style.display = visible === 0 && !q ? '' : 'none';
+  if (createEl) {
+    const exactMatch = _getGlobalTags().some(t => t.toLowerCase() === q);
+    createEl.style.display = q && !exactMatch ? '' : 'none';
+    if (q && !exactMatch) createEl.textContent = `+ Criar "${query.trim()}"`;
+    createEl.onclick = () => _selectMapaTagDd(inputId, query.trim());
+  }
+}
+
+function _selectMapaTagDd(inputId, tag) {
+  const hidden = document.getElementById(inputId);
+  if (hidden) hidden.value = tag;
+  const label = document.getElementById(`mapa-tag-dd-label-${inputId}`);
+  if (label) {
+    label.textContent = tag || 'Tag…';
+    label.style.color = tag ? 'var(--teal)' : 'var(--text-mid)';
+    label.style.fontWeight = tag ? '700' : '';
+  }
+  const panel = document.getElementById(`mapa-tag-dd-panel-${inputId}`);
+  if (panel) panel.style.display = 'none';
+  const list = document.getElementById(`mapa-tag-dd-list-${inputId}`);
+  if (list) list.querySelectorAll('.mapa-tag-dd-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.tag === tag);
+  });
+}
+
+function _mapaTagPickerHtml(inputId, currentVal) {
   const tags = _getGlobalTags();
-  const pills = tags.map(t =>
-    `<button type="button" class="mapa-tag-pill${t === currentVal ? ' active' : ''}" data-tv="${_esc(t)}"
-      onclick="_pickMapaTag('${inputId}','${_esc(t)}')">${_esc(t)}</button>`
+  const items = tags.map(t =>
+    `<div class="mapa-tag-dd-item${t === currentVal ? ' active' : ''}" data-tag="${_esc(t)}"
+      onclick="_selectMapaTagDd('${inputId}','${_esc(t)}')">${_esc(t)}</div>`
   ).join('');
-  const textVal = currentVal && tags.includes(currentVal) ? '' : _esc(currentVal || '');
-  return `<div class="mapa-tag-picker" data-tagpicker="${inputId}">
-    ${tags.length ? `<div class="mapa-tag-pills">${pills}</div>` : ''}
-    <input type="text" class="mapa-tag-new" placeholder="Nova tag…" maxlength="40"
-      value="${textVal}"
-      oninput="_pickMapaTag('${inputId}',this.value,true)"
-      onkeydown="if(event.key==='Enter'){${onEnterJs}}">
+  const labelStyle = currentVal ? 'color:var(--teal);font-weight:700' : 'color:var(--text-mid)';
+  return `<div class="mapa-tag-dd" id="mapa-tag-dd-${inputId}">
+    <button type="button" class="mapa-tag-dd-btn" onclick="_toggleMapaTagDd('${inputId}')">
+      <span id="mapa-tag-dd-label-${inputId}" style="${labelStyle}">${_esc(currentVal || 'Tag…')}</span>
+      <span style="color:var(--text-mid);font-size:.6rem">▾</span>
+    </button>
+    <div class="mapa-tag-dd-panel" id="mapa-tag-dd-panel-${inputId}" style="display:none">
+      <input type="text" class="mapa-tag-dd-search" placeholder="Buscar ou criar…" maxlength="40"
+        oninput="_filterMapaTagDd('${inputId}',this.value)"
+        onkeydown="if(event.key==='Escape'){document.getElementById('mapa-tag-dd-panel-${inputId}').style.display='none'}">
+      <div class="mapa-tag-dd-list" id="mapa-tag-dd-list-${inputId}">
+        ${items || `<div class="mapa-tag-dd-empty">Nenhuma tag ainda</div>`}
+      </div>
+      <div class="mapa-tag-dd-create" id="mapa-tag-dd-create-${inputId}" style="display:none"></div>
+    </div>
     <input type="hidden" id="${inputId}" value="${_esc(currentVal || '')}">
   </div>`;
 }

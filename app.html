@@ -173,6 +173,16 @@
       font-family: inherit; font-size: .65rem; padding: 4px 7px;
       border: 1.5px solid var(--teal); border-radius: 5px; width: 100px; text-align: center;
     }
+    /* ── Tag picker ── */
+    .mapa-tag-picker { display:flex; flex-direction:column; gap:5px; width:130px; }
+    .mapa-tag-pills  { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; }
+    .mapa-tag-pill   { font-family:inherit; font-size:.58rem; font-weight:700; padding:2px 8px; border-radius:20px;
+                       border:1.5px solid var(--gray-mid); background:none; color:var(--text-mid); cursor:pointer; transition:all .15s; }
+    .mapa-tag-pill:hover { border-color:var(--teal); color:var(--teal); }
+    .mapa-tag-pill.active { border-color:var(--teal); background:var(--teal); color:#fff; }
+    .mapa-tag-new   { font-family:inherit; font-size:.63rem; padding:3px 7px; border:1.5px solid var(--teal);
+                      border-radius:5px; outline:none; width:100%; text-align:center; box-sizing:border-box; }
+    .mapa-tag-new:focus { border-color:var(--blue-dark); }
     /* ── Mapa detail panel ── */
     .mapa-detail-panel {
       position: fixed; top: 0; right: 0;
@@ -3653,14 +3663,11 @@ function renderMapaTimeline(cidadeNome) {
     <button class="mapa-tl-add" onclick="startAddMapaMarco()">+ Marco</button>
     <button class="mapa-tl-close" onclick="closeMapaTimeline()" title="Fechar">×</button>`;
 
-  const tagsList = _getGlobalTags().map(t => `<option value="${_esc(t)}">`).join('');
   const addFormHtml = _mapaAddingMarco ? `
-    <datalist id="mapa-tags-dl">${tagsList}</datalist>
     <div class="mapa-marco-add-form">
       <input id="mapa-inp-data" type="month" style="width:140px;text-align:left">
       <input id="mapa-inp-titulo" placeholder="Título do marco" maxlength="80">
-      <input id="mapa-inp-tag" list="mapa-tags-dl" placeholder="Tag (ex: Contrato, Piloto…)" maxlength="40"
-        onkeydown="if(event.key==='Enter')confirmAddMapaMarco()">
+      ${_mapaTagPickerHtml('mapa-inp-tag', '', 'confirmAddMapaMarco()')}
       <div style="display:flex;gap:6px;margin-top:2px">
         <button class="mapa-tl-add" onclick="confirmAddMapaMarco()">✓ Salvar</button>
         <button class="mapa-marco-del" style="font-size:.75rem" onclick="_mapaAddingMarco=false;renderMapaTimeline(_mapaActiveCidade)">✕</button>
@@ -3672,17 +3679,13 @@ function renderMapaTimeline(cidadeNome) {
     const isEditing = m.id === _mapaEditingMarco;
     const cEsc = _esc(cidadeNome);
     if (isEditing) {
-      const tsList = _getGlobalTags().map(t => `<option value="${_esc(t)}">`).join('');
-      return `<datalist id="mapa-edit-tags-dl">${tsList}</datalist>
-        <div class="mapa-marco active" style="min-width:150px" onclick="event.stopPropagation()">
+      return `<div class="mapa-marco active" style="min-width:150px" onclick="event.stopPropagation()">
           <div class="mapa-marco-dot" style="background:var(--blue-dark)"></div>
           <input id="mapa-edit-data" type="month" value="${_esc(m.data)}" style="width:130px;margin-top:6px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit">
           <input id="mapa-edit-titulo" value="${_esc(m.titulo)}" maxlength="80" placeholder="Título"
             style="width:130px;margin-top:4px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit"
             onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${cEsc}','${m.id}')">
-          <input id="mapa-edit-tag" list="mapa-edit-tags-dl" value="${_esc(m.tag||'')}" maxlength="40" placeholder="Tag"
-            style="width:130px;margin-top:4px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit"
-            onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${cEsc}','${m.id}')">
+          <div style="margin-top:6px">${_mapaTagPickerHtml('mapa-edit-tag', m.tag||'', `saveMapaMarcoEdit('${cEsc}','${m.id}')`)}</div>
           <div style="display:flex;gap:4px;margin-top:6px">
             <button class="mapa-tl-add" style="font-size:.6rem;padding:3px 8px" onclick="saveMapaMarcoEdit('${cEsc}','${m.id}')">✓</button>
             <button class="mapa-marco-del" style="font-size:.75rem" onclick="event.stopPropagation();_mapaEditingMarco=null;renderMapaTimeline('${cEsc}')">✕</button>
@@ -3710,6 +3713,39 @@ function renderMapaTimeline(cidadeNome) {
 function startAddMapaMarco() {
   _mapaAddingMarco = true;
   renderMapaTimeline(_mapaActiveCidade);
+}
+
+function _pickMapaTag(pickerId, tag, fromText) {
+  const hidden = document.getElementById(pickerId);
+  if (hidden) hidden.value = tag;
+  const container = document.querySelector(`[data-tagpicker="${pickerId}"]`);
+  if (!container) return;
+  container.querySelectorAll('.mapa-tag-pill').forEach(b => {
+    b.classList.toggle('active', b.dataset.tv === tag);
+  });
+  if (!fromText) {
+    const ti = container.querySelector('.mapa-tag-new');
+    if (ti) ti.value = '';
+  } else {
+    container.querySelectorAll('.mapa-tag-pill').forEach(b => b.classList.remove('active'));
+  }
+}
+
+function _mapaTagPickerHtml(inputId, currentVal, onEnterJs) {
+  const tags = _getGlobalTags();
+  const pills = tags.map(t =>
+    `<button type="button" class="mapa-tag-pill${t === currentVal ? ' active' : ''}" data-tv="${_esc(t)}"
+      onclick="_pickMapaTag('${inputId}','${_esc(t)}')">${_esc(t)}</button>`
+  ).join('');
+  const textVal = currentVal && tags.includes(currentVal) ? '' : _esc(currentVal || '');
+  return `<div class="mapa-tag-picker" data-tagpicker="${inputId}">
+    ${tags.length ? `<div class="mapa-tag-pills">${pills}</div>` : ''}
+    <input type="text" class="mapa-tag-new" placeholder="Nova tag…" maxlength="40"
+      value="${textVal}"
+      oninput="_pickMapaTag('${inputId}',this.value,true)"
+      onkeydown="if(event.key==='Enter'){${onEnterJs}}">
+    <input type="hidden" id="${inputId}" value="${_esc(currentVal || '')}">
+  </div>`;
 }
 
 function _getGlobalTags() {

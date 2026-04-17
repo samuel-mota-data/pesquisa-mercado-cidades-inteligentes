@@ -3654,20 +3654,11 @@ function renderMapaTimeline(cidadeNome) {
 
   track.innerHTML = marcos.map(m => {
     const isActive = m.id === _mapaActiveMarcoId;
-    const docLabel = m.doc ? m.doc.nome.slice(0, 14) + (m.doc.nome.length > 14 ? '…' : '') : '📎 Doc';
-    const docClass = m.doc ? 'has-doc' : '';
     const cEsc = _esc(cidadeNome);
     return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
       <div class="mapa-marco-data">${_esc(m.data)}</div>
       <div class="mapa-marco-titulo">${_esc(m.titulo)}</div>
-      <div class="mapa-marco-doc">
-        <label class="mapa-marco-doc-btn ${docClass}" title="${m.doc ? _esc(m.doc.nome) : 'Upload documento'}" onclick="event.stopPropagation()">
-          ${docLabel}
-          <input type="file" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-            onchange="uploadMapaDoc('${cEsc}','${m.id}',this)">
-        </label>
-      </div>
       <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir marco">×</button>
     </div>`;
   }).join('') + addFormHtml;

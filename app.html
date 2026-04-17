@@ -3122,13 +3122,13 @@ let DATA = {
     <span class="kanban-title">Mapa de Adoção — Cidades Inteligentes Sul do Brasil</span>
     <span style="display:flex;gap:6px;flex-wrap:wrap;margin-left:auto" id="mapa-filters"></span>
   </div>
-  <div id="mapa-container"><div id="mapa-leaflet"></div></div>
   <div class="mapa-timeline-panel" id="mapa-timeline-panel">
     <div class="mapa-tl-header" id="mapa-tl-header"></div>
     <div class="mapa-tl-track-wrap">
       <div class="mapa-tl-track" id="mapa-tl-track"></div>
     </div>
   </div>
+  <div id="mapa-container"><div id="mapa-leaflet"></div></div>
   <div class="mapa-detail-panel" id="mapa-detail-panel">
     <div class="mapa-detail-hdr">
       <div class="mapa-detail-title" id="mapa-detail-title">—</div>
@@ -3650,7 +3650,7 @@ function renderMapaTimeline(cidadeNome) {
 
   const addFormHtml = _mapaAddingMarco ? `
     <div class="mapa-marco-add-form">
-      <input id="mapa-inp-data" placeholder="Ex: 2024-03" maxlength="10">
+      <input id="mapa-inp-data" type="month" style="width:140px;text-align:left">
       <input id="mapa-inp-titulo" placeholder="Título do marco" maxlength="80"
         onkeydown="if(event.key==='Enter')confirmAddMapaMarco()">
       <div style="display:flex;gap:6px;margin-top:2px">

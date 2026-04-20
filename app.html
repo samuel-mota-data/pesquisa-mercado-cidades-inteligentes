@@ -5906,7 +5906,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
   tabs.forEach(tab => {
     (DATA[tab.id]?.gestao || []).forEach((ev, ei) => {
       const estagio = _gMapEstagio(ev);
-      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro', hasHist: !!(ev.historico?.length) });
+      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro' });
     });
   });
 
@@ -5930,11 +5930,10 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
           <button class="kanban-card-move-btn" title="Mover fase" onclick="showGestaoMoveModal('${item.tabId}',${item.ei},'${contentId}',${isCi})">→</button>
         </div>
         ${item.desc ? `<div class="kanban-card-device" style="opacity:.75;font-style:italic;margin-top:4px" title="${item.desc}">${item.desc}</div>` : ''}
-        ${dateStr ? `<div class="kanban-card-meta" style="margin-top:4px"><span class="kanban-card-date${isPast ? '" style="color:#dc2626;font-weight:700' : ''}">${dateStr}</span></div>` : ''}
+        ${dateStr ? `<div class="kanban-card-meta" style="margin-top:4px"><span class="kanban-card-date${isPast ? '" style="color:#dc2626;font-weight:700' : ''}" style="cursor:pointer" title="Ver histórico" onclick="showGestaoHistorico('${item.tabId}',${item.ei})">${dateStr}</span></div>` : ''}
         <div class="kanban-card-meta" style="margin-top:6px;justify-content:space-between">
           <button class="kanban-card-solution" style="background:${st.bg === 'var(--white)' ? 'rgba(37,64,192,.08)' : st.bg};color:${st.color};border:none;cursor:pointer;font-family:inherit" title="Alternar status" onclick="cycleGestaoCardSt('${item.tabId}',${item.ei},'${contentId}',${isCi})">● ${st.label}</button>
           <span style="display:flex;gap:2px">
-            ${item.hasHist ? `<button class="gestao-k-hist" title="Histórico" onclick="showGestaoHistorico('${item.tabId}',${item.ei})">⏱</button>` : ''}
             <button class="gestao-k-edit" title="Editar" onclick="showGestaoEditModal('${item.tabId}',${item.ei},'${contentId}',${isCi})">✎</button>
             <button class="gestao-k-del" title="Excluir" onclick="delGestaoKanbanItem('${item.tabId}',${item.ei},'${contentId}',${isCi})">×</button>
           </span>
@@ -6191,6 +6190,14 @@ function _initGestaoSortable(contentId, isCi) {
 }
 
 function showGestaoHistorico(tabId, ei) {
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
+  _renderHistBox(ov, tabId, ei, null);
+}
+
+function _renderHistBox(ov, tabId, ei, editingIdx) {
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
   const hist = ev.historico || [];
@@ -6199,7 +6206,7 @@ function showGestaoHistorico(tabId, ei) {
 
   // calcula durações entre mudanças de fase
   const faseEntries = hist.filter(h => h.tipo === 'fase');
-  const durMap = {}; // key da fase → dias passados nela
+  const durMap = {};
   for (let i = 0; i < faseEntries.length; i++) {
     const prev = faseEntries[i - 1];
     const cur  = faseEntries[i];
@@ -6209,7 +6216,8 @@ function showGestaoHistorico(tabId, ei) {
     }
   }
 
-  const rows = [...hist].reverse().map(h => {
+  // índices reais (hist em ordem original, exibidos em reverso)
+  const rows = hist.map((h, realIdx) => {
     const isFase  = h.tipo === 'fase';
     const deLabel = isFase ? funil(h.de)   : stLbl(h.de);
     const paLabel = isFase ? funil(h.para) : stLbl(h.para);
@@ -6219,6 +6227,20 @@ function showGestaoHistorico(tabId, ei) {
     const dur = isFase && durMap[h.de] != null
       ? `<div class="gestao-hist-dur">${durMap[h.de]} dia${durMap[h.de] !== 1 ? 's' : ''} em ${funil(h.de)}</div>`
       : '';
+    if (editingIdx === realIdx) {
+      return `<div class="gestao-hist-row" style="background:rgba(0,163,163,.04);border-radius:6px;padding:6px 4px">
+        <input type="date" id="ghist-date-${realIdx}" value="${h.data}"
+          style="font-family:inherit;font-size:.72rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;outline:none">
+        <div style="flex:1;display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-left:6px">
+          ${badge}
+          <span style="color:var(--text-mid);font-size:.72rem">${_escForn(deLabel)} → ${_escForn(paLabel)}</span>
+        </div>
+        <span style="display:flex;gap:3px;flex-shrink:0">
+          <button class="gestao-k-edit" style="color:var(--teal)" onclick="_saveHistEntry('${tabId}',${ei},${realIdx})">✓</button>
+          <button class="gestao-k-edit" onclick="_renderHistBox(document.getElementById('ghist-ov-${tabId}-${ei}'),'${tabId}',${ei},null)">✕</button>
+        </span>
+      </div>`;
+    }
     return `<div class="gestao-hist-row">
       <div class="gestao-hist-date">${_fmtDate(h.data)}</div>
       <div style="flex:1">
@@ -6229,23 +6251,42 @@ function showGestaoHistorico(tabId, ei) {
         </div>
         ${dur}
       </div>
+      <span style="display:flex;gap:2px;flex-shrink:0">
+        <button class="gestao-k-edit" title="Editar data" onclick="_renderHistBox(document.getElementById('ghist-ov-${tabId}-${ei}'),'${tabId}',${ei},${realIdx})">✎</button>
+        <button class="gestao-k-del" title="Excluir" onclick="_delHistEntry('${tabId}',${ei},${realIdx})">×</button>
+      </span>
     </div>`;
-  }).join('') || `<p style="color:var(--text-mid);font-size:.75rem">Nenhuma mudança registrada ainda.</p>`;
+  }).reverse().join('') || `<p style="color:var(--text-mid);font-size:.75rem">Nenhuma mudança registrada ainda.</p>`;
 
-  const ov = document.createElement('div');
-  ov.className = 'confirm-overlay';
+  ov.id = `ghist-ov-${tabId}-${ei}`;
   ov.innerHTML = `
-    <div class="confirm-box" style="width:460px;max-width:95vw;text-align:left">
-      <h4 style="margin-bottom:4px">Histórico — ${_escForn(ev.titulo || ev.tabLabel || '—')}</h4>
+    <div class="confirm-box" style="width:480px;max-width:95vw;text-align:left">
+      <h4 style="margin-bottom:4px">Histórico — ${_escForn(ev.titulo || '—')}</h4>
       <p style="font-size:.7rem;color:var(--text-mid);margin-bottom:14px">Fase atual: <strong>${funil(_gMapEstagio(ev))}</strong></p>
-      <div style="max-height:340px;overflow-y:auto">${rows}</div>
+      <div style="max-height:360px;overflow-y:auto">${rows}</div>
       <div class="confirm-actions" style="margin-top:14px">
         <button class="confirm-cancel">Fechar</button>
       </div>
     </div>`;
   ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
-  ov.onclick = e => { if (e.target === ov) ov.remove(); };
-  document.body.appendChild(ov);
+}
+
+function _saveHistEntry(tabId, ei, idx) {
+  const newDate = document.getElementById(`ghist-date-${idx}`)?.value;
+  if (!newDate) return;
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev || !ev.historico?.[idx]) return;
+  ev.historico[idx].data = newDate;
+  persistData(tabId);
+  _renderHistBox(document.getElementById(`ghist-ov-${tabId}-${ei}`), tabId, ei, null);
+}
+
+function _delHistEntry(tabId, ei, idx) {
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev || !ev.historico) return;
+  ev.historico.splice(idx, 1);
+  persistData(tabId);
+  _renderHistBox(document.getElementById(`ghist-ov-${tabId}-${ei}`), tabId, ei, null);
 }
 
 function showGestaoEditModal(tabId, ei, contentId, isCi) {
@@ -6268,10 +6309,6 @@ function showGestaoEditModal(tabId, ei, contentId, isCi) {
           <input id="ge-titulo" type="text" value="${_escFornAttr(ev.titulo||'')}" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;outline:none">
         </div>
         <div>
-          <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Data</label>
-          <input id="ge-data" type="date" value="${ev.data||''}" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;outline:none">
-        </div>
-        <div>
           <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Descrição</label>
           <textarea id="ge-desc" rows="3" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;outline:none;resize:vertical">${_escForn(ev.desc||'')}</textarea>
         </div>
@@ -6289,7 +6326,6 @@ function showGestaoEditModal(tabId, ei, contentId, isCi) {
   ov.querySelector('.confirm-ok').onclick = () => {
     ev.estagio     = document.getElementById('ge-fase').value;
     ev.titulo      = document.getElementById('ge-titulo').value.trim();
-    ev.data        = document.getElementById('ge-data').value;
     ev.desc        = document.getElementById('ge-desc').value.trim();
     ev.card_status = document.getElementById('ge-card-st').value;
     persistData(tabId);

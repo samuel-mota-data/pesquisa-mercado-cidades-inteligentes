@@ -6003,11 +6003,11 @@ function _showGestaoStDateStep(tabId, ei, newKey, contentId, isCi) {
 }
 
 function _applyGestaoCardSt(tabId, ei, newKey, contentId, isCi) {
+  const dateVal = document.getElementById(`gst-date-${tabId}-${ei}`)?.value;
   const ov = document.getElementById(`gst-modal-${tabId}-${ei}`);
   if (ov) ov.remove();
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
-  const dateVal = document.getElementById(`gst-date-${tabId}-${ei}`)?.value;
   ev.card_status = newKey;
   if (dateVal) ev.data = dateVal;
   persistData(tabId);

@@ -3621,6 +3621,8 @@ function _mapaRenderPins() {
 let _mapaActiveCidade = null;
 let _mapaActiveMarcoId = null;
 let _mapaAddingMarco = false;
+const _mapaTagSelections = {}; // inputId → string[]
+function _getMapaTagSelections(inputId) { return _mapaTagSelections[inputId] || []; }
 let _mapaEditingMarco    = null; // marcoId sendo editado inline
 let _mapaEditingCityName = false;
 
@@ -3683,7 +3685,7 @@ function renderMapaTimeline(cidadeNome) {
     <div class="mapa-marco-add-form">
       <input id="mapa-inp-data" type="month" style="width:140px;text-align:left">
       <input id="mapa-inp-titulo" placeholder="Título do marco" maxlength="80">
-      ${_mapaTagPickerHtml('mapa-inp-tag', '', 'confirmAddMapaMarco()')}
+      ${_mapaTagPickerHtml('mapa-inp-tag', [])}
       <div style="display:flex;gap:6px;margin-top:2px">
         <button class="mapa-tl-add" onclick="confirmAddMapaMarco()">✓ Salvar</button>
         <button class="mapa-marco-del" style="font-size:.75rem" onclick="_mapaAddingMarco=false;renderMapaTimeline(_mapaActiveCidade)">✕</button>
@@ -3701,15 +3703,16 @@ function renderMapaTimeline(cidadeNome) {
           <input id="mapa-edit-titulo" value="${_esc(m.titulo)}" maxlength="80" placeholder="Título"
             style="width:130px;margin-top:4px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit"
             onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${cEsc}','${m.id}')">
-          <div style="margin-top:6px">${_mapaTagPickerHtml('mapa-edit-tag', m.tag||'', `saveMapaMarcoEdit('${cEsc}','${m.id}')`)}</div>
+          <div style="margin-top:6px">${_mapaTagPickerHtml('mapa-edit-tag', m.tags?.length ? m.tags : (m.tag ? [m.tag] : []))}</div>
           <div style="display:flex;gap:4px;margin-top:6px">
             <button class="mapa-tl-add" style="font-size:.6rem;padding:3px 8px" onclick="saveMapaMarcoEdit('${cEsc}','${m.id}')">✓</button>
             <button class="mapa-marco-del" style="font-size:.75rem" onclick="event.stopPropagation();_mapaEditingMarco=null;renderMapaTimeline('${cEsc}')">✕</button>
           </div>
         </div>`;
     }
-    const tagBadge = m.tag
-      ? `<span style="display:inline-block;margin-top:5px;font-size:.55rem;font-weight:700;color:var(--teal);background:rgba(0,163,163,.1);border-radius:20px;padding:1px 7px;white-space:nowrap;max-width:95px;overflow:hidden;text-overflow:ellipsis">${_esc(m.tag)}</span>`
+    const allTagsM = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
+    const tagBadge = allTagsM.length
+      ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${allTagsM.map(t => `<span style="font-size:.55rem;font-weight:700;color:var(--teal);background:rgba(0,163,163,.1);border-radius:20px;padding:1px 7px">${_esc(t)}</span>`).join('')}</div>`
       : '';
     return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
@@ -3729,6 +3732,37 @@ function renderMapaTimeline(cidadeNome) {
 function startAddMapaMarco() {
   _mapaAddingMarco = true;
   renderMapaTimeline(_mapaActiveCidade);
+}
+
+function _toggleMapaTag(inputId, tag) {
+  if (!_mapaTagSelections[inputId]) _mapaTagSelections[inputId] = [];
+  const idx = _mapaTagSelections[inputId].indexOf(tag);
+  if (idx === -1) _mapaTagSelections[inputId].push(tag);
+  else            _mapaTagSelections[inputId].splice(idx, 1);
+  _refreshTagPickerDisplay(inputId);
+}
+
+function _refreshTagPickerDisplay(inputId) {
+  const sel = _mapaTagSelections[inputId] || [];
+  const pillsEl = document.getElementById(`mapa-tag-pills-${inputId}`);
+  if (pillsEl) {
+    pillsEl.innerHTML = sel.map(t =>
+      `<span style="display:inline-flex;align-items:center;gap:2px;font-size:.6rem;font-weight:700;color:var(--teal);background:rgba(0,163,163,.12);border-radius:20px;padding:1px 7px">
+        ${_esc(t)}
+        <button type="button" style="background:none;border:none;cursor:pointer;color:var(--teal);font-size:.75rem;line-height:1;padding:0 0 0 2px" onclick="event.stopPropagation();_toggleMapaTag('${inputId}','${_esc(t)}')">×</button>
+      </span>`
+    ).join('');
+  }
+  const label = document.getElementById(`mapa-tag-dd-label-${inputId}`);
+  if (label) {
+    label.textContent = sel.length === 0 ? 'Tags…' : sel.length === 1 ? sel[0] : `${sel.length} tags`;
+    label.style.color = sel.length ? 'var(--teal)' : 'var(--text-mid)';
+    label.style.fontWeight = sel.length ? '700' : '';
+  }
+  const list = document.getElementById(`mapa-tag-dd-list-${inputId}`);
+  if (list) list.querySelectorAll('.mapa-tag-dd-item').forEach(item =>
+    item.classList.toggle('active', sel.includes(item.dataset.tag))
+  );
 }
 
 function _toggleMapaTagDd(inputId) {
@@ -3766,38 +3800,46 @@ function _filterMapaTagDd(inputId, query) {
   if (createEl) {
     const exactMatch = _getGlobalTags().some(t => t.toLowerCase() === q);
     createEl.style.display = q && !exactMatch ? '' : 'none';
-    if (q && !exactMatch) createEl.textContent = `+ Criar "${query.trim()}"`;
-    createEl.onclick = () => _selectMapaTagDd(inputId, query.trim());
+    if (q && !exactMatch) {
+      createEl.textContent = `+ Criar "${query.trim()}"`;
+      createEl.onclick = () => {
+        const newTag = query.trim();
+        if (!DATA['__tags__']) DATA['__tags__'] = [];
+        if (!DATA['__tags__'].includes(newTag)) { DATA['__tags__'].push(newTag); DATA['__tags__'].sort(); persistData('__tags__'); }
+        // add item to list
+        const item = document.createElement('div');
+        item.className = 'mapa-tag-dd-item active';
+        item.dataset.tag = newTag;
+        item.textContent = newTag;
+        item.onclick = () => _toggleMapaTag(inputId, newTag);
+        list.appendChild(item);
+        _toggleMapaTag(inputId, newTag);
+        const search = document.querySelector(`#mapa-tag-dd-panel-${inputId} .mapa-tag-dd-search`);
+        if (search) { search.value = ''; _filterMapaTagDd(inputId, ''); }
+        createEl.style.display = 'none';
+      };
+    }
   }
 }
 
-function _selectMapaTagDd(inputId, tag) {
-  const hidden = document.getElementById(inputId);
-  if (hidden) hidden.value = tag;
-  const label = document.getElementById(`mapa-tag-dd-label-${inputId}`);
-  if (label) {
-    label.textContent = tag || 'Tag…';
-    label.style.color = tag ? 'var(--teal)' : 'var(--text-mid)';
-    label.style.fontWeight = tag ? '700' : '';
-  }
-  const panel = document.getElementById(`mapa-tag-dd-panel-${inputId}`);
-  if (panel) panel.style.display = 'none';
-  const list = document.getElementById(`mapa-tag-dd-list-${inputId}`);
-  if (list) list.querySelectorAll('.mapa-tag-dd-item').forEach(item => {
-    item.classList.toggle('active', item.dataset.tag === tag);
-  });
-}
-
-function _mapaTagPickerHtml(inputId, currentVal) {
-  const tags = _getGlobalTags();
-  const items = tags.map(t =>
-    `<div class="mapa-tag-dd-item${t === currentVal ? ' active' : ''}" data-tag="${_esc(t)}"
-      onclick="_selectMapaTagDd('${inputId}','${_esc(t)}')">${_esc(t)}</div>`
+function _mapaTagPickerHtml(inputId, currentTags) {
+  const tags = Array.isArray(currentTags) ? currentTags : (currentTags ? [currentTags] : []);
+  _mapaTagSelections[inputId] = [...tags];
+  const allTags = _getGlobalTags();
+  const items = allTags.map(t =>
+    `<div class="mapa-tag-dd-item${tags.includes(t) ? ' active' : ''}" data-tag="${_esc(t)}"
+      onclick="_toggleMapaTag('${inputId}','${_esc(t)}')">${_esc(t)}</div>`
   ).join('');
-  const labelStyle = currentVal ? 'color:var(--teal);font-weight:700' : 'color:var(--text-mid)';
+  const labelText = tags.length === 0 ? 'Tags…' : tags.length === 1 ? tags[0] : `${tags.length} tags`;
+  const labelStyle = tags.length ? 'color:var(--teal);font-weight:700' : 'color:var(--text-mid)';
   return `<div class="mapa-tag-dd" id="mapa-tag-dd-${inputId}">
+    <div id="mapa-tag-pills-${inputId}" style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:${tags.length ? '5px' : '0'}">${
+      tags.map(t => `<span style="display:inline-flex;align-items:center;gap:2px;font-size:.6rem;font-weight:700;color:var(--teal);background:rgba(0,163,163,.12);border-radius:20px;padding:1px 7px">
+        ${_esc(t)}<button type="button" style="background:none;border:none;cursor:pointer;color:var(--teal);font-size:.75rem;line-height:1;padding:0 0 0 2px" onclick="event.stopPropagation();_toggleMapaTag('${inputId}','${_esc(t)}')">×</button>
+      </span>`).join('')
+    }</div>
     <button type="button" class="mapa-tag-dd-btn" onclick="event.stopPropagation();_toggleMapaTagDd('${inputId}')">
-      <span id="mapa-tag-dd-label-${inputId}" style="${labelStyle}">${_esc(currentVal || 'Tag…')}</span>
+      <span id="mapa-tag-dd-label-${inputId}" style="${labelStyle}">${_esc(labelText)}</span>
       <span style="color:var(--text-mid);font-size:.6rem">▾</span>
     </button>
     <div class="mapa-tag-dd-panel" id="mapa-tag-dd-panel-${inputId}" style="display:none" onclick="event.stopPropagation()">
@@ -3809,7 +3851,6 @@ function _mapaTagPickerHtml(inputId, currentVal) {
       </div>
       <div class="mapa-tag-dd-create" id="mapa-tag-dd-create-${inputId}" style="display:none"></div>
     </div>
-    <input type="hidden" id="${inputId}" value="${_esc(currentVal || '')}">
   </div>`;
 }
 
@@ -3824,7 +3865,7 @@ function _getGlobalTags() {
   // coleta tags já usadas nos marcos do mapa
   Object.values(DATA['__mapa__'] || {}).forEach(marcos => {
     if (!Array.isArray(marcos)) return;
-    marcos.forEach(m => { if (m.tag) set.add(m.tag); });
+    marcos.forEach(m => { if (m.tag) set.add(m.tag); (m.tags||[]).forEach(t => set.add(t)); });
   });
   return [...set].sort();
 }
@@ -3832,17 +3873,12 @@ function _getGlobalTags() {
 function confirmAddMapaMarco() {
   const dataVal   = (document.getElementById('mapa-inp-data')?.value || '').trim();
   const tituloVal = (document.getElementById('mapa-inp-titulo')?.value || '').trim();
-  const tagVal    = (document.getElementById('mapa-inp-tag')?.value  || '').trim();
+  const tagVal    = null; // tags now stored in _mapaTagSelections
+  const tagsArr   = _getMapaTagSelections('mapa-inp-tag');
   if (!dataVal || !tituloVal) return;
-  // salva tag nova na lista global
-  if (tagVal && !(DATA['__tags__'] || []).includes(tagVal)) {
-    if (!DATA['__tags__']) DATA['__tags__'] = [];
-    DATA['__tags__'].push(tagVal);
-    persistData('__tags__');
-  }
   const marcos = _mapaGetMarcos(_mapaActiveCidade);
   const novoId = _nbId();
-  marcos.push({ id: novoId, data: dataVal, titulo: tituloVal, tag: tagVal || null, blocks: [] });
+  marcos.push({ id: novoId, data: dataVal, titulo: tituloVal, tags: tagsArr, tag: tagsArr[0] || null, blocks: [] });
   marcos.sort((a, b) => a.data.localeCompare(b.data));
   _mapaAddingMarco = false;
   persistData('__mapa__');
@@ -3869,19 +3905,13 @@ function saveMapaCityName(cidadeNome) {
 function saveMapaMarcoEdit(cidadeNome, marcoId) {
   const dataVal   = (document.getElementById('mapa-edit-data')?.value   || '').trim();
   const tituloVal = (document.getElementById('mapa-edit-titulo')?.value || '').trim();
-  const tagVal    = (document.getElementById('mapa-edit-tag')?.value    || '').trim();
+  const tagsArr   = _getMapaTagSelections('mapa-edit-tag');
+  const tagVal    = tagsArr[0] || null;
   if (!dataVal || !tituloVal) return;
   const marcos = _mapaGetMarcos(cidadeNome);
   const marco  = marcos.find(m => m.id === marcoId);
   if (!marco) return;
-  marco.data   = dataVal;
-  marco.titulo = tituloVal;
-  marco.tag    = tagVal || null;
-  if (tagVal && !(DATA['__tags__'] || []).includes(tagVal)) {
-    if (!DATA['__tags__']) DATA['__tags__'] = [];
-    DATA['__tags__'].push(tagVal);
-    persistData('__tags__');
-  }
+  marco.data = dataVal; marco.titulo = tituloVal; marco.tags = tagsArr; marco.tag = tagVal;
   marcos.sort((a, b) => a.data.localeCompare(b.data));
   _mapaEditingMarco = null;
   persistData('__mapa__');
@@ -5906,7 +5936,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
   tabs.forEach(tab => {
     (DATA[tab.id]?.gestao || []).forEach((ev, ei) => {
       const estagio = _gMapEstagio(ev);
-      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro' });
+      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro', tags: ev.tags || [] });
     });
   });
 
@@ -5930,6 +5960,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
           <button class="kanban-card-move-btn" title="Mover fase" onclick="showGestaoMoveModal('${item.tabId}',${item.ei},'${contentId}',${isCi})">→</button>
         </div>
         ${item.desc ? `<div class="kanban-card-device" style="opacity:.75;font-style:italic;margin-top:4px" title="${item.desc}">${item.desc}</div>` : ''}
+        ${item.tags?.length ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${item.tags.map(t => `<span style="font-size:.55rem;font-weight:700;color:var(--teal);background:rgba(0,163,163,.12);border-radius:20px;padding:1px 6px">${_escForn(t)}</span>`).join('')}</div>` : ''}
         ${dateStr ? `<div class="kanban-card-meta" style="margin-top:4px"><span class="kanban-card-date${isPast ? '" style="color:#dc2626;font-weight:700' : ''}" style="cursor:pointer" title="Ver histórico" onclick="showGestaoHistorico('${item.tabId}',${item.ei})">${dateStr}</span></div>` : ''}
         <div class="kanban-card-meta" style="margin-top:6px;justify-content:space-between">
           <button class="kanban-card-solution" style="background:${st.bg === 'var(--white)' ? 'rgba(37,64,192,.08)' : st.bg};color:${st.color};border:none;cursor:pointer;font-family:inherit" title="Alternar status" onclick="cycleGestaoCardSt('${item.tabId}',${item.ei},'${contentId}',${isCi})">● ${st.label}</button>
@@ -6328,6 +6359,10 @@ function showGestaoEditModal(tabId, ei, contentId, isCi) {
           <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Status</label>
           <select id="ge-card-st" style="width:100%;font-family:inherit;font-size:.8rem;padding:7px 8px;border:1.5px solid var(--gray-mid);border-radius:6px;background:var(--white);outline:none">${stOpts}</select>
         </div>
+        <div>
+          <label style="font-size:.7rem;font-weight:700;color:var(--text-mid);display:block;margin-bottom:3px">Tags</label>
+          ${_mapaTagPickerHtml('ge-tags', ev.tags || [])}
+        </div>
       </div>
       <div class="confirm-actions" style="margin-top:16px">
         <button class="confirm-cancel">Cancelar</button>
@@ -6340,6 +6375,7 @@ function showGestaoEditModal(tabId, ei, contentId, isCi) {
     ev.titulo      = document.getElementById('ge-titulo').value.trim();
     ev.desc        = document.getElementById('ge-desc').value.trim();
     ev.card_status = document.getElementById('ge-card-st').value;
+    ev.tags = _getMapaTagSelections('ge-tags');
     persistData(tabId);
     ov.remove();
     _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);

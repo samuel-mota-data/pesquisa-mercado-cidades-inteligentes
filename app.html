@@ -6009,7 +6009,7 @@ function _applyGestaoCardSt(tabId, ei, newKey, contentId, isCi) {
   if (!ev) return;
   const dateVal = document.getElementById(`gst-date-${tabId}-${ei}`)?.value;
   ev.card_status = newKey;
-  if (dateVal) ev.data_status = dateVal;
+  if (dateVal) ev.data = dateVal;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }

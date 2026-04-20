@@ -232,6 +232,13 @@
     .gestao-k-del:hover { color:#c0392b; background:#fdecea; }
     .gestao-k-edit { background:none; border:none; color:var(--text-mid); font-size:.8rem; cursor:pointer; padding:2px 5px; line-height:1; border-radius:4px; }
     .gestao-k-edit:hover { color:var(--teal); background:rgba(0,163,163,.08); }
+    .gestao-k-hist { background:none; border:none; color:var(--text-mid); font-size:.75rem; cursor:pointer; padding:2px 5px; line-height:1; border-radius:4px; }
+    .gestao-k-hist:hover { color:var(--blue-dark); background:rgba(37,64,192,.08); }
+    .gestao-hist-row { display:flex; gap:8px; align-items:flex-start; padding:6px 0; border-bottom:1px solid var(--gray-light); font-size:.72rem; }
+    .gestao-hist-row:last-child { border-bottom:none; }
+    .gestao-hist-date { color:var(--text-mid); font-weight:700; min-width:85px; flex-shrink:0; }
+    .gestao-hist-badge { font-size:.6rem; font-weight:700; padding:1px 6px; border-radius:10px; white-space:nowrap; flex-shrink:0; }
+    .gestao-hist-dur { font-size:.65rem; color:#6d28d9; font-weight:700; margin-top:2px; }
     .kanban-card.sortable-ghost { opacity:.35; background:var(--gray-light) !important; }
     .gestao-k-add { display:block; width:calc(100% - 16px); margin:0 8px 8px; background:none; border:1px dashed var(--gray-mid); color:var(--text-mid); font-family:inherit; font-size:.68rem; padding:6px; border-radius:6px; cursor:pointer; transition:border-color .15s, color .15s; text-align:center; }
     .gestao-k-add:hover { border-color:var(--teal); color:var(--teal); }
@@ -5899,7 +5906,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
   tabs.forEach(tab => {
     (DATA[tab.id]?.gestao || []).forEach((ev, ei) => {
       const estagio = _gMapEstagio(ev);
-      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro' });
+      cols[estagio].push({ tabId: tab.id, tabLabel: tab.label, ei, titulo: ev.titulo, data: ev.data, desc: ev.desc, card_status: ev.card_status || 'neutro', hasHist: !!(ev.historico?.length) });
     });
   });
 
@@ -5927,6 +5934,7 @@ function _renderGestaoKanban(tabs, contentId, isCi) {
         <div class="kanban-card-meta" style="margin-top:6px;justify-content:space-between">
           <button class="kanban-card-solution" style="background:${st.bg === 'var(--white)' ? 'rgba(37,64,192,.08)' : st.bg};color:${st.color};border:none;cursor:pointer;font-family:inherit" title="Alternar status" onclick="cycleGestaoCardSt('${item.tabId}',${item.ei},'${contentId}',${isCi})">● ${st.label}</button>
           <span style="display:flex;gap:2px">
+            ${item.hasHist ? `<button class="gestao-k-hist" title="Histórico" onclick="showGestaoHistorico('${item.tabId}',${item.ei})">⏱</button>` : ''}
             <button class="gestao-k-edit" title="Editar" onclick="showGestaoEditModal('${item.tabId}',${item.ei},'${contentId}',${isCi})">✎</button>
             <button class="gestao-k-del" title="Excluir" onclick="delGestaoKanbanItem('${item.tabId}',${item.ei},'${contentId}',${isCi})">×</button>
           </span>
@@ -6008,8 +6016,9 @@ function _applyGestaoCardSt(tabId, ei, newKey, contentId, isCi) {
   if (ov) ov.remove();
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
+  if (!ev.historico) ev.historico = [];
+  ev.historico.push({ data: dateVal || new Date().toISOString().slice(0,10), tipo: 'status', de: ev.card_status || 'neutro', para: newKey });
   ev.card_status = newKey;
-  if (dateVal) ev.data = dateVal;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }
@@ -6150,8 +6159,9 @@ function _applyGestaoMove(tabId, ei, newKey, contentId, isCi) {
   if (ov) ov.remove();
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
+  if (!ev.historico) ev.historico = [];
+  ev.historico.push({ data: dateVal || new Date().toISOString().slice(0,10), tipo: 'fase', de: _gMapEstagio(ev), para: newKey });
   ev.estagio = newKey;
-  if (dateVal) ev.data = dateVal;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }
@@ -6178,6 +6188,64 @@ function _initGestaoSortable(contentId, isCi) {
       },
     });
   });
+}
+
+function showGestaoHistorico(tabId, ei) {
+  const ev = DATA[tabId]?.gestao?.[ei];
+  if (!ev) return;
+  const hist = ev.historico || [];
+  const funil = k => GESTAO_FUNIL.find(f => f.key === k)?.label || k;
+  const stLbl = k => GESTAO_CARD_ST.find(s => s.key === k)?.label || k;
+
+  // calcula durações entre mudanças de fase
+  const faseEntries = hist.filter(h => h.tipo === 'fase');
+  const durMap = {}; // key da fase → dias passados nela
+  for (let i = 0; i < faseEntries.length; i++) {
+    const prev = faseEntries[i - 1];
+    const cur  = faseEntries[i];
+    if (prev) {
+      const d = _daysBetween(prev.data, cur.data);
+      durMap[prev.para] = (durMap[prev.para] || 0) + d;
+    }
+  }
+
+  const rows = [...hist].reverse().map(h => {
+    const isFase  = h.tipo === 'fase';
+    const deLabel = isFase ? funil(h.de)   : stLbl(h.de);
+    const paLabel = isFase ? funil(h.para) : stLbl(h.para);
+    const badge   = isFase
+      ? `<span class="gestao-hist-badge" style="background:#ede9fe;color:#6d28d9">Fase</span>`
+      : `<span class="gestao-hist-badge" style="background:#dbeafe;color:#1e40af">Status</span>`;
+    const dur = isFase && durMap[h.de] != null
+      ? `<div class="gestao-hist-dur">${durMap[h.de]} dia${durMap[h.de] !== 1 ? 's' : ''} em ${funil(h.de)}</div>`
+      : '';
+    return `<div class="gestao-hist-row">
+      <div class="gestao-hist-date">${_fmtDate(h.data)}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${badge}
+          <span style="color:var(--text-mid)">${_escForn(deLabel)}</span>
+          <span style="color:var(--text-mid)">→</span>
+          <span style="font-weight:700;color:var(--blue-dark)">${_escForn(paLabel)}</span>
+        </div>
+        ${dur}
+      </div>
+    </div>`;
+  }).join('') || `<p style="color:var(--text-mid);font-size:.75rem">Nenhuma mudança registrada ainda.</p>`;
+
+  const ov = document.createElement('div');
+  ov.className = 'confirm-overlay';
+  ov.innerHTML = `
+    <div class="confirm-box" style="width:460px;max-width:95vw;text-align:left">
+      <h4 style="margin-bottom:4px">Histórico — ${_escForn(ev.titulo || ev.tabLabel || '—')}</h4>
+      <p style="font-size:.7rem;color:var(--text-mid);margin-bottom:14px">Fase atual: <strong>${funil(_gMapEstagio(ev))}</strong></p>
+      <div style="max-height:340px;overflow-y:auto">${rows}</div>
+      <div class="confirm-actions" style="margin-top:14px">
+        <button class="confirm-cancel">Fechar</button>
+      </div>
+    </div>`;
+  ov.querySelector('.confirm-cancel').onclick = () => ov.remove();
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  document.body.appendChild(ov);
 }
 
 function showGestaoEditModal(tabId, ei, contentId, isCi) {

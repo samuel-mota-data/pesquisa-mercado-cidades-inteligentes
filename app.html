@@ -5997,7 +5997,9 @@ function cycleGestaoCardSt(tabId, ei, contentId, isCi) {
 }
 
 function _showGestaoStDateStep(tabId, ei, newKey, contentId, isCi) {
+  console.log('[Gestão] _showGestaoStDateStep', { tabId, ei, newKey });
   const box = document.getElementById(`gst-box-${tabId}-${ei}`);
+  console.log('[Gestão] box encontrado?', !!box);
   if (!box) return;
   const newSt = GESTAO_CARD_ST.find(s => s.key === newKey) || GESTAO_CARD_ST[0];
   const today = new Date().toISOString().slice(0, 10);
@@ -6017,13 +6019,17 @@ function _showGestaoStDateStep(tabId, ei, newKey, contentId, isCi) {
 }
 
 function _applyGestaoCardSt(tabId, ei, newKey, contentId, isCi) {
-  const dateVal = document.getElementById(`gst-date-${tabId}-${ei}`)?.value;
+  const inputEl = document.getElementById(`gst-date-${tabId}-${ei}`);
+  const dateVal = inputEl?.value;
+  console.log('[Gestão] _applyGestaoCardSt', { tabId, ei, newKey, inputEl: !!inputEl, dateVal });
   const ov = document.getElementById(`gst-modal-${tabId}-${ei}`);
   if (ov) ov.remove();
   const ev = DATA[tabId]?.gestao?.[ei];
+  console.log('[Gestão] ev encontrado?', !!ev, 'data antes:', ev?.data);
   if (!ev) return;
   ev.card_status = newKey;
   if (dateVal) ev.data = dateVal;
+  console.log('[Gestão] data depois:', ev.data);
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }

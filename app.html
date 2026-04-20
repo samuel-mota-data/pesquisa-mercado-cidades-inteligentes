@@ -6015,9 +6015,11 @@ function _applyGestaoCardSt(tabId, ei, newKey, contentId, isCi) {
   if (ov) ov.remove();
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
+  const d = dateVal || new Date().toISOString().slice(0,10);
   if (!ev.historico) ev.historico = [];
-  ev.historico.push({ data: dateVal || new Date().toISOString().slice(0,10), tipo: 'status', de: ev.card_status || 'neutro', para: newKey });
+  ev.historico.push({ data: d, tipo: 'status', de: ev.card_status || 'neutro', para: newKey });
   ev.card_status = newKey;
+  ev.data = d;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }
@@ -6158,9 +6160,11 @@ function _applyGestaoMove(tabId, ei, newKey, contentId, isCi) {
   if (ov) ov.remove();
   const ev = DATA[tabId]?.gestao?.[ei];
   if (!ev) return;
+  const d = dateVal || new Date().toISOString().slice(0,10);
   if (!ev.historico) ev.historico = [];
-  ev.historico.push({ data: dateVal || new Date().toISOString().slice(0,10), tipo: 'fase', de: _gMapEstagio(ev), para: newKey });
+  ev.historico.push({ data: d, tipo: 'fase', de: _gMapEstagio(ev), para: newKey });
   ev.estagio = newKey;
+  ev.data = d;
   persistData(tabId);
   _renderGestaoKanban(isCi ? CI_TABS : TABS, contentId, isCi);
 }
@@ -6224,8 +6228,9 @@ function _renderHistBox(ov, tabId, ei, editingIdx) {
     const badge   = isFase
       ? `<span class="gestao-hist-badge" style="background:#ede9fe;color:#6d28d9">Fase</span>`
       : `<span class="gestao-hist-badge" style="background:#dbeafe;color:#1e40af">Status</span>`;
-    const dur = isFase && durMap[h.de] != null
-      ? `<div class="gestao-hist-dur">${durMap[h.de]} dia${durMap[h.de] !== 1 ? 's' : ''} em ${funil(h.de)}</div>`
+    const durDays = isFase ? (durMap[h.de] ?? null) : null;
+    const dur = durDays > 0
+      ? `<div class="gestao-hist-dur">${durDays} dia${durDays !== 1 ? 's' : ''} em ${funil(h.de)}</div>`
       : '';
     if (editingIdx === realIdx) {
       return `<div class="gestao-hist-row" style="background:rgba(0,163,163,.04);border-radius:6px;padding:6px 4px">

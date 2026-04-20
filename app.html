@@ -5886,8 +5886,22 @@ function _gMapEstagio(ev) {
   return 'pesquisa';
 }
 
-function renderGestaoPage()   { _renderGestaoKanban(TABS,    'gestao-page-content',    false); }
-function renderCiGestaoPage() { _renderGestaoKanban(CI_TABS, 'ci-gestao-page-content', true);  }
+function renderGestaoPage()   { _renderGestaoKanban(TABS,    'gestao-page-content',    false); _gestaoAttachClickLog('gestao-page-content'); }
+function renderCiGestaoPage() { _renderGestaoKanban(CI_TABS, 'ci-gestao-page-content', true);  _gestaoAttachClickLog('ci-gestao-page-content'); }
+
+function _gestaoAttachClickLog(contentId) {
+  const el = document.getElementById(contentId);
+  if (!el) return;
+  el._gestaoClickLog = true;
+  el.addEventListener('click', function _gcl(e) {
+    const btn = e.target.closest('button');
+    console.log('[Gestão click]', {
+      target: e.target.tagName + (e.target.className ? '.' + [...e.target.classList].join('.') : ''),
+      btn: btn ? (btn.className + ' | ' + btn.textContent.trim().slice(0, 40)) : null,
+      onclick: btn?.getAttribute('onclick')?.slice(0, 80) || null,
+    });
+  }, { capture: true });
+}
 
 function _renderGestaoKanban(tabs, contentId, isCi) {
   const el = document.getElementById(contentId);

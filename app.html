@@ -5272,7 +5272,7 @@ function switchCiSitePage(page) {
 
 function scrollCiTabBar(dir) {
   const el = document.getElementById('ci-tab-bar-scroll');
-  if (el) el.scrollLeft += dir * 160;
+  if (el) el.scrollBy({ left: dir * 200, behavior: 'smooth' });
 }
 
 function renderCiKanban() {

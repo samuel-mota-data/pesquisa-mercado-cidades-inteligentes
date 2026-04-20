@@ -3712,7 +3712,7 @@ function renderMapaTimeline(cidadeNome) {
     }
     const allTagsM = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
     const tagBadge = allTagsM.length
-      ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${allTagsM.map(t => `<span style="font-size:.55rem;font-weight:700;color:#fff;background:var(--teal);border-radius:20px;padding:2px 8px">${_esc(t)}</span>`).join('')}</div>`
+      ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${allTagsM.map(t => `<span style="font-size:.55rem;font-weight:700;color:#1e293b;background:var(--teal);border-radius:20px;padding:2px 8px">${_esc(t)}</span>`).join('')}</div>`
       : '';
     return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
@@ -3834,8 +3834,8 @@ function _mapaTagPickerHtml(inputId, currentTags) {
   const labelStyle = tags.length ? 'color:var(--teal);font-weight:700' : 'color:var(--text-mid)';
   return `<div class="mapa-tag-dd" id="mapa-tag-dd-${inputId}">
     <div id="mapa-tag-pills-${inputId}" style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:${tags.length ? '5px' : '0'}">${
-      tags.map(t => `<span style="display:inline-flex;align-items:center;gap:2px;font-size:.6rem;font-weight:700;color:#fff;background:var(--teal);border-radius:20px;padding:2px 8px">
-        ${_esc(t)}<button type="button" style="background:none;border:none;cursor:pointer;color:#fff;font-size:.75rem;line-height:1;padding:0 0 0 2px;opacity:.8" onclick="event.stopPropagation();_toggleMapaTag('${inputId}','${_esc(t)}')">×</button>
+      tags.map(t => `<span style="display:inline-flex;align-items:center;gap:2px;font-size:.6rem;font-weight:700;color:#1e293b;background:var(--teal);border-radius:20px;padding:2px 8px">
+        ${_esc(t)}<button type="button" style="background:none;border:none;cursor:pointer;color:#1e293b;font-size:.75rem;line-height:1;padding:0 0 0 2px;opacity:.8" onclick="event.stopPropagation();_toggleMapaTag('${inputId}','${_esc(t)}')">×</button>
       </span>`).join('')
     }</div>
     <button type="button" class="mapa-tag-dd-btn" onclick="event.stopPropagation();_toggleMapaTagDd('${inputId}')">

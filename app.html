@@ -6747,13 +6747,15 @@ function renderTecFornecedores(id, i) {
           <span class="tec-fornec-preco-prefix">R$</span>
           <input class="tec-fornec-preco" id="tfn-preco-${id}-${i}-${fi}" placeholder="0,00" value="${_escFornAttr(f.preco)}">
         </div>
-        <button class="tec-fornec-doc-btn${hasDoc}" onclick="document.getElementById('tec-fornec-file-${id}-${i}-${fi}').click()" title="${_escFornAttr(f.doc?.nome||'Anexar orçamento')}">
-          ${docLabel}
-        </button>
-        <input type="file" id="tec-fornec-file-${id}-${i}-${fi}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
-          onchange="_tecFornDocUpload('${id}',${i},${fi},this)">
         <button class="tec-fornec-save-btn" onclick="saveTecFornecedor('${id}',${i},${fi})">Salvar</button>
         <button class="tec-fornec-cancel-btn" onclick="cancelTecFornecedor('${id}',${i},${fi})">Cancelar</button>
+        <div style="width:100%;display:flex;align-items:center;gap:6px;margin-top:2px">
+          <button class="tec-fornec-doc-btn${hasDoc}" onclick="document.getElementById('tec-fornec-file-${id}-${i}-${fi}').click()" title="${_escFornAttr(f.doc?.nome||'Anexar orçamento')}">
+            ${docLabel}
+          </button>
+          <input type="file" id="tec-fornec-file-${id}-${i}-${fi}" style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+            onchange="_tecFornDocUpload('${id}',${i},${fi},this)">
+        </div>
         <div class="tec-fornec-edit-meta">
           <span style="font-size:.6rem;color:#9ca3af;margin-right:1px;">Nota:</span>${starsEdit}
           <input class="tec-fornec-entrega-inp" id="tfn-entrega-${id}-${i}-${fi}" placeholder="Prazo entrega (ex: 30 dias)" value="${_escFornAttr(f.entrega||'')}">
@@ -6871,11 +6873,17 @@ function _askDelTecFornecedor(id, i, fi) {
 function _tecFornDocUpload(id, i, fi, input) {
   const file = input.files[0];
   if (!file) return;
+  // Preserva valores digitados antes de re-renderizar
+  const f = DATA[id].tecnologia[i].fornecedores[fi];
+  if (!f) return;
+  f.nome    = document.getElementById(`tfn-nome-${id}-${i}-${fi}`)?.value    ?? f.nome;
+  f.tag     = document.getElementById(`tfn-tag-${id}-${i}-${fi}`)?.value     ?? f.tag;
+  f.preco   = document.getElementById(`tfn-preco-${id}-${i}-${fi}`)?.value   ?? f.preco;
+  f.entrega = document.getElementById(`tfn-entrega-${id}-${i}-${fi}`)?.value ?? f.entrega;
   const reader = new FileReader();
   reader.onload = e => {
     if (!DATA[id].tecnologia[i].fornecedores[fi]) return;
     DATA[id].tecnologia[i].fornecedores[fi].doc = { nome: file.name, data: e.target.result };
-    // Mantém em modo edição após upload — salva automaticamente só o doc
     persistData(id);
     renderTecFornecedores(id, i);
   };

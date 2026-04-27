@@ -4152,7 +4152,13 @@ function defaultData(id, tab) {
    renderPanel(id) — lê DATA[id] e gera todo o conteúdo
    ==================================================== */
 function renderPanel(id) {
-  const panel = document.getElementById('panel-' + id);
+  let panel = document.getElementById('panel-' + id);
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.className = 'tab-panel';
+    panel.id = 'panel-' + id;
+    document.getElementById('panel-hidrometros').parentNode.appendChild(panel);
+  }
   const tab = TABS.find(t => t.id === id) || CI_TABS.find(t => t.id === id) || {};
   if (!DATA[id]) DATA[id] = defaultData(id, tab);
   const d = DATA[id];
@@ -5247,8 +5253,8 @@ function activateTab(id) {
   activeTabId = id;
   sessionStorage.setItem('usc_tab', id);
   renderTabBar();
-  document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
   renderPanel(id);
+  document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + id));
 }
 
 document.getElementById('tab-bar').addEventListener('click', e => {
@@ -8584,8 +8590,8 @@ O padrão das **16 falhas documentadas** tem 4 causas recorrentes:
   const savedProject = sessionStorage.getItem('usc_project');
   activeTabId = startTab;
   renderTabBar();
-  document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + startTab));
   renderPanel(startTab);
+  document.querySelectorAll('#page-solucoes .tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + startTab));
   if (savedProject && ['cidades','telemed','seguro','casainte'].includes(savedProject)) {
     switchProject(savedProject);
   }

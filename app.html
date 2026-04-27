@@ -3122,6 +3122,18 @@ let DATA = {
   </div>
 </div>
 
+<!-- Modal confirmação exclusão de aba -->
+<div id="tab-del-overlay" class="modal-overlay" onclick="if(event.target===this)_closeTabDelConfirm()">
+  <div class="confirm-box">
+    <h4>Confirmar exclusão</h4>
+    <p>Remover a aba <strong id="tab-del-nome"></strong>?</p>
+    <div style="display:flex;gap:8px;justify-content:center">
+      <button class="calc-action-btn discard" onclick="_closeTabDelConfirm()">Cancelar</button>
+      <button class="calc-action-btn save" style="background:#c0392b" onclick="_confirmTabDel()">Excluir</button>
+    </div>
+  </div>
+</div>
+
 <div id="tab-sort-overlay" class="tab-sort-overlay" onclick="closeTabSort(false)"></div>
 <div id="tab-sort-panel" class="tab-sort-panel" style="display:none">
   <h4>Gerenciar abas</h4>
@@ -7867,6 +7879,21 @@ function openTabSort() {
   document.getElementById('tab-sort-panel').style.display = 'block';
 }
 
+let _tabDelIdx = null;
+
+function _closeTabDelConfirm() {
+  document.getElementById('tab-del-overlay').classList.remove('open');
+  _tabDelIdx = null;
+}
+
+function _confirmTabDel() {
+  if (_tabDelIdx !== null) {
+    _tabSortOrder.splice(_tabDelIdx, 1);
+    _renderSortList();
+  }
+  _closeTabDelConfirm();
+}
+
 function _tabSortAddNew() {
   const icon  = (document.getElementById('tab-sort-new-icon').value.trim()  || '📌');
   const label = document.getElementById('tab-sort-new-label').value.trim();
@@ -7884,14 +7911,15 @@ function _renderSortList() {
     <div class="tab-sort-item" draggable="true" data-idx="${i}">
       <span class="tab-sort-handle">⠿</span>
       <span class="tab-sort-num">${i + 1}</span>
-      <span style="flex:1">${t.icon ? t.icon + ' ' : ''}${t.label}</span>
+      <span style="flex:1">${t.label}</span>
       <button class="tab-sort-del" data-del="${i}" title="Remover aba">×</button>
     </div>`).join('');
   list.querySelectorAll('.tab-sort-del').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      _tabSortOrder.splice(+btn.dataset.del, 1);
-      _renderSortList();
+      _tabDelIdx = +btn.dataset.del;
+      document.getElementById('tab-del-nome').textContent = _tabSortOrder[_tabDelIdx].label;
+      document.getElementById('tab-del-overlay').classList.add('open');
     });
   });
   let dragIdx = null;

@@ -3532,8 +3532,6 @@ function switchSitePage(page) {
    ==================================================== */
 let _mapaInstance = null;
 let _mapaFiltroAtivo = 'todos';
-let _mapaCidadesAtivas = [];
-const _mapaGeoCacheKey = '__mapa_geo_cache__';
 
 const MAPA_CATEGORIAS = [
   { key: 'todos',       label: 'Todos',           color: '#475569' },
@@ -3581,125 +3579,6 @@ const MAPA_CIDADES = [
   { nome: 'Porto de Itapoá',   lat: -26.1060, lng: -48.6140, cat: 'mobilidade', solucao: 'IoT 100% própria e patenteada (FIESC)', estado: 'SC' },
 ];
 
-function _mapaLoadGeoCache() {
-  try {
-    const raw = localStorage.getItem(_mapaGeoCacheKey);
-    return raw ? JSON.parse(raw) : {};
-  } catch (_) {
-    return {};
-  }
-}
-
-function _mapaSaveGeoCache(cache) {
-  try { localStorage.setItem(_mapaGeoCacheKey, JSON.stringify(cache)); } catch (_) {}
-}
-
-function _mapaGetCidadesComMarcos() {
-  const mapa = DATA['__mapa__'] || {};
-  const cidadesComMarcos = Object.keys(mapa)
-    .filter(nome => nome !== 'nomes' && Array.isArray(mapa[nome]) && mapa[nome].length > 0);
-
-  // Prioriza cidades que possuem marcos, mas também aceita cidades geocodificadas
-  // persistidas no banco para evitar depender de geocodificação no navegador.
-  const geoDb = DATA['__mapa_geo__'] || {};
-  const cidadesComGeo = Object.keys(geoDb).filter(nome => {
-    const item = geoDb[nome];
-    return item && Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng));
-  });
-
-  return Array.from(new Set([...cidadesComMarcos, ...cidadesComGeo]));
-}
-
-function _mapaInferirCategoria(nomeCidade, marcos) {
-  const txt = `${nomeCidade} ${(marcos || []).map(m => `${m.titulo || ''} ${(m.tags || []).join(' ')}`).join(' ')}`
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  if (/ilumin|telegest|led/.test(txt)) return 'iluminacao';
-  if (/camera|segur|lpr|totem/.test(txt)) return 'seguranca';
-  if (/semafor|mobil|frota|onibus|transporte/.test(txt)) return 'mobilidade';
-  if (/agua|sane|hidromet|enchente|rio|bacia/.test(txt)) return 'agua';
-  if (/energia|solar|smart meter|medidor/.test(txt)) return 'energia';
-  if (/5g|conectividade|backhaul|wan|telecom/.test(txt)) return 'conectividade';
-  if (/agro|irrig|silo/.test(txt)) return 'agro';
-  if (/clima|meteorolog|defesa civil/.test(txt)) return 'clima';
-  return 'todos';
-}
-
-async function _mapaGeocodificarCidade(nomeCidade) {
-  const cache = _mapaLoadGeoCache();
-  if (cache[nomeCidade]) return cache[nomeCidade];
-
-  try {
-    const q = encodeURIComponent(`${nomeCidade}, Brasil`);
-    const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${q}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const arr = await res.json();
-    if (!Array.isArray(arr) || !arr.length) return null;
-    const geo = { lat: Number(arr[0].lat), lng: Number(arr[0].lon) };
-    if (!Number.isFinite(geo.lat) || !Number.isFinite(geo.lng)) return null;
-    cache[nomeCidade] = geo;
-    _mapaSaveGeoCache(cache);
-    return geo;
-  } catch (_) {
-    return null;
-  }
-}
-
-async function _mapaMontarCidadesAtivas() {
-  const nomes = _mapaGetCidadesComMarcos();
-  const out = [];
-  const geoDb = DATA['__mapa_geo__'] || {};
-
-  for (const nome of nomes) {
-    const base = MAPA_CIDADES.find(c => c.nome === nome);
-    const marcos = _mapaGetMarcos(nome);
-    const geoPersistido = geoDb[nome];
-    const geoValidoDb = geoPersistido
-      && Number.isFinite(Number(geoPersistido.lat))
-      && Number.isFinite(Number(geoPersistido.lng));
-
-    if (geoValidoDb) {
-      out.push({
-        ...(base || {}),
-        nome,
-        lat: Number(geoPersistido.lat),
-        lng: Number(geoPersistido.lng),
-        cat: (base && base.cat) || _mapaInferirCategoria(nome, marcos),
-        solucao: (base && base.solucao) || `Cidade com ${marcos.length} marco(s)`,
-        estado: (base && base.estado) || '',
-      });
-      continue;
-    }
-
-    if (base) {
-      out.push({
-        ...base,
-        cat: base.cat || _mapaInferirCategoria(nome, marcos),
-        solucao: base.solucao || `Cidade com ${marcos.length} marco(s)`,
-      });
-      continue;
-    }
-
-    const geo = await _mapaGeocodificarCidade(nome);
-    if (!geo) continue;
-
-    out.push({
-      nome,
-      lat: geo.lat,
-      lng: geo.lng,
-      cat: _mapaInferirCategoria(nome, marcos),
-      solucao: `Cidade com ${marcos.length} marco(s)`,
-      estado: '',
-    });
-  }
-
-  _mapaCidadesAtivas = out;
-}
-
-function _mapaGetCidadeMeta(nome) {
-  return _mapaCidadesAtivas.find(c => c.nome === nome) || MAPA_CIDADES.find(c => c.nome === nome) || {};
-}
-
 function renderMapaAdocao() {
   const el = document.getElementById('mapa-leaflet');
   if (!el) return;
@@ -3739,16 +3618,14 @@ function _mapaSetFiltro(cat) {
 }
 
 let _mapaMarkers = [];
-async function _mapaRenderPins() {
+function _mapaRenderPins() {
   if (!_mapaInstance) return;
   _mapaMarkers.forEach(m => m.remove());
   _mapaMarkers = [];
 
-  await _mapaMontarCidadesAtivas();
-
   const filtrados = _mapaFiltroAtivo === 'todos'
-    ? _mapaCidadesAtivas
-    : _mapaCidadesAtivas.filter(c => c.cat === _mapaFiltroAtivo);
+    ? MAPA_CIDADES
+    : MAPA_CIDADES.filter(c => c.cat === _mapaFiltroAtivo);
 
   filtrados.forEach(cidade => {
     const cat   = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || MAPA_CATEGORIAS[0];
@@ -3766,7 +3643,6 @@ async function _mapaRenderPins() {
       .bindPopup(`
         <div style="font-family:inherit;min-width:200px">
           <div style="font-weight:800;font-size:.85rem;color:#1e293b">${_mapaNome(cidade.nome)}</div>
-          <div style="font-size:.72rem;color:#64748b;margin-top:2px">${_mapaGetMarcos(cidade.nome).length} marco(s)</div>
         </div>
       `, { maxWidth: 280 })
       .on('click', () => selectMapaCidade(cidade.nome))
@@ -3825,7 +3701,7 @@ function renderMapaTimeline(cidadeNome) {
   const track = document.getElementById('mapa-tl-track');
   if (!hdr || !track) return;
 
-  const cidade = _mapaGetCidadeMeta(cidadeNome);
+  const cidade = MAPA_CIDADES.find(c => c.nome === cidadeNome) || {};
   const cat    = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || {};
   const marcos = _mapaGetMarcos(cidadeNome);
 

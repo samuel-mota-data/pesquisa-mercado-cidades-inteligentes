@@ -3596,8 +3596,18 @@ function _mapaSaveGeoCache(cache) {
 
 function _mapaGetCidadesComMarcos() {
   const mapa = DATA['__mapa__'] || {};
-  return Object.keys(mapa)
+  const cidadesComMarcos = Object.keys(mapa)
     .filter(nome => nome !== 'nomes' && Array.isArray(mapa[nome]) && mapa[nome].length > 0);
+
+  // Prioriza cidades que possuem marcos, mas também aceita cidades geocodificadas
+  // persistidas no banco para evitar depender de geocodificação no navegador.
+  const geoDb = DATA['__mapa_geo__'] || {};
+  const cidadesComGeo = Object.keys(geoDb).filter(nome => {
+    const item = geoDb[nome];
+    return item && Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lng));
+  });
+
+  return Array.from(new Set([...cidadesComMarcos, ...cidadesComGeo]));
 }
 
 function _mapaInferirCategoria(nomeCidade, marcos) {
@@ -3783,9 +3793,9 @@ function _mapaNome(nome) {
 }
 
 function _mapaGetMarcos(cidadeNome) {
-  const mapa = DATA['__mapa__'] || {};
-  const marcos = mapa[cidadeNome];
-  return Array.isArray(marcos) ? marcos : [];
+  if (!DATA['__mapa__']) DATA['__mapa__'] = {};
+  if (!DATA['__mapa__'][cidadeNome]) DATA['__mapa__'][cidadeNome] = [];
+  return DATA['__mapa__'][cidadeNome];
 }
 
 function _mapaVid(cidadeNome, marcoId) {

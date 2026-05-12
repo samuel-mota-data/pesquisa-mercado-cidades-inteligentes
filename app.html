@@ -3680,7 +3680,20 @@ function _mapaSetFiltro(cat) {
     btn.style.background  = isActive ? `${c?.color || ''}18` : '';
   });
   _mapaRenderPins();
-  if (_mapaActiveCidade) renderMapaTimeline(_mapaActiveCidade);
+  if (_mapaActiveCidade) {
+    const todosMarcos = _mapaGetMarcos(_mapaActiveCidade);
+    const marcosVisiveis = cat === 'todos'
+      ? todosMarcos
+      : todosMarcos.filter(m => {
+          const mt = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
+          return mt.some(t => _mapaTagNorm(t) === cat);
+        });
+    if (marcosVisiveis.length > 0) {
+      renderMapaTimeline(_mapaActiveCidade);
+    } else {
+      closeMapaTimeline();
+    }
+  }
 }
 
 let _mapaMarkers = [];

@@ -3559,6 +3559,15 @@ function _mapaTagNorm(tag) {
   return (tag || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
 }
 
+function _mapaHumanize(txt) {
+  if (!txt) return '';
+  return txt
+    .replace(/_/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
 function _mapaCollectTags() {
   const mapa = DATA['__mapa__'] || {};
   const tagSet = new Set();
@@ -3584,7 +3593,7 @@ function _mapaBuildCategorias() {
     if (known) {
       cats.push({ key: t, label: known.label, color: known.color });
     } else {
-      const label = t.charAt(0).toUpperCase() + t.slice(1);
+      const label = _mapaHumanize(t);
       const color = _MAPA_PALETA_EXTRA[extraIdx % _MAPA_PALETA_EXTRA.length];
       extraIdx++;
       cats.push({ key: t, label, color });
@@ -3807,12 +3816,12 @@ function renderMapaTimeline(cidadeNome) {
     }
     const allTagsM = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
     const tagBadge = allTagsM.length
-      ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${allTagsM.map(t => `<span style="font-size:.55rem;font-weight:700;color:#1e293b;background:var(--teal);border-radius:20px;padding:2px 8px">${_esc(t)}</span>`).join('')}</div>`
+      ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${allTagsM.map(t => `<span style="font-size:.55rem;font-weight:700;color:#1e293b;background:var(--teal);border-radius:20px;padding:2px 8px">${_esc(_mapaHumanize(t))}</span>`).join('')}</div>`
       : '';
     return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
       <div class="mapa-marco-data">${_esc(m.data)}</div>
-      <div class="mapa-marco-titulo">${_esc(m.titulo)}</div>
+      <div class="mapa-marco-titulo">${_esc(_mapaHumanize(m.titulo))}</div>
       ${tagBadge}
       ${isActive ? `<div style="display:flex;gap:2px;margin-top:4px">
         <button class="mapa-marco-del" onclick="event.stopPropagation();_mapaEditingMarco='${m.id}';renderMapaTimeline('${cEsc}')" title="Editar" style="color:var(--text-mid)">✎</button>

@@ -3569,17 +3569,34 @@ function _mapaHumanize(txt) {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+const _MAPA_TAG_IGNORE = new Set([
+  'ppp','produto','pr','rs','sc','sp','rj','mg','ba','go','df','es','mt','ms',
+  'mobil','5g','distribuidor br','br','contrato','governo',
+]);
+
+function _mapaIsTagValida(tag) {
+  const n = _mapaTagNorm(tag);
+  if (!n || n.length < 4) return false;
+  if (_MAPA_TAG_IGNORE.has(n)) return false;
+  return true;
+}
+
 function _mapaCollectTags() {
   const mapa = DATA['__mapa__'] || {};
-  const tagSet = new Set();
+  const tagCount = {};
   for (const [nome, marcos] of Object.entries(mapa)) {
     if (nome === 'nomes' || !Array.isArray(marcos)) continue;
     for (const m of marcos) {
       const tags = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
-      tags.forEach(t => { if (t) tagSet.add(_mapaTagNorm(t)); });
+      tags.forEach(t => {
+        const n = _mapaTagNorm(t);
+        if (n && _mapaIsTagValida(n)) tagCount[n] = (tagCount[n] || 0) + 1;
+      });
     }
   }
-  return Array.from(tagSet).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  return Object.entries(tagCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([t]) => t);
 }
 
 function _mapaBuildCategorias() {
@@ -3607,7 +3624,7 @@ function _mapaCidadeTags(marcos) {
   const tags = new Set();
   for (const m of (marcos || [])) {
     const mt = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
-    mt.forEach(t => { if (t) tags.add(_mapaTagNorm(t)); });
+    mt.forEach(t => { const n = _mapaTagNorm(t); if (_mapaIsTagValida(n)) tags.add(n); });
   }
   return Array.from(tags);
 }

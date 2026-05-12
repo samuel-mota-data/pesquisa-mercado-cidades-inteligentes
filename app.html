@@ -3662,6 +3662,7 @@ function _mapaSetFiltro(cat) {
     btn.style.background  = isActive ? `${c?.color || ''}18` : '';
   });
   _mapaRenderPins();
+  if (_mapaActiveCidade) renderMapaTimeline(_mapaActiveCidade);
 }
 
 let _mapaMarkers = [];
@@ -3769,7 +3770,13 @@ function renderMapaTimeline(cidadeNome) {
   const cidade = _mapaGetCidades().find(c => c.nome === cidadeNome) || {};
   const categorias = _mapaBuildCategorias();
   const cat    = categorias.find(c => c.key === cidade.primaryTag) || categorias[0] || {};
-  const marcos = _mapaGetMarcos(cidadeNome);
+  const todosMarcos = _mapaGetMarcos(cidadeNome);
+  const marcos = _mapaFiltroAtivo === 'todos'
+    ? todosMarcos
+    : todosMarcos.filter(m => {
+        const mt = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
+        return mt.some(t => _mapaTagNorm(t) === _mapaFiltroAtivo);
+      });
 
   const displayNome = _mapaNome(cidadeNome);
   const cityHtml = _mapaEditingCityName

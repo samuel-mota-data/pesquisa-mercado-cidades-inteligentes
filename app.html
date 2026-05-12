@@ -3533,30 +3533,73 @@ function switchSitePage(page) {
 let _mapaInstance = null;
 let _mapaFiltroAtivo = 'todos';
 
-const MAPA_CATEGORIAS = [
-  { key: 'todos',       label: 'Todos',           color: '#475569' },
-  { key: 'agua',        label: 'Saneamento',       color: '#0284c7' },
-  { key: 'energia',     label: 'Energia',          color: '#d97706' },
-  { key: 'mobilidade',  label: 'Mobilidade',       color: '#7c3aed' },
-  { key: 'iluminacao',  label: 'Iluminação',       color: '#ca8a04' },
-  { key: 'seguranca',   label: 'Segurança',        color: '#dc2626' },
-  { key: 'clima',       label: 'Clima / Defesa',   color: '#0f766e' },
-  { key: 'conectividade', label: 'Conectividade',  color: '#2563eb' },
-  { key: 'agro',        label: 'Agronegócio',      color: '#16a34a' },
-];
+const _MAPA_CORES_CONHECIDAS = {
+  agua:           { label: 'Saneamento',      color: '#0284c7' },
+  saneamento:     { label: 'Saneamento',      color: '#0284c7' },
+  energia:        { label: 'Energia',          color: '#d97706' },
+  mobilidade:     { label: 'Mobilidade',       color: '#7c3aed' },
+  iluminacao:     { label: 'Iluminação',       color: '#ca8a04' },
+  iluminação:     { label: 'Iluminação',       color: '#ca8a04' },
+  seguranca:      { label: 'Segurança',        color: '#dc2626' },
+  segurança:      { label: 'Segurança',        color: '#dc2626' },
+  clima:          { label: 'Clima / Defesa',   color: '#0f766e' },
+  conectividade:  { label: 'Conectividade',    color: '#2563eb' },
+  telecom:        { label: 'Telecomunicações', color: '#2563eb' },
+  agro:           { label: 'Agronegócio',      color: '#16a34a' },
+  saude:          { label: 'Saúde',            color: '#e11d48' },
+  educacao:       { label: 'Educação',         color: '#8b5cf6' },
+  governo:        { label: 'Governo',          color: '#475569' },
+  contrato:       { label: 'Contrato',         color: '#0891b2' },
+  ppp:            { label: 'PPP',              color: '#f59e0b' },
+  concessao:      { label: 'Concessão',        color: '#ea580c' },
+};
+const _MAPA_PALETA_EXTRA = ['#6366f1','#14b8a6','#f43f5e','#84cc16','#a855f7','#06b6d4','#fb923c','#4ade80','#e879f9','#fbbf24'];
 
-function _mapaInferirCategoria(nomeCidade, marcos) {
-  const txt = `${nomeCidade} ${(marcos || []).map(m => `${m.titulo || ''} ${(m.tags || []).join(' ')}`).join(' ')}`
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  if (/ilumin|telegest|led/.test(txt)) return 'iluminacao';
-  if (/camera|segur|lpr|totem/.test(txt)) return 'seguranca';
-  if (/semafor|mobil|frota|onibus|transporte/.test(txt)) return 'mobilidade';
-  if (/agua|sane|hidromet|enchente|rio|bacia/.test(txt)) return 'agua';
-  if (/energia|solar|smart meter|medidor/.test(txt)) return 'energia';
-  if (/5g|conectividade|backhaul|wan|telecom/.test(txt)) return 'conectividade';
-  if (/agro|irrig|silo/.test(txt)) return 'agro';
-  if (/clima|meteorolog|defesa civil/.test(txt)) return 'clima';
-  return 'todos';
+function _mapaTagNorm(tag) {
+  return (tag || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}
+
+function _mapaCollectTags() {
+  const mapa = DATA['__mapa__'] || {};
+  const tagSet = new Set();
+  for (const [nome, marcos] of Object.entries(mapa)) {
+    if (nome === 'nomes' || !Array.isArray(marcos)) continue;
+    for (const m of marcos) {
+      const tags = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
+      tags.forEach(t => { if (t) tagSet.add(_mapaTagNorm(t)); });
+    }
+  }
+  return Array.from(tagSet).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+}
+
+function _mapaBuildCategorias() {
+  const tags = _mapaCollectTags();
+  let extraIdx = 0;
+  const cats = [{ key: 'todos', label: 'Todos', color: '#475569' }];
+  const seen = new Set(['todos']);
+  for (const t of tags) {
+    if (seen.has(t)) continue;
+    seen.add(t);
+    const known = _MAPA_CORES_CONHECIDAS[t];
+    if (known) {
+      cats.push({ key: t, label: known.label, color: known.color });
+    } else {
+      const label = t.charAt(0).toUpperCase() + t.slice(1);
+      const color = _MAPA_PALETA_EXTRA[extraIdx % _MAPA_PALETA_EXTRA.length];
+      extraIdx++;
+      cats.push({ key: t, label, color });
+    }
+  }
+  return cats;
+}
+
+function _mapaCidadeTags(marcos) {
+  const tags = new Set();
+  for (const m of (marcos || [])) {
+    const mt = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
+    mt.forEach(t => { if (t) tags.add(_mapaTagNorm(t)); });
+  }
+  return Array.from(tags);
 }
 
 function _mapaGetCidades() {
@@ -3569,7 +3612,8 @@ function _mapaGetCidades() {
     const lat = g ? Number(g.lat) : null;
     const lng = g ? Number(g.lng) : null;
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-    return { nome, lat, lng, cat: _mapaInferirCategoria(nome, marcos), solucao: `${marcos.length} marco(s)`, estado: g.display_name || '' };
+    const tags = _mapaCidadeTags(marcos);
+    return { nome, lat, lng, tags, primaryTag: tags[0] || 'todos', solucao: `${marcos.length} marco(s)`, estado: g.display_name || '' };
   }).filter(Boolean);
 }
 
@@ -3577,16 +3621,15 @@ function renderMapaAdocao() {
   const el = document.getElementById('mapa-leaflet');
   if (!el) return;
 
-  // Renderiza filtros
   const filtersEl = document.getElementById('mapa-filters');
-  if (filtersEl && !filtersEl.children.length) {
-    filtersEl.innerHTML = MAPA_CATEGORIAS.map(c =>
-      `<button class="mapa-filter-btn${c.key === 'todos' ? ' active' : ''}" data-cat="${c.key}"
-        onclick="_mapaSetFiltro('${c.key}')" style="${c.key === 'todos' ? `border-color:${c.color};color:${c.color}` : ''}">${c.label}</button>`
+  const categorias = _mapaBuildCategorias();
+  if (filtersEl) {
+    filtersEl.innerHTML = categorias.map(c =>
+      `<button class="mapa-filter-btn${c.key === _mapaFiltroAtivo ? ' active' : ''}" data-cat="${c.key}"
+        onclick="_mapaSetFiltro('${c.key}')" style="${c.key === _mapaFiltroAtivo ? `border-color:${c.color};color:${c.color};background:${c.color}18` : ''}">${c.label}</button>`
     ).join('');
   }
 
-  // Inicializa mapa uma única vez
   if (!_mapaInstance) {
     _mapaInstance = L.map('mapa-leaflet', { zoomControl: true }).setView([-27.5, -50.5], 7);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -3600,10 +3643,11 @@ function renderMapaAdocao() {
 
 function _mapaSetFiltro(cat) {
   _mapaFiltroAtivo = cat;
+  const categorias = _mapaBuildCategorias();
   document.querySelectorAll('.mapa-filter-btn').forEach(btn => {
     const isActive = btn.dataset.cat === cat;
     btn.classList.toggle('active', isActive);
-    const c = MAPA_CATEGORIAS.find(x => x.key === btn.dataset.cat);
+    const c = categorias.find(x => x.key === btn.dataset.cat);
     btn.style.borderColor = isActive ? (c?.color || '') : '';
     btn.style.color       = isActive ? (c?.color || '') : '';
     btn.style.background  = isActive ? `${c?.color || ''}18` : '';
@@ -3617,18 +3661,21 @@ function _mapaRenderPins() {
   _mapaMarkers.forEach(m => m.remove());
   _mapaMarkers = [];
 
+  const categorias = _mapaBuildCategorias();
   const todas = _mapaGetCidades();
   const filtrados = _mapaFiltroAtivo === 'todos'
     ? todas
-    : todas.filter(c => c.cat === _mapaFiltroAtivo);
+    : todas.filter(c => c.tags.includes(_mapaFiltroAtivo));
 
   filtrados.forEach(cidade => {
-    const cat   = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || MAPA_CATEGORIAS[0];
+    const tagAtiva = _mapaFiltroAtivo !== 'todos' && cidade.tags.includes(_mapaFiltroAtivo)
+      ? _mapaFiltroAtivo : cidade.primaryTag;
+    const catObj = categorias.find(c => c.key === tagAtiva) || categorias[0];
     const icon  = L.divIcon({
       className: '',
       html: `<div style="
         width:14px;height:14px;border-radius:50%;
-        background:${cat.color};border:2.5px solid white;
+        background:${catObj.color};border:2.5px solid white;
         box-shadow:0 1px 4px rgba(0,0,0,.35);cursor:pointer
       "></div>`,
       iconSize: [14, 14],
@@ -3636,13 +3683,18 @@ function _mapaRenderPins() {
     });
     const mapa = DATA['__mapa__'] || {};
     const marcos = Array.isArray(mapa[cidade.nome]) ? mapa[cidade.nome] : [];
+    const tagBadges = cidade.tags.map(t => {
+      const co = categorias.find(c => c.key === t);
+      return co ? `<span style="display:inline-block;font-size:.55rem;font-weight:700;color:#fff;background:${co.color};border-radius:10px;padding:1px 6px;margin:1px 2px">${co.label}</span>` : '';
+    }).join('');
     const marker = L.marker([cidade.lat, cidade.lng], { icon })
       .bindPopup(`
         <div style="font-family:inherit;min-width:200px">
           <div style="font-weight:800;font-size:.85rem;color:#1e293b">${_mapaNome(cidade.nome)}</div>
           <div style="font-size:.72rem;color:#64748b;margin-top:2px">${marcos.length} marco(s)</div>
+          <div style="margin-top:4px">${tagBadges}</div>
         </div>
-      `, { maxWidth: 280 })
+      `, { maxWidth: 300 })
       .on('click', () => selectMapaCidade(cidade.nome))
       .addTo(_mapaInstance);
     _mapaMarkers.push(marker);
@@ -3706,7 +3758,8 @@ function renderMapaTimeline(cidadeNome) {
   if (!hdr || !track) return;
 
   const cidade = _mapaGetCidades().find(c => c.nome === cidadeNome) || {};
-  const cat    = MAPA_CATEGORIAS.find(c => c.key === cidade.cat) || {};
+  const categorias = _mapaBuildCategorias();
+  const cat    = categorias.find(c => c.key === cidade.primaryTag) || categorias[0] || {};
   const marcos = _mapaGetMarcos(cidadeNome);
 
   const displayNome = _mapaNome(cidadeNome);

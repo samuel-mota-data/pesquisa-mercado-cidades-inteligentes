@@ -3819,6 +3819,18 @@ function _mapaSeedMarcoBlocksIfEmpty(marco, cidadeNome) {
   return true;
 }
 
+function _mapaDetailSourceHtml(marco) {
+  if (!marco?.source_url) return '';
+  const url = String(marco.source_url);
+  const href = url.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  const label = url.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  return `<div class="mapa-detail-source" style="margin-bottom:14px;padding:12px 14px;background:#f1f5f9;border-radius:8px;border:1px solid #e2e8f0">
+    <div style="font-size:.68rem;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Fonte oficial · Querido Diário</div>
+    <a href="${href}" target="_blank" rel="noopener noreferrer" style="font-size:.78rem;font-weight:600;color:#2540c0;word-break:break-all;text-decoration:underline">Abrir documento no diário oficial</a>
+    <div style="font-size:.62rem;color:#94a3b8;margin-top:6px;word-break:break-all">${label}</div>
+  </div>`;
+}
+
 function selectMapaCidade(cidadeNome) {
   if (_mapaActiveCidade !== cidadeNome) closeMapaDetail();
   _mapaActiveCidade = cidadeNome;
@@ -4147,6 +4159,7 @@ function selectMapaMarco(cidadeNome, marcoId) {
   if (!body) return;
   const vid = _mapaVid(cidadeNome, marcoId);
   body.innerHTML = `
+    ${_mapaDetailSourceHtml(marco)}
     <div class="nb-editor" id="nb-editor-${vid}"></div>
     <button class="nb-add-btn" onclick="_nbAdd('${vid}',null)">+ Adicionar bloco</button>`;
   _nbRenderBlocks(vid);
@@ -5693,7 +5706,7 @@ function _nbBlockHtml(block, tabId) {
       const _wrapped = content.startsWith('<!') || content.startsWith('<html') ? content : _reset + content;
       const srcdoc = _wrapped.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
       return `<div class="nb-html-block nb-media-embedded">
-        <iframe class="nb-html-iframe" id="nb-html-if-${block.id}" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin allow-popups"
+        <iframe class="nb-html-iframe" id="nb-html-if-${block.id}" srcdoc="${srcdoc}" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
           onload="(function(f){function fit(){f.style.height='0';f.style.height=f.contentDocument.documentElement.scrollHeight+'px';}fit();new ResizeObserver(fit).observe(f.contentDocument.documentElement);})(this)"></iframe>
         <div class="nb-media-edit-overlay">
           <button onclick="_nbHtmlFullscreen('${block.id}')">⛶ Apresentar</button>

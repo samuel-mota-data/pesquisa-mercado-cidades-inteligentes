@@ -3798,10 +3798,6 @@ function _mapaSeedMarcoBlocksIfEmpty(marco, cidadeNome) {
   if (marco.data_doc) linhas.push(`Data do diário: ${marco.data_doc}`);
   else if (marco.data) linhas.push(`Período: ${marco.data}`);
   if (marco.termo_base) linhas.push(`Termo / modalidade: ${marco.termo_base}`);
-  if (marco.score != null) {
-    const kw = marco.hits_keywords != null ? ` · ${marco.hits_keywords} keyword(s)` : '';
-    linhas.push(`Score de relação com produto: ${marco.score}${kw}`);
-  }
   if (marco.titulo) linhas.push(`Referência: ${marco.titulo}`);
 
   marco.blocks = [

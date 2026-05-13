@@ -3569,6 +3569,10 @@ function _mapaHumanize(txt) {
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function _jsEsc(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 const _MAPA_TAG_IGNORE = new Set([
   'ppp','produto','pr','rs','sc','sp','rj','mg','ba','go','df','es','mt','ms',
   'mobil','5g','distribuidor br','br','contrato','governo',
@@ -3771,19 +3775,57 @@ function _mapaVid(cidadeNome, marcoId) {
   return vid;
 }
 
+function _mapaMarcoBlocksEmpty(marco) {
+  if (!marco.blocks || !marco.blocks.length) return true;
+  return marco.blocks.every(b => !String(b.content || '').trim());
+}
+
+function _mapaProdutoLabel(marco) {
+  if (marco.produto) return marco.produto;
+  const tags = marco.tags?.length ? marco.tags : (marco.tag ? [marco.tag] : []);
+  const prodTag = tags.map(_mapaTagNorm).find(t => _mapaIsTagValida(t));
+  return prodTag ? _mapaHumanize(prodTag) : 'Marco PPP';
+}
+
+function _mapaSeedMarcoBlocksIfEmpty(marco, cidadeNome) {
+  if (!_mapaMarcoBlocksEmpty(marco)) return false;
+
+  const produto = _mapaProdutoLabel(marco);
+  const uf = marco.uf || '';
+  const linhas = [
+    `Cidade: ${_mapaNome(cidadeNome)}${uf ? ` (${uf})` : ''}`,
+  ];
+  if (marco.data_doc) linhas.push(`Data do diário: ${marco.data_doc}`);
+  else if (marco.data) linhas.push(`Período: ${marco.data}`);
+  if (marco.termo_base) linhas.push(`Termo / modalidade: ${marco.termo_base}`);
+  if (marco.score != null) {
+    const kw = marco.hits_keywords != null ? ` · ${marco.hits_keywords} keyword(s)` : '';
+    linhas.push(`Score de relação com produto: ${marco.score}${kw}`);
+  }
+  if (marco.titulo) linhas.push(`Referência: ${marco.titulo}`);
+
+  marco.blocks = [
+    { id: _nbId(), type: 'h2', content: produto },
+    { id: _nbId(), type: 'p', content: linhas.join('\n') },
+  ];
+  if (marco.source_url) {
+    const url = String(marco.source_url).replace(/"/g, '&quot;');
+    marco.blocks.push({
+      id: _nbId(),
+      type: 'html',
+      content: `<p><strong>Fonte oficial (Querido Diário)</strong></p><p><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></p>`,
+    });
+  }
+  return true;
+}
+
 function selectMapaCidade(cidadeNome) {
+  if (_mapaActiveCidade !== cidadeNome) closeMapaDetail();
   _mapaActiveCidade = cidadeNome;
   _mapaAddingMarco = false;
   const panel = document.getElementById('mapa-timeline-panel');
   if (panel) panel.classList.add('open');
   renderMapaTimeline(cidadeNome);
-  if (_mapaActiveMarcoId) {
-    const marcos = _mapaGetMarcos(cidadeNome);
-    if (!marcos.find(m => m.id === _mapaActiveMarcoId)) {
-      _mapaActiveMarcoId = null;
-      closeMapaDetail();
-    }
-  }
 }
 
 function renderMapaTimeline(cidadeNome) {
@@ -3830,18 +3872,18 @@ function renderMapaTimeline(cidadeNome) {
   track.innerHTML = marcos.map(m => {
     const isActive  = m.id === _mapaActiveMarcoId;
     const isEditing = m.id === _mapaEditingMarco;
-    const cEsc = _esc(cidadeNome);
+    const jEsc = _jsEsc(cidadeNome);
     if (isEditing) {
       return `<div class="mapa-marco active" style="min-width:150px" onclick="event.stopPropagation()">
           <div class="mapa-marco-dot" style="background:var(--blue-dark)"></div>
           <input id="mapa-edit-data" type="month" value="${_esc(m.data)}" style="width:130px;margin-top:6px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit">
           <input id="mapa-edit-titulo" value="${_esc(m.titulo)}" maxlength="80" placeholder="Título"
             style="width:130px;margin-top:4px;font-size:.63rem;padding:3px 6px;border:1.5px solid var(--teal);border-radius:5px;font-family:inherit"
-            onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${cEsc}','${m.id}')">
+            onkeydown="if(event.key==='Enter')saveMapaMarcoEdit('${jEsc}','${m.id}')">
           <div style="margin-top:6px">${_mapaTagPickerHtml('mapa-edit-tag', m.tags?.length ? m.tags : (m.tag ? [m.tag] : []))}</div>
           <div style="display:flex;gap:4px;margin-top:6px">
-            <button class="mapa-tl-add" style="font-size:.6rem;padding:3px 8px" onclick="saveMapaMarcoEdit('${cEsc}','${m.id}')">✓</button>
-            <button class="mapa-marco-del" style="font-size:.75rem" onclick="event.stopPropagation();_mapaEditingMarco=null;renderMapaTimeline('${cEsc}')">✕</button>
+            <button class="mapa-tl-add" style="font-size:.6rem;padding:3px 8px" onclick="saveMapaMarcoEdit('${jEsc}','${m.id}')">✓</button>
+            <button class="mapa-marco-del" style="font-size:.75rem" onclick="event.stopPropagation();_mapaEditingMarco=null;renderMapaTimeline('${jEsc}')">✕</button>
           </div>
         </div>`;
     }
@@ -3849,14 +3891,14 @@ function renderMapaTimeline(cidadeNome) {
     const tagBadge = allTagsM.length
       ? `<div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px">${allTagsM.map(t => `<span style="font-size:.55rem;font-weight:700;color:#1e293b;background:var(--teal);border-radius:20px;padding:2px 8px">${_esc(_mapaHumanize(t))}</span>`).join('')}</div>`
       : '';
-    return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${cEsc}','${m.id}')">
+    return `<div class="mapa-marco${isActive ? ' active' : ''}" onclick="selectMapaMarco('${jEsc}','${m.id}')">
       <div class="mapa-marco-dot"></div>
       <div class="mapa-marco-data">${_esc(m.data)}</div>
       <div class="mapa-marco-titulo">${_esc(_mapaHumanize(m.titulo))}</div>
       ${tagBadge}
       ${isActive ? `<div style="display:flex;gap:2px;margin-top:4px">
-        <button class="mapa-marco-del" onclick="event.stopPropagation();_mapaEditingMarco='${m.id}';renderMapaTimeline('${cEsc}')" title="Editar" style="color:var(--text-mid)">✎</button>
-        <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${cEsc}','${m.id}')" title="Excluir">×</button>
+        <button class="mapa-marco-del" onclick="event.stopPropagation();_mapaEditingMarco='${m.id}';renderMapaTimeline('${jEsc}')" title="Editar" style="color:var(--text-mid)">✎</button>
+        <button class="mapa-marco-del" onclick="event.stopPropagation();delMapaMarco('${jEsc}','${m.id}')" title="Excluir">×</button>
       </div>` : ''}
     </div>`;
   }).join('') + addFormHtml;
@@ -4052,9 +4094,9 @@ function saveMapaMarcoEdit(cidadeNome, marcoId) {
   persistData('__mapa__');
   renderMapaTimeline(cidadeNome);
   // atualiza título no painel de detalhe se estiver aberto
-  if (_mapaActiveMarcoId === marcoId) {
+  if (_mapaActiveMarcoId === marcoId && _mapaActiveCidade === cidadeNome) {
     const titleEl = document.getElementById('mapa-detail-title');
-    if (titleEl) titleEl.textContent = `${cidadeNome}  ·  ${marco.data}  —  ${marco.titulo}`;
+    if (titleEl) titleEl.textContent = `${_mapaNome(cidadeNome)} · ${marco.data}`;
   }
 }
 
@@ -4084,6 +4126,7 @@ function uploadMapaDoc(cidadeNome, marcoId, input) {
 }
 
 function selectMapaMarco(cidadeNome, marcoId) {
+  _mapaActiveCidade = cidadeNome;
   _mapaActiveMarcoId = marcoId;
   renderMapaTimeline(cidadeNome);
 
@@ -4092,11 +4135,13 @@ function selectMapaMarco(cidadeNome, marcoId) {
   if (!marco) return;
   if (!marco.blocks) marco.blocks = [];
 
+  if (_mapaSeedMarcoBlocksIfEmpty(marco, cidadeNome)) persistData('__mapa__');
+
   const panel = document.getElementById('mapa-detail-panel');
   if (panel) panel.classList.add('open');
 
   const titleEl = document.getElementById('mapa-detail-title');
-  if (titleEl) titleEl.textContent = `${cidadeNome}  ·  ${marco.data}  —  ${marco.titulo}`;
+  if (titleEl) titleEl.textContent = `${_mapaNome(cidadeNome)} · ${marco.data}`;
 
   const body = document.getElementById('mapa-detail-body');
   if (!body) return;

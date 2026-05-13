@@ -3804,14 +3804,6 @@ function _mapaSeedMarcoBlocksIfEmpty(marco, cidadeNome) {
     { id: _nbId(), type: 'h2', content: produto },
     { id: _nbId(), type: 'p', content: linhas.join('\n') },
   ];
-  if (marco.source_url) {
-    const url = String(marco.source_url).replace(/"/g, '&quot;');
-    marco.blocks.push({
-      id: _nbId(),
-      type: 'html',
-      content: `<p><strong>Fonte oficial (Querido Diário)</strong></p><p><a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a></p>`,
-    });
-  }
   return true;
 }
 

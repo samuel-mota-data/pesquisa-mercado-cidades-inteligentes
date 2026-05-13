@@ -3581,11 +3581,13 @@ function _mapaIsTagValida(tag) {
   return true;
 }
 
-function _mapaCollectTags() {
+function _mapaCollectTagCounts() {
   const mapa = DATA['__mapa__'] || {};
   const tagCount = {};
+  let totalMarcos = 0;
   for (const [nome, marcos] of Object.entries(mapa)) {
     if (nome === 'nomes' || !Array.isArray(marcos)) continue;
+    totalMarcos += marcos.length;
     for (const m of marcos) {
       const tags = m.tags?.length ? m.tags : (m.tag ? [m.tag] : []);
       tags.forEach(t => {
@@ -3594,27 +3596,30 @@ function _mapaCollectTags() {
       });
     }
   }
-  return Object.entries(tagCount)
-    .sort((a, b) => b[1] - a[1])
-    .map(([t]) => t);
+  return { tagCount, totalMarcos };
+}
+
+function _mapaFilterLabel(c) {
+  return c.count != null ? `${c.label} (${c.count})` : c.label;
 }
 
 function _mapaBuildCategorias() {
-  const tags = _mapaCollectTags();
+  const { tagCount, totalMarcos } = _mapaCollectTagCounts();
+  const tags = Object.entries(tagCount).sort((a, b) => b[1] - a[1]);
   let extraIdx = 0;
-  const cats = [{ key: 'todos', label: 'Todos', color: '#475569' }];
+  const cats = [{ key: 'todos', label: 'Todos', color: '#475569', count: totalMarcos }];
   const seen = new Set(['todos']);
-  for (const t of tags) {
+  for (const [t, count] of tags) {
     if (seen.has(t)) continue;
     seen.add(t);
     const known = _MAPA_CORES_CONHECIDAS[t];
     if (known) {
-      cats.push({ key: t, label: known.label, color: known.color });
+      cats.push({ key: t, label: known.label, color: known.color, count });
     } else {
       const label = _mapaHumanize(t);
       const color = _MAPA_PALETA_EXTRA[extraIdx % _MAPA_PALETA_EXTRA.length];
       extraIdx++;
-      cats.push({ key: t, label, color });
+      cats.push({ key: t, label, color, count });
     }
   }
   return cats;
@@ -3653,7 +3658,7 @@ function renderMapaAdocao() {
   if (filtersEl) {
     filtersEl.innerHTML = categorias.map(c =>
       `<button class="mapa-filter-btn${c.key === _mapaFiltroAtivo ? ' active' : ''}" data-cat="${c.key}"
-        onclick="_mapaSetFiltro('${c.key}')" style="${c.key === _mapaFiltroAtivo ? `border-color:${c.color};color:${c.color};background:${c.color}18` : ''}">${c.label}</button>`
+        onclick="_mapaSetFiltro('${c.key}')" style="${c.key === _mapaFiltroAtivo ? `border-color:${c.color};color:${c.color};background:${c.color}18` : ''}">${_mapaFilterLabel(c)}</button>`
     ).join('');
   }
 

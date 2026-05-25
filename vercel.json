@@ -4,5 +4,19 @@
     { "source": "/app",      "destination": "/app.html" },
     { "source": "/api/auth", "destination": "/api/auth.js" },
     { "source": "/api/data", "destination": "/api/data.js" }
+  ],
+  "headers": [
+    {
+      "source": "/app.html",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/app",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
   ]
 }

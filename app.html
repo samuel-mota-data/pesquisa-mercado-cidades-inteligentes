@@ -4358,11 +4358,14 @@ function renderPanel(id) {
             { title: 'Potencial Brasil',           sub: 'Estimativa do mercado brasileiro', delta: '' },
           ];
           const _cm = m.cards_meta ? m.cards_meta.map((c,i) => ({ ..._defCM[i], ...c })) : _defCM;
+          const _isQtd = m.tipo === 'quantidade';
+          const _fmtN = v => Math.round(v * 1000).toLocaleString('pt-BR');
+          const _fv = (cm, bi, moedaFallback) => cm.val || (_isQtd ? `${_fmtN(bi)} ${m.moeda}` : moedaFallback);
           return [
-            { ..._cm[0], val: `${m.moeda} ${m.tamanho_bi}bi`,  cls: '',      url: (m.cards_url||[])[0]||'' },
-            { ..._cm[1], val: `${m.moeda} ${m.proj[1].bi}bi`,  cls: 'yellow', url: (m.cards_url||[])[1]||'' },
-            { ..._cm[2], val: `${m.moeda} ${m.proj[2].bi}bi`,  cls: 'green',  url: (m.cards_url||[])[2]||'' },
-            { ..._cm[3], val: `R$ ${b.potencial_bi}bi`,         cls: 'dark',   url: (m.cards_url||[])[3]||'' },
+            { ..._cm[0], val: _fv(_cm[0], m.tamanho_bi,   `${m.moeda} ${m.tamanho_bi}bi`),  cls: '',       url: (m.cards_url||[])[0]||'' },
+            { ..._cm[1], val: _fv(_cm[1], m.proj[1].bi,   `${m.moeda} ${m.proj[1].bi}bi`),  cls: 'yellow', url: (m.cards_url||[])[1]||'' },
+            { ..._cm[2], val: _fv(_cm[2], m.proj[2].bi,   `${m.moeda} ${m.proj[2].bi}bi`),  cls: 'green',  url: (m.cards_url||[])[2]||'' },
+            { ..._cm[3], val: _fv(_cm[3], b.potencial_bi, `R$ ${b.potencial_bi}bi`),         cls: 'dark',   url: (m.cards_url||[])[3]||'' },
           ].map(c => `
             <div class="card ${c.cls}" style="position:relative">
               <h3>${c.title}${c.url ? `<a href="${c.url}" target="_blank" class="uplink" style="position:absolute;top:8px;right:10px;font-size:.7rem;opacity:.8" title="Ver fonte">↗</a>` : ''}</h3>
@@ -4758,7 +4761,7 @@ function renderPanel(id) {
     data: {
       labels: m.proj.map(p => String(p.ano)),
       datasets: [{
-        label: `${m.moeda} bilhões`,
+        label: m.chart_label||(m.tipo==='quantidade' ? m.moeda : `${m.moeda} bilhões`),
         data: m.proj.map(p => p.bi),
         backgroundColor: ['#2540c0', '#00c8d4', '#a8e063'],
         borderRadius: 8,
@@ -4767,7 +4770,7 @@ function renderPanel(id) {
     options: {
       plugins: {
         legend: { display: false },
-        title: { display: true, text: `Mercado Global (${m.moeda} bi)`, font: { size: 14 }, color: '#1a2340' }
+        title: { display: true, text: m.chart_title||(m.tipo==='quantidade' ? `Escala (${m.moeda})` : `Mercado Global (${m.moeda} bi)`), font: { size: 14 }, color: '#1a2340' }
       },
       scales: { y: { beginAtZero: true, grid: { color: '#eee' } }, x: { grid: { display: false } } }
     }
